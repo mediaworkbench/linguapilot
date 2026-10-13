@@ -32,6 +32,11 @@ interface Environment {
 	public function wpml_version(): ?string;
 
 	/**
+	 * Whether the WPML setup wizard was completed. Only meaningful when WPML is active.
+	 */
+	public function is_wpml_setup_complete(): bool;
+
+	/**
 	 * Active WooCommerce Multilingual version, or null when WCML is not active.
 	 */
 	public function wcml_version(): ?string;

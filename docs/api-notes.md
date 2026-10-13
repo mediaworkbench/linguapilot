@@ -188,36 +188,112 @@ That conflicts with the hard rule "no writes anywhere".
 
 ---
 
-## 5. WPML / WCML: nothing verified yet
+## 5. WPML / WCML (verified against installed WPML 5.1.0 / WCML 5.6.3, 2026-10-13)
 
-The concept says "WPML 4.7+" / "WCML 5.x". The zips in `_licensed/` are **WPML 5.1.0 / WCML 5.6.3**, so the minimum versions need updating.
-WCML is a free plugin on wordpress.org (5.6.3 current).
+### 5.0 ⚠️ WCML already registers ability *extensions*
+`WCML\Abilities\Hooks` (WCML 5.6.3) uses core's `wp_register_ability_args` filter to add `lang` and `currency` input params
+to `woocommerce/products-query` and `woocommerce/orders-query`. It also switches WPML language and WCML currency around execution
+(`wp_before_execute_ability` / `wp_after_execute_ability`). It only touches the `woocommerce/` namespace, so it does not affect `mlstore/*`.
+→ The concept's "no multilingual abilities exist" (§1) is outdated. More precisely: WCML lets Woo's generic queries read *one* language/currency,
+but nothing audits *across* languages. That is still our gap, and a better pitch.
 
-The public hooks reference (wpml.org, last updated 2016) only lists hook names. These all exist:
-`wpml_active_languages`, `wpml_default_language`, `wpml_element_language_details`, `wpml_element_language_code`,
-`wpml_object_id`, `wpml_element_trid`, `wpml_get_element_translations`, `wpml_element_type`,
-`wpml_original_element_id`, `wpml_post_language_details`, `wpml_setting`, `wpml_current_language`, and the `wpml_loaded` action.
-Parameters and return shapes are **not** documented there and must be read from the installed code.
+### 5.1 Detection ✅
+- `ICL_SITEPRESS_VERSION` is defined at file load (`sitepress.php`). WPML defines `ICL_PLUGIN_INACTIVE = true` when it can't run.
+- `WCML_VERSION` is defined at file load **unconditionally**. `$GLOBALS['woocommerce_wpml']` exists only if WCML's WPML version check passed.
+- `RuntimeEnvironment` checks both (version constant + "really running" signal).
+- WCML 5.6.3 itself requires WPML ≥ 5.0.0 and WC ≥ 3.9 (`WCML_Dependencies`).
 
-❓ Open questions for Patrick (no guessing, per §14.7):
-1. **Detection:** `ICL_SITEPRESS_VERSION` vs `wpml_loaded` vs `has_filter('wpml_active_languages')`? And WCML: `WCML_VERSION`?
-2. **Element types:** confirm `post_product`, `post_product_variation`, `tax_product_cat`, `tax_product_tag`, `tax_pa_{slug}`.
-3. **Batching:** is a direct `icl_translations` query by `trid` acceptable for page-level batching (one query per page)?
-   Which columns are reliable (`element_id, element_type, trid, language_code, source_language_code`)?
-4. **"Synced" fields (§6.4):** which of SKU / stock / prices / tax class / visibility are governed by WCML settings
-   (option key and structure?) and which by WPML's custom-field translation preference ("copy" vs "translate")?
-   This decides `sync_error` vs `deviation`.
-5. **Multi-currency:** option key for currencies and their language mapping; meta keys for the manual-price flag
-   (`_wcml_custom_prices_status`?) and per-currency prices (`_regular_price_{CUR}`, `_sale_price_{CUR}`, `_price_{CUR}`?), for variations too.
-6. **Local (custom) attributes:** how does WCML store their translations (the `_product_attributes` meta on the translation? a WCML-specific meta?)
-7. **Order item product IDs:** does an order placed in FR record the FR product ID in `wc_order_product_lookup`,
-   or does WCML normalize to the original? (§6.6 assumes the translated ID.)
-8. **Variations:** are variations always their own `icl_translations` rows, or can a translated parent exist without them under WCML's auto-sync?
-10. **Minimum versions:** which WPML / WCML versions should `Dependencies` require? (Currently presence-only.)
-   Are `ICL_SITEPRESS_VERSION` / `WCML_VERSION` the right constants, defined by `plugins_loaded`?
-9. ~~Inspecting code~~ **Decided:** wait until WPML/WCML are installed in DDEV, then read the installed code.
+### 5.2 Element types and translation data ✅
+- `apply_filters( 'wpml_element_type', 'product' )` → `post_product`; `'product_cat'` → `tax_product_cat`.
+  Seen in the DB: `post_product`, `post_product_variation`, `tax_product_cat`, `tax_pa_color`, `tax_pa_size` (so `tax_pa_{slug}`).
+  `tax_product_tag` is presumably by the same rule; no rows yet.
+- **Language codes are not always two letters**: this install uses `en-us`. Validate against active languages and never assume `^[a-z]{2}$`.
+  `icl_translations.language_code` is `varchar(7)`.
+- `{prefix}icl_translations`: `translation_id, element_type, element_id, trid, language_code, source_language_code`;
+  UNIQUE `(trid, language_code)`, UNIQUE `(element_type, element_id)`, KEY `(element_id, element_type, language_code)`.
+  The original has `source_language_code IS NULL`.
+- `wpml_element_language_details` (args `['element_id', 'element_type']`) → `stdClass{element_id, trid, language_code, source_language_code}`.
+- `wpml_element_trid( null, $id, $type )` → trid **as string**.
+- `wpml_get_element_translations( null, $trid, $type )` → `array<lang, stdClass{trid, translation_id, language_code, element_id, source_language_code,
+  element_type, original ("1"/"0"), post_title, post_status}>` (post types). All values are strings.
+- `wpml_original_element_id( null, $id, $type )` → original ID as string.
+- Batching: one query per page against `icl_translations` (`WHERE element_type = %s AND trid IN (...)`) is safe given those indexes.
+  This lives in `WpmlGateway` only.
 
----
+### 5.2a ⚠️ Hook quirks found by the store suite (milestone 3)
+- **Front-end visibility policy.** Outside wp-admin (REST, MCP, front end; `is_admin()` false), `wpml_get_element_translations`
+  filters rows by post status and the current user's capabilities (`WPML_Translations::applies_visibility_policy()`).
+  It returned **an empty group for product variations**. Fix: pass `$all_statuses = true` (5th argument:
+  `( null, $trid, $type, $skip_empty = false, $all_statuses = true )`). `wp eval` and wp-admin don't show the bug,
+  which is why the store suite loads WordPress as a non-admin request.
+- **`wpml_original_element_id`** goes through the same policy with no opt-out. The gateway derives the original from the
+  all-statuses group instead (the row with empty `source_language_code`).
+- **`wpml_element_trid` ignores the element type for posts:** `( 25, 'post_product' )` returns the trid of *variation* 25.
+  The gateway therefore checks `element_type` on every returned row.
+- For terms, `wpml_get_element_translations` rows also carry `term_id`, `name` and `instances`.
+
+### 5.3 ⚠️ WPML filters queries by the *current language*
+`WP_Query` / `wc_get_products()` only return current-language posts while WPML is active.
+The gateway must make language explicit: either query originals via `icl_translations` and then load products by ID,
+or switch language (`wpml_switch_language`) and restore it in `finally`. Never rely on the request's language.
+(WCML's own ability hooks do the switch/restore dance, which confirms the issue.)
+
+### 5.4 What is "synced" (for `cross-language-consistency`) ✅
+Two mechanisms:
+1. **WPML custom-field preferences**, stored in `icl_sitepress_settings['translation-management']['custom_fields_translation'][meta_key]`:
+   `0` ignore, `1` copy, `2` translate, `3` copy-once (WPML constants `WPML_*_CUSTOM_FIELD`).
+   WCML ships defaults in `wpml-config.xml`: **copy** for `_sku`, `_manage_stock`, `_stock_status`, `_tax_class`, `_tax_status`, `_regular_price`,
+   `_sale_price`, `_price`, `_backorders`, `_weight`, ... and **ignore** for `_stock`, `_product_attributes`, `_wcml_custom_prices_status`.
+   The admin can override these (read-only config vs custom settings).
+2. **WCML code**, independent of the preferences: stock quantity (`Synchronization\Component\Stock`, even though `_stock` is "ignore"),
+   stock status (`woocommerce_product_set_stock_status`), catalog visibility (`product_visibility` terms, `sync_product_translations_visibility`).
+
+Proposed rule: a field is *synced* if its preference is `copy` (1), or WCML syncs it in code (stock quantity, stock status, catalog visibility).
+`copy-once` (3) and `translate`/`ignore` → *not synced* → differences are `deviation`. `post_status` is never synced → `deviation`.
+
+### 5.5 Multi-currency ✅ (data) / ❓ (semantics)
+- `_wcml_settings['enable_multi_currency']`: `0` disabled, `2` enabled (`WCML_MULTI_CURRENCIES_INDEPENDENT`).
+- `_wcml_settings['currency_options'][CUR]['languages'][lang] = 1|0`: currencies and the languages they're shown in.
+  The store default currency is `woocommerce_currency` and has no custom prices.
+- Manual pricing is **per product/variation, on the original**: post meta `_wcml_custom_prices_status` (truthy = manual).
+  WCML always reads it from the *original* (`get_original_product_id`).
+- Per-currency values on the original: `_regular_price_{CUR}`, `_sale_price_{CUR}`, `_price_{CUR}`,
+  plus `_sale_price_dates_from_{CUR}` / `_sale_price_dates_to_{CUR}`, `_wcml_schedule_{CUR}`.
+- WCML uses custom prices only if `_price_{CUR}` is set; otherwise it falls back to exchange-rate conversion.
+- ⚠️ **`WCML_Custom_Prices::get_product_custom_prices()` writes post meta** (`update_post_meta( _price_{CUR} )` for sale-date recalculation).
+  The gateway must **never** call it. Read raw meta with `get_post_meta()` instead (read-only rule).
+
+### 5.6 Attributes and variations ✅
+- Global attributes: terms in `pa_*` taxonomies, translated as `tax_pa_{slug}`. `_wcml_settings['attributes_settings'][pa_x] = "1"` = translatable.
+- Local attributes: each translation's own `_product_attributes` meta (key = sanitized name, `is_taxonomy = 0`, `value` = translated "a | b | c").
+  Labels in post meta `attr_label_translations[lang][key]` on the translation.
+- Variations: their own `post_product_variation` rows in `icl_translations`, same trid logic.
+- Order items: WCML's `OrderItems\LineItem\{Product,Variation}` can switch an item's `product_id` to the translated product.
+  `wc_order_product_lookup` may therefore hold either ID. Normalizing with `original_id()` covers both.
+
+### 5.7 Languages ✅
+- `wpml_active_languages( null, ['skip_missing' => 0, 'orderby' => 'code'] )` → `array<code, array{code, id, native_name, major, active,
+  default_locale, encode_url, tag, country, display_code, translated_name, url, country_flag_url, language_code}>`.
+- ⚠️ In that array **`active` means "is the current language"**, not "enabled". Every returned language is enabled. Never expose WPML's `active` as-is.
+- `translated_name` is in the *current admin* language. English name: `apply_filters( 'wpml_translated_language_name', null, $code, 'en' )` → "German".
+- `wpml_default_language` → e.g. `en-us`. `wpml_setting( null, 'setup_complete' )` → `1` when the wizard is finished.
+
+### 5.8 Terms ⚠️
+For `tax_*` element types, `icl_translations.element_id` is the **`term_taxonomy_id`**, not the `term_id`
+(`WPML_Term_Translation::adjust_ttid_for_term_id()`). On this install both IDs happen to be equal for every term, so tests here would
+not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join `term_taxonomy`).
+
+### 5.9 Decisions (Patrick, 2026-10-13)
+1. **Currency gap:** a product/variation with manual pricing on is missing currency X when `_regular_price_{X}` on the original is empty or absent.
+2. **WPML setup unfinished** (`setup_complete` falsy) → blocking dependency problem with an admin notice.
+3. **Minimum versions:** WPML ≥ 5.0.0, WCML ≥ 5.6.0.
+4. **WPML integration tests** run as a separate read-only PHPUnit suite (`store`) against the DDEV dev DB (the `wpml-baseline` snapshot),
+   loading `wp-load.php` without the WP test framework. CI runs only the no-WPML suite.
+
+### 5.10 Still open
+- **Untranslated local attribute (§6.3):** detection rule? (Identical values are often legitimate, e.g. "S | M | L".) Needed for milestone 5 / ability 4.
+- **Store setup vs. §13.4:** the DDEV store currently has default `en-us` + `de` (no FR), only EUR (no CHF/USD), and no translated products.
+  The store-suite tests and the seeded test cases need the final setup and the `wpml-baseline` snapshot.
 
 ## 6. Environment (resolved 2026-10-13)
 

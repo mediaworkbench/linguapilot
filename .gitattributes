@@ -12,5 +12,6 @@
 /phpstan.neon.dist  export-ignore
 /phpunit.xml.dist   export-ignore
 /phpunit-integration.xml.dist export-ignore
+/phpunit-store.xml.dist export-ignore
 
 *.sh text eol=lf

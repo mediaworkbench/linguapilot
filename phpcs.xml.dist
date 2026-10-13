@@ -24,6 +24,8 @@
 	<rule ref="WordPress-Docs">
 		<!-- Doc types use PHPStan generics (list<Foo>, array<string, mixed>), which this sniff cannot parse. PHPStan checks them. -->
 		<exclude name="Squiz.Commenting.FunctionComment.IncorrectTypeHint"/>
+		<!-- Implementations use {@inheritDoc}; parameters are documented once, on the interface. -->
+		<exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
 	</rule>
 
 	<rule ref="WordPress.WP.I18n">
@@ -32,6 +34,11 @@
 				<element value="multilingual-store-abilities"/>
 			</property>
 		</properties>
+	</rule>
+
+	<!-- The WPML gateway is the one place allowed to call WPML's own (unprefixed) hooks. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound">
+		<exclude-pattern>/src/Gateway/WpmlGateway\.php</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">

@@ -23,13 +23,22 @@ final class FakeEnvironment implements Environment {
 	 * @param string|null $woocommerce_version  Detected WooCommerce version, null when inactive.
 	 * @param string|null $wpml_version         Detected WPML version, null when inactive.
 	 * @param string|null $wcml_version         Detected WCML version, null when inactive.
+	 * @param bool        $wpml_setup_complete  Whether the WPML setup wizard was finished.
 	 */
 	public function __construct(
 		private readonly bool $abilities_api = true,
 		private readonly ?string $woocommerce_version = '11.2.1',
 		private readonly ?string $wpml_version = '5.1.0',
 		private readonly ?string $wcml_version = '5.6.3',
+		private readonly bool $wpml_setup_complete = true,
 	) {}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function is_wpml_setup_complete(): bool {
+		return $this->wpml_setup_complete;
+	}
 
 	/**
 	 * {@inheritDoc}

@@ -13,6 +13,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\RuntimeEnvironment;
+use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
 
 /**
  * Wires hooks and holds the dependency status for the current request.
@@ -56,7 +57,9 @@ final class Plugin {
 			return;
 		}
 
-		self::$instance = new self( $plugin_file, new Dependencies( new RuntimeEnvironment() ) );
+		global $wpdb;
+
+		self::$instance = new self( $plugin_file, new Dependencies( new RuntimeEnvironment( new WpmlGateway( $wpdb ) ) ) );
 		self::$instance->register_hooks();
 	}
 
@@ -140,9 +143,14 @@ final class Plugin {
 			DependencyProblem::ABILITIES_API => __( 'WordPress Abilities API (WordPress 6.9 or newer)', 'multilingual-store-abilities' ),
 			DependencyProblem::WOOCOMMERCE   => 'WooCommerce',
 			DependencyProblem::WPML          => 'WPML Multilingual CMS',
+			DependencyProblem::WPML_SETUP    => 'WPML Multilingual CMS',
 			DependencyProblem::WCML          => 'WooCommerce Multilingual & Multicurrency',
 		);
 		$name  = $names[ $problem->dependency ] ?? $problem->dependency;
+
+		if ( DependencyProblem::WPML_SETUP === $problem->dependency ) {
+			return __( 'The WPML setup wizard has not been completed (WPML → Setup).', 'multilingual-store-abilities' );
+		}
 
 		if ( $problem->is_missing() ) {
 			/* translators: %s: Name of the required plugin or API. */

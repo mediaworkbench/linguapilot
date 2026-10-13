@@ -94,6 +94,36 @@ final class DependenciesTest extends TestCase {
 		);
 	}
 
+	public function test_outdated_wpml_blocks_registration(): void {
+		$status = ( new Dependencies( new FakeEnvironment( wpml_version: '4.9.9' ) ) )->check();
+
+		$this->assertFalse( $status->can_register_abilities() );
+		$this->assertSame( array( DependencyProblem::WPML ), $this->blocking_ids( $status->problems() ) );
+		$this->assertSame( Dependencies::MIN_WPML, $status->problems()[0]->required_version );
+	}
+
+	public function test_unfinished_wpml_setup_blocks_registration(): void {
+		$status = ( new Dependencies( new FakeEnvironment( wpml_setup_complete: false ) ) )->check();
+
+		$this->assertFalse( $status->can_register_abilities() );
+		$this->assertSame( array( DependencyProblem::WPML_SETUP ), $this->blocking_ids( $status->problems() ) );
+	}
+
+	public function test_setup_state_is_not_reported_when_wpml_is_missing(): void {
+		$status = ( new Dependencies( new FakeEnvironment( wpml_version: null, wpml_setup_complete: false ) ) )->check();
+
+		$this->assertSame( array( DependencyProblem::WPML ), $this->blocking_ids( $status->problems() ) );
+	}
+
+	public function test_outdated_wcml_only_degrades(): void {
+		$status = ( new Dependencies( new FakeEnvironment( wcml_version: '5.5.9' ) ) )->check();
+
+		$this->assertTrue( $status->can_register_abilities() );
+		$this->assertFalse( $status->has_wcml() );
+		$this->assertSame( '5.5.9', $status->problems()[0]->installed_version );
+		$this->assertSame( Dependencies::MIN_WCML, $status->problems()[0]->required_version );
+	}
+
 	/**
 	 * Returns the dependency IDs of all blocking problems.
 	 *

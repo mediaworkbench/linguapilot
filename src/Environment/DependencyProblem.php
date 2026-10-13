@@ -17,6 +17,7 @@ final class DependencyProblem {
 	public const ABILITIES_API = 'abilities-api';
 	public const WOOCOMMERCE   = 'woocommerce';
 	public const WPML          = 'wpml';
+	public const WPML_SETUP    = 'wpml-setup';
 	public const WCML          = 'wcml';
 
 	/**
