@@ -1,0 +1,58 @@
+{
+	"name": "mediaworkbench/multilingual-store-abilities",
+	"description": "Read-only WordPress Abilities for multilingual WooCommerce stores running WPML and WooCommerce Multilingual.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Media Workbench"
+		}
+	],
+	"require": {
+		"php": ">=8.1"
+	},
+	"require-dev": {
+		"brain/monkey": "^2.6",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"php-stubs/woocommerce-stubs": "^10.0",
+		"php-stubs/wordpress-tests-stubs": "^7.1",
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"phpstan/extension-installer": "^1.4",
+		"phpstan/phpstan": "^2.1",
+		"phpunit/phpunit": "^9.6",
+		"szepeviktor/phpstan-wordpress": "^2.0",
+		"wp-coding-standards/wpcs": "^3.1",
+		"yoast/phpunit-polyfills": "^1.1"
+	},
+	"autoload": {
+		"psr-4": {
+			"MediaWorkbench\\MultilingualStoreAbilities\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"MediaWorkbench\\MultilingualStoreAbilities\\Tests\\": "tests/"
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true,
+			"phpstan/extension-installer": true
+		},
+		"platform": {
+			"php": "8.1.0"
+		},
+		"sort-packages": true
+	},
+	"scripts": {
+		"lint": "phpcs",
+		"lint:fix": "phpcbf",
+		"analyse": "phpstan analyse --memory-limit=1G",
+		"test:unit": "phpunit --testsuite unit",
+		"test:integration": "phpunit -c phpunit-integration.xml.dist",
+		"test": [
+			"@test:unit",
+			"@test:integration"
+		]
+	}
+}

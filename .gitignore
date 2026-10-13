@@ -1,0 +1,21 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Licensed third-party code must never be committed (WPML zips live outside this repo)
+/_licensed/
+*.zip
+
+# Tool caches
+.phpunit.result.cache
+/.phpunit.cache/
+/.phpcs-cache
+
+# Local Claude Code settings
+.claude/settings.local.json
+CLAUDE.md
+
+# OS / editor
+.DS_Store
+/.idea/
+/.vscode/

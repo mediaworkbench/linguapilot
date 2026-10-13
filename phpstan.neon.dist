@@ -1,0 +1,13 @@
+# szepeviktor/phpstan-wordpress is loaded automatically by phpstan/extension-installer.
+parameters:
+	level: 8
+	paths:
+		- multilingual-store-abilities.php
+		- uninstall.php
+		- src
+		- tests
+	scanFiles:
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+		- vendor/php-stubs/wordpress-tests-stubs/wordpress-tests-stubs.php
+	excludePaths:
+		- tests/Integration/bootstrap.php
