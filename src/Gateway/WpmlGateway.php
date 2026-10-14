@@ -642,6 +642,34 @@ final class WpmlGateway implements MultilingualGateway {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * Raw read of WCML's `attr_label_translations` meta (structure verified against WCML 5.6.3,
+	 * WCML_Attributes::get_attr_label_translations()).
+	 */
+	public function attribute_label_translations( int $translation_id ): array {
+		$wpdb = $this->wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Raw read, see docs/api-notes.md §11; indexed by post_id + meta_key.
+		$value = $wpdb->get_var( $wpdb->prepare( 'SELECT meta_value FROM %i WHERE post_id = %d AND meta_key = %s LIMIT 1', $wpdb->postmeta, $translation_id, 'attr_label_translations' ) );
+		$this->assert_query_succeeded();
+
+		$labels = is_string( $value ) ? maybe_unserialize( $value ) : array();
+		$result = array();
+		foreach ( is_array( $labels ) ? $labels : array() as $language => $by_key ) {
+			if ( ! is_string( $language ) || ! is_array( $by_key ) ) {
+				continue;
+			}
+			foreach ( $by_key as $key => $label ) {
+				if ( is_string( $key ) && is_string( $label ) && '' !== $label ) {
+					$result[ $language ][ $key ] = $label;
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public function sync_settings(): SyncSettings {
 		if ( null === $this->sync_settings ) {

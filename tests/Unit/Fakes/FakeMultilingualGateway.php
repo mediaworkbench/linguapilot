@@ -94,6 +94,13 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	private array $outdated = array();
 
 	/**
+	 * WCML attribute label translations by translation ID: language => attribute key => label.
+	 *
+	 * @var array<int, array<string, array<string, string>>>
+	 */
+	private array $labels = array();
+
+	/**
 	 * Element type values that are not translatable.
 	 *
 	 * @var list<string>
@@ -201,6 +208,24 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	public function mark_outdated( ElementType $type, int $member_id ): self {
 		$this->outdated[ $type->value ][] = $member_id;
 		return $this;
+	}
+
+	/**
+	 * Sets WCML attribute label translations of a translated product.
+	 *
+	 * @param int                                  $translation_id Translated product ID.
+	 * @param array<string, array<string, string>> $labels        Language => attribute key => label.
+	 */
+	public function set_attribute_labels( int $translation_id, array $labels ): self {
+		$this->labels[ $translation_id ] = $labels;
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function attribute_label_translations( int $translation_id ): array {
+		return $this->labels[ $translation_id ] ?? array();
 	}
 
 	/**

@@ -27,4 +27,8 @@ require_once dirname( __DIR__, 2 ) . '/vendor/autoload.php';
 
 // Load WordPress like WP-CLI does: no theme output, no HTTP request.
 define( 'WP_USE_THEMES', false ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WordPress core constant.
+
+// Never spawn WP-Cron from the suite: cron jobs (e.g. WooCommerce scheduled sales) write to the
+// guarded tables in a separate request and would make the read-only guard fail for the wrong reason.
+define( 'DISABLE_WP_CRON', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WordPress core constant.
 require_once $mlstore_wp_load;

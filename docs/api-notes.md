@@ -454,3 +454,24 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   returns null. Another reason the gateway reads `icl_translation_status` in its SQL. The store reference test loads it explicitly.
   `needs_update` has no public hook.
 - Seed data for consistency `sync_error`/`deviation` examples: in the milestone 6 seed script (Patrick, 2026-10-14).
+
+## 15. `mlstore/untranslated-variations` (milestone 5, ability 4), 2026-10-14
+
+- ✅ WooCommerce 11.2 matching (`WC_Product_Data_Store_CPT::find_matching_product_variation()`): variation meta `attribute_` +
+  `sanitize_title( name )`, only parent attributes with `is_variation`, **exact `!==` comparison** with the selected value; empty =
+  "any". Custom attribute options come from `wc_get_text_attributes()`: `html_entity_decode`, split at `WC_DELIMITER` (`|`), trim,
+  drop empty values (`ProductAttribute::split_options()` mirrors this). Global attributes store the term **slug**.
+- ✅ WCML keeps the attribute *key* (sanitized original name) on translations (`WCML_Attributes::sync_product_attr()`); translated
+  labels in the translation's `attr_label_translations` meta as `[language][key] => label`.
+- Issue table as decided in §5.10. Only attributes used for variations are checked; taxonomies WPML does not translate are skipped
+  (terms are shared). `variation_missing` = no translation, or the translation is not a non-trashed child of the translated parent.
+- All reads are raw SQL (`WooGateway::variable_product_ids()`, `product_attributes()`, `children()`, `variation_attribute_values()`,
+  `object_terms()`; `MultilingualGateway::attribute_label_translations()`), because WCML filters meta reads and WPML filters term queries.
+  `tests/Store/VariationDataStoreTest` checks them against `WC_Product::get_attributes()`, `get_children()`,
+  `wc_get_product_terms()` and the variation attributes on the generated catalog: 100 products, 200 variations, all equal.
+- ⚠️ No end-to-end example on the DDEV store yet: none of the real translations is a variable product (V-Neck T-Shirt's `de`/`fr` are
+  still "sent to translation"). Logic is covered by unit and integration tests; real cases come from the milestone 6 seed script.
+- ⚠️ **Store-suite guard vs. WP-Cron (2026-10-14):** the guard tripped once in `TranslationCoverageStoreTest`. The cause was not plugin
+  code: WP-Cron ran `wc_product_start_scheduled_sale` (Smooth Generator gave many products scheduled sales), which updates price meta.
+  The store bootstrap itself had spawned cron via `wp-load.php`. Fix: `DISABLE_WP_CRON` in `tests/Store/bootstrap.php`, plus a guard
+  message naming the changed tables and the likely external writers.

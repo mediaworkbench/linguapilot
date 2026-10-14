@@ -10,6 +10,8 @@ declare( strict_types = 1 );
 namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
 
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
 
 /**
  * Read-only access to WooCommerce catalog data. Never calls the multilingual plugin.
@@ -34,6 +36,47 @@ interface WooGateway {
 	 * @return array<int, array<string, string|null>>
 	 */
 	public function product_fields( array $ids ): array;
+
+	/**
+	 * Which of the given products are variable products.
+	 *
+	 * @param list<int> $ids Product IDs.
+	 * @return list<int>
+	 */
+	public function variable_product_ids( array $ids ): array;
+
+	/**
+	 * Attributes of each product, parsed from raw `_product_attributes` meta.
+	 *
+	 * @param list<int> $ids Product IDs.
+	 * @return array<int, list<ProductAttribute>>
+	 */
+	public function product_attributes( array $ids ): array;
+
+	/**
+	 * Variation IDs of each parent (any status except trash), in menu order.
+	 *
+	 * @param list<int> $parent_ids Product IDs.
+	 * @return array<int, list<int>>
+	 */
+	public function children( array $parent_ids ): array;
+
+	/**
+	 * Raw `attribute_*` meta of each variation.
+	 *
+	 * @param list<int> $variation_ids Variation IDs.
+	 * @return array<int, array<string, string>>
+	 */
+	public function variation_attribute_values( array $variation_ids ): array;
+
+	/**
+	 * Terms of the given taxonomies assigned to each product.
+	 *
+	 * @param list<int>    $ids        Product IDs.
+	 * @param list<string> $taxonomies Taxonomies.
+	 * @return array<int, array<string, list<TermRef>>>
+	 */
+	public function object_terms( array $ids, array $taxonomies ): array;
 
 	/**
 	 * Display data for posts (products), keyed by ID. Unknown IDs are omitted.

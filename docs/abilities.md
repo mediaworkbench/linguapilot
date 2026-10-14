@@ -284,3 +284,39 @@ Rows are ordered by product, then variation (product row first), then language.
 - Values are read raw from the database, because WCML converts price meta reads into the visitor's currency.
 - **Variations** are compared on every field except `catalog_visibility` (variations have none). `post_status` is `publish`
   (enabled) or `private` (disabled). Manual prices are checked on the original variation.
+
+---
+
+## `mlstore/untranslated-variations`
+
+Translated variable products whose variations or variation attributes are not properly translated, the classic cause of broken
+variation selectors ("This product is unavailable") in translated shops.
+
+**Example questions:** *"Why can't French customers select a size on some products?"*, *"Which translated products are missing variations?"*
+
+**Input:**
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `languages` | string[] | all non-default | Language codes from `languages-overview` |
+| `product_id` | int | all variable products | Any language version; reported under its original. Unknown → `mlstore_not_found`, not variable → `mlstore_invalid_input` |
+| `page`, `per_page` | int | 1, 50 | `per_page` max 100 |
+
+**Output:** list envelope with `products[]`: `{ product_id, title, language, translation_id, edit_url, issues[] }`, one row per product and
+language with at least one issue. `summary`: `products_checked`, `translations_checked`, `errors`, `reviews`.
+
+**Issues** (only attributes used for variations are checked):
+
+| `type` | Severity | Meaning | Extra fields |
+|---|---|---|---|
+| `variation_missing` | error | An original variation has no (non-trashed) translation under the translated product | `variation_id` |
+| `attribute_term_untranslated` | error | A global attribute term used by the product has no translation (taxonomies WPML does not translate are skipped) | `taxonomy`, `term_id`, `term_name` |
+| `local_attribute_missing` | error | A custom attribute of the original is missing on the translation | `attribute` |
+| `local_attribute_options_mismatch` | error | The translation has a different number of options | `attribute`, `original_value`, `translation_value` |
+| `variation_attribute_value_invalid` | error | A translated variation's value is not one of the translated product's options, so shoppers cannot select it | `variation_id`, `attribute`, `translation_value` |
+| `local_attribute_identical` | review | Options are identical to the original; often fine (S \| M \| L), sometimes forgotten | `attribute`, `original_value` |
+| `local_attribute_label_untranslated` | review | No translated label for the attribute name (WCML), or it equals the original | `attribute` |
+
+**How values are matched** (WooCommerce 11.2, `find_matching_product_variation()`): a variation stores `attribute_{key}` and must match a
+selectable option **exactly** (case-sensitive). That means the option text for custom attributes (split at `|`, trimmed) and the term slug
+for global attributes. An empty value means "any" and is always valid.

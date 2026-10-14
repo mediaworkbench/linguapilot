@@ -10,6 +10,8 @@ declare( strict_types = 1 );
 namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
 
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
 use wpdb;
 
 /**
@@ -104,6 +106,159 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function variable_product_ids( array $ids ): array {
+		if ( array() === $ids ) {
+			return array();
+		}
+
+		$wpdb = $this->wpdb;
+		$list = self::id_list( $ids );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$found = $wpdb->get_col(
+			"SELECT tr.object_id FROM {$wpdb->term_relationships} tr
+			INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'product_type'
+			INNER JOIN {$wpdb->terms} t ON t.term_id = tt.term_id AND t.slug = 'variable'
+			WHERE tr.object_id IN ( {$list} )"
+		);
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		return array_values( array_intersect( $ids, array_map( 'intval', $found ) ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Raw read: WCML filters product meta reads (docs/api-notes.md §11).
+	 */
+	public function product_attributes( array $ids ): array {
+		if ( array() === $ids ) {
+			return array();
+		}
+
+		$wpdb = $this->wpdb;
+		$list = self::id_list( $ids );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$rows = $wpdb->get_results( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$list} ) AND meta_key = '_product_attributes'", ARRAY_A );
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		$result = array();
+		foreach ( $rows as $row ) {
+			$stored     = maybe_unserialize( (string) $row['meta_value'] );
+			$attributes = array();
+			foreach ( is_array( $stored ) ? $stored : array() as $key => $data ) {
+				if ( ! is_string( $key ) || ! is_array( $data ) ) {
+					continue;
+				}
+				$is_taxonomy  = ! empty( $data['is_taxonomy'] );
+				$attributes[] = new ProductAttribute(
+					$key,
+					is_string( $data['name'] ?? null ) ? $data['name'] : $key,
+					$is_taxonomy,
+					! empty( $data['is_variation'] ),
+					$is_taxonomy || ! is_string( $data['value'] ?? null ) ? array() : ProductAttribute::split_options( $data['value'] )
+				);
+			}
+			$result[ (int) $row['post_id'] ] = $attributes;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function children( array $parent_ids ): array {
+		if ( array() === $parent_ids ) {
+			return array();
+		}
+
+		$wpdb = $this->wpdb;
+		$list = self::id_list( $parent_ids );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$rows = $wpdb->get_results(
+			"SELECT ID, post_parent FROM {$wpdb->posts}
+			WHERE post_parent IN ( {$list} ) AND post_type = 'product_variation' AND post_status NOT IN ( 'trash', 'auto-draft' )
+			ORDER BY menu_order ASC, ID ASC",
+			ARRAY_A
+		);
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		$result = array();
+		foreach ( $rows as $row ) {
+			$result[ (int) $row['post_parent'] ][] = (int) $row['ID'];
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function variation_attribute_values( array $variation_ids ): array {
+		if ( array() === $variation_ids ) {
+			return array();
+		}
+
+		$wpdb = $this->wpdb;
+		$list = self::id_list( $variation_ids );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$rows = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$list} ) AND meta_key LIKE 'attribute\\_%'", ARRAY_A );
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		$result = array();
+		foreach ( $rows as $row ) {
+			$result[ (int) $row['post_id'] ][ (string) $row['meta_key'] ] = (string) $row['meta_value'];
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Direct SQL: WPML filters term queries to the current language.
+	 */
+	public function object_terms( array $ids, array $taxonomies ): array {
+		if ( array() === $ids || array() === $taxonomies ) {
+			return array();
+		}
+
+		// Only strict taxonomy slugs reach the SQL (same rule as ElementType).
+		$taxonomies = array_values( array_filter( $taxonomies, static fn ( string $taxonomy ): bool => 1 === preg_match( '/^[a-z0-9_-]{1,32}$/', $taxonomy ) ) );
+		if ( array() === $taxonomies ) {
+			return array();
+		}
+
+		$wpdb  = $this->wpdb;
+		$list  = self::id_list( $ids );
+		$names = "'" . implode( "','", $taxonomies ) . "'";
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()); $names only validated slugs.
+		$rows = $wpdb->get_results(
+			"SELECT tr.object_id, tt.taxonomy, t.term_id, t.slug, t.name FROM {$wpdb->term_relationships} tr
+			INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+			INNER JOIN {$wpdb->terms} t ON t.term_id = tt.term_id
+			WHERE tr.object_id IN ( {$list} ) AND tt.taxonomy IN ( {$names} )
+			ORDER BY t.term_id ASC",
+			ARRAY_A
+		);
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		$result = array();
+		foreach ( $rows as $row ) {
+			$result[ (int) $row['object_id'] ][ (string) $row['taxonomy'] ][] = new TermRef( (int) $row['term_id'], (string) $row['slug'], self::plain_text( (string) $row['name'] ) );
+		}
+
+		return $result;
 	}
 
 	/**

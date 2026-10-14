@@ -53,7 +53,13 @@ abstract class StoreTestCase extends TestCase {
 		$after = self::checksums();
 		parent::tear_down_after_class();
 
-		self::assertSame( self::$checksums, $after, 'A read-only test wrote to the database.' );
+		$changed = array_keys( array_diff_assoc( $after, self::$checksums ) );
+		self::assertSame(
+			array(),
+			$changed,
+			'Guarded tables changed during ' . static::class . ': ' . implode( ', ', $changed ) . '. Either a test wrote to the database, '
+			. 'or something outside the suite did (WP-Cron/Action Scheduler, a browser tab on the DDEV site). Check wp_actionscheduler_logs.'
+		);
 	}
 
 	/**

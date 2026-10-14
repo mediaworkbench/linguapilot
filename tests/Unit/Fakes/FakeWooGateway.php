@@ -10,6 +10,8 @@ declare( strict_types = 1 );
 namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
 
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
 
 /**
@@ -37,6 +39,41 @@ final class FakeWooGateway implements WooGateway {
 	 * @var array<int, array<string, string|null>>
 	 */
 	private array $fields = array();
+
+	/**
+	 * Variable product IDs.
+	 *
+	 * @var list<int>
+	 */
+	private array $variable = array();
+
+	/**
+	 * Attributes by product ID.
+	 *
+	 * @var array<int, list<ProductAttribute>>
+	 */
+	private array $attributes = array();
+
+	/**
+	 * Variation IDs by parent ID.
+	 *
+	 * @var array<int, list<int>>
+	 */
+	private array $children = array();
+
+	/**
+	 * Variation attribute meta by variation ID.
+	 *
+	 * @var array<int, array<string, string>>
+	 */
+	private array $variation_values = array();
+
+	/**
+	 * Assigned terms by product ID and taxonomy.
+	 *
+	 * @var array<int, array<string, list<TermRef>>>
+	 */
+	private array $terms_by_product = array();
 
 	/**
 	 * Creates the fake.
@@ -102,6 +139,73 @@ final class FakeWooGateway implements WooGateway {
 			if ( isset( $this->fields[ $id ] ) ) {
 				$result[ $id ] = $this->fields[ $id ] + array( 'parent_id' => (string) ( $this->posts[ $id ]->parent_id ?? 0 ) );
 			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Declares a variable product with attributes, variations and assigned terms.
+	 *
+	 * @param int                          $id         Product ID.
+	 * @param list<ProductAttribute>       $attributes Attributes.
+	 * @param list<int>                    $children   Variation IDs.
+	 * @param array<string, list<TermRef>> $terms     Assigned global attribute terms by taxonomy.
+	 */
+	public function set_variable_product( int $id, array $attributes, array $children = array(), array $terms = array() ): self {
+		$this->variable[]              = $id;
+		$this->attributes[ $id ]       = $attributes;
+		$this->children[ $id ]         = $children;
+		$this->terms_by_product[ $id ] = $terms;
+		return $this;
+	}
+
+	/**
+	 * Sets a variation's attribute meta (keys `attribute_*`).
+	 *
+	 * @param int                   $id     Variation ID.
+	 * @param array<string, string> $values Attribute values.
+	 */
+	public function set_variation_values( int $id, array $values ): self {
+		$this->variation_values[ $id ] = $values;
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function variable_product_ids( array $ids ): array {
+		return array_values( array_intersect( $ids, $this->variable ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function product_attributes( array $ids ): array {
+		return array_intersect_key( $this->attributes, array_flip( $ids ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function children( array $parent_ids ): array {
+		return array_intersect_key( $this->children, array_flip( $parent_ids ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function variation_attribute_values( array $variation_ids ): array {
+		return array_intersect_key( $this->variation_values, array_flip( $variation_ids ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function object_terms( array $ids, array $taxonomies ): array {
+		$result = array();
+		foreach ( $ids as $id ) {
+			$result[ $id ] = array_intersect_key( $this->terms_by_product[ $id ] ?? array(), array_flip( $taxonomies ) );
 		}
 
 		return $result;

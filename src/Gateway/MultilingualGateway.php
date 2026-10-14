@@ -131,6 +131,14 @@ interface MultilingualGateway {
 	public function translation_pairs( CatalogScope $scope, array $languages ): array;
 
 	/**
+	 * WCML's attribute label translations stored on a translated product.
+	 *
+	 * @param int $translation_id Translated product ID.
+	 * @return array<string, array<string, string>> Language => attribute key => label.
+	 */
+	public function attribute_label_translations( int $translation_id ): array;
+
+	/**
 	 * Which product fields are kept in sync across translations.
 	 */
 	public function sync_settings(): SyncSettings;

@@ -15,6 +15,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Abilities\CrossLanguageConsistency
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\LanguagesOverview;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\TranslationCompleteness;
+use MediaWorkbench\MultilingualStoreAbilities\Abilities\UntranslatedVariations;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\RuntimeEnvironment;
@@ -147,6 +148,7 @@ final class Plugin {
 			new LanguagesOverview( $this->gateway, $audit, $status ),
 			new TranslationCompleteness( $this->gateway, $this->woo, $audit, $status ),
 			new CrossLanguageConsistency( $this->gateway, $this->woo, $audit, $status ),
+			new UntranslatedVariations( $this->gateway, $this->woo, $audit, $status ),
 		);
 	}
 
