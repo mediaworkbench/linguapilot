@@ -18,10 +18,11 @@ use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\CurrencySettingsParser;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\SyncRules;
-use RuntimeException;
+use InvalidArgumentException;
 use wpdb;
 
 /**
@@ -36,6 +37,8 @@ use wpdb;
  * post meta while reading. Prices are read from raw meta instead.
  */
 final class WpmlGateway implements MultilingualGateway {
+
+	use AssertsQueries;
 
 	/**
 	 * Per-request memo of the active languages.
@@ -281,19 +284,6 @@ final class WpmlGateway implements MultilingualGateway {
 		$this->assert_query_succeeded();
 
 		return new IdPage( array_map( 'intval', $ids ), $total );
-	}
-
-	/**
-	 * Fails loudly on a database error. `$wpdb` returns empty results on errors, which an audit
-	 * would otherwise report as "nothing translated". AbstractAbility turns this into
-	 * `mlstore_internal_error` and logs the message only under WP_DEBUG.
-	 *
-	 * @throws RuntimeException When the last query failed.
-	 */
-	private function assert_query_succeeded(): void {
-		if ( '' !== $this->wpdb->last_error ) {
-			throw new RuntimeException( 'Database query failed: ' . $this->wpdb->last_error );
-		}
 	}
 
 	/**
@@ -553,6 +543,60 @@ final class WpmlGateway implements MultilingualGateway {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * Direct SQL for the same reason as coverage(): checking every product's translations via
+	 * hooks is one round-trip per original.
+	 *
+	 * @throws InvalidArgumentException For term scopes.
+	 */
+	public function translation_pairs( CatalogScope $scope, array $languages ): array {
+		if ( $scope->is_terms() ) {
+			throw new InvalidArgumentException( 'translation_pairs() supports post scopes only.' );
+		}
+		if ( array() === $languages ) {
+			return array();
+		}
+
+		$wpdb  = $this->wpdb;
+		$table = $this->translations_table();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Read-only report query, see method doc.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT o.element_id AS original_id, t.element_id AS translation_id, t.language_code
+				FROM %i o
+				INNER JOIN %i op ON op.ID = o.element_id
+				INNER JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND t.element_id <> o.element_id AND FIND_IN_SET( t.language_code, %s )
+				INNER JOIN %i tp ON tp.ID = t.element_id AND tp.post_status NOT IN ('trash', 'auto-draft')
+				WHERE o.element_type = %s AND o.source_language_code IS NULL AND FIND_IN_SET( op.post_status, %s )
+				ORDER BY o.element_id ASC",
+				$table,
+				$wpdb->posts,
+				$table,
+				implode( ',', $languages ),
+				$wpdb->posts,
+				$scope->types[0]->value,
+				implode( ',', $scope->post_statuses )
+			),
+			ARRAY_A
+		);
+		$this->assert_query_succeeded();
+
+		$order = array_flip( $languages );
+		$pairs = array();
+		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+			$pairs[] = new TranslationPair( (int) $row['original_id'], (int) $row['translation_id'], (string) $row['language_code'] );
+		}
+
+		usort(
+			$pairs,
+			static fn ( TranslationPair $a, TranslationPair $b ): int => array( $a->original_id, $order[ $a->language ] ?? PHP_INT_MAX ) <=> array( $b->original_id, $order[ $b->language ] ?? PHP_INT_MAX )
+		);
+
+		return $pairs;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public function sync_settings(): SyncSettings {
 		if ( null === $this->sync_settings ) {
@@ -599,9 +643,16 @@ final class WpmlGateway implements MultilingualGateway {
 			return null;
 		}
 
-		$price = get_post_meta( $original, '_regular_price_' . $currency, true );
+		// Raw read: WCML may filter price meta reads into the visitor's currency (docs/api-notes.md §11).
+		$wpdb = $this->wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- See comment above; read-only, indexed by post_id + meta_key.
+		$value = $wpdb->get_var( $wpdb->prepare( 'SELECT meta_value FROM %i WHERE post_id = %d AND meta_key = %s LIMIT 1', $wpdb->postmeta, $original, '_regular_price_' . $currency ) );
+		$this->assert_query_succeeded();
 
-		return is_string( $price ) && '' !== $price ? $price : null;
+		// An empty meta_value is possible at runtime even though the stubs type get_var() as non-empty.
+		$price = null === $value ? '' : (string) $value;
+
+		return '' === $price ? null : $price;
 	}
 
 	/**

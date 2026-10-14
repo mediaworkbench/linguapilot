@@ -17,6 +17,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
 
 /**
  * Everything the plugin needs to know from the multilingual plugin, behind one interface.
@@ -115,6 +116,18 @@ interface MultilingualGateway {
 	 * @param int          $offset    Number of originals to skip.
 	 */
 	public function incomplete_originals( CatalogScope $scope, array $languages, int $limit, int $offset ): CoveragePage;
+
+	/**
+	 * Every existing translation of every original post in the scope, in the given languages.
+	 *
+	 * "Existing" = any post status except trash and auto-draft (TranslationState not Missing).
+	 * Ordered by original ID, then by the order of $languages. Post scopes only.
+	 *
+	 * @param CatalogScope $scope     One post type plus the statuses originals must have.
+	 * @param list<string> $languages Translation language codes.
+	 * @return list<TranslationPair>
+	 */
+	public function translation_pairs( CatalogScope $scope, array $languages ): array;
 
 	/**
 	 * Which product fields are kept in sync across translations.

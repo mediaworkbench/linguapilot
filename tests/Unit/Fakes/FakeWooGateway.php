@@ -32,6 +32,13 @@ final class FakeWooGateway implements WooGateway {
 	private array $terms = array();
 
 	/**
+	 * Product field values by post ID.
+	 *
+	 * @var array<int, array<string, string|null>>
+	 */
+	private array $fields = array();
+
+	/**
 	 * Creates the fake.
 	 *
 	 * @param list<string> $attribute_taxonomies Global attribute taxonomies.
@@ -60,6 +67,31 @@ final class FakeWooGateway implements WooGateway {
 	public function add_term( int $id, string $taxonomy, string $name ): self {
 		$this->terms[ $id ] = new CatalogItem( $id, $taxonomy, $name, null, "https://shop.test/wp-admin/term.php?taxonomy={$taxonomy}&tag_ID={$id}" );
 		return $this;
+	}
+
+	/**
+	 * Sets a post's field values (keys = ProductField values; unset = null).
+	 *
+	 * @param int                        $id     Post ID.
+	 * @param array<string, string|null> $fields Field values.
+	 */
+	public function set_fields( int $id, array $fields ): self {
+		$this->fields[ $id ] = $fields;
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function product_fields( array $ids ): array {
+		$result = array();
+		foreach ( $ids as $id ) {
+			if ( isset( $this->fields[ $id ] ) ) {
+				$result[ $id ] = $this->fields[ $id ];
+			}
+		}
+
+		return $result;
 	}
 
 	/**

@@ -19,6 +19,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
 
@@ -212,6 +213,30 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 		);
 
 		return new CoveragePage( array_slice( $incomplete, max( 0, $offset ), max( 1, min( 100, $limit ) ) ), count( $incomplete ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function translation_pairs( CatalogScope $scope, array $languages ): array {
+		$type  = $scope->types[0];
+		$pairs = array();
+		foreach ( $this->original_ids( $type, 100, 0, $scope->post_statuses )->ids as $original ) {
+			$group = $this->translations( $original, $type );
+			foreach ( $languages as $language ) {
+				$member = $group[ $language ] ?? null;
+				if ( null === $member || $member === $original ) {
+					continue;
+				}
+
+				$status = $this->elements[ $type->value ][ $member ]['status'];
+				if ( TranslationState::Missing !== TranslationState::from_post_status( $status ) ) {
+					$pairs[] = new TranslationPair( $original, $member, $language );
+				}
+			}
+		}
+
+		return $pairs;
 	}
 
 	/**

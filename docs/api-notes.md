@@ -370,12 +370,69 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - ⚠️ **`$wpdb` swallows SQL errors** and returns empty results, which an audit would report as "0 % translated". It happened during
   development (placeholder order). WpmlGateway now checks `$wpdb->last_error` after every query and throws; AbstractAbility
   returns `mlstore_internal_error`.
-- ⚠️ **Orphaned WPML rows in the DDEV store:** 14 `de` and 14 `fr` `post_product` rows in `icl_translations` point to posts that
-  no longer exist (translations deleted permanently while WPML kept its rows). They are correctly reported as missing.
-  Worth a mention in the docs and the demo: a typical real-world WPML artefact.
+- ⚠️ **Rows with `element_id = NULL` (corrected 2026-10-14):** 14 `de` and 14 `fr` `post_product` rows in `icl_translations` have
+  **no element at all**, so they are not deleted posts (an earlier note here was wrong). Patrick did not delete anything. In WPML such
+  rows are, to my understanding (unverified), placeholders for translations that were started (e.g. a translation job) but not completed.
+  They are reported as missing (no translation shoppers can see). ❓ Open: is "translation in progress" worth its own state? It would
+  need WPML's job/status table, whose semantics must be confirmed with Patrick first.
 - Translatable check via `wpml_is_translated_post_type` / `wpml_is_translated_taxonomy`; non-translatable attribute taxonomies are
   skipped in "all attributes" mode, and requesting one explicitly is an error.
 - `WooGateway` (new): `attribute_taxonomies()` via `wc_get_attribute_taxonomy_names()`, `describe_posts()` (primes caches, plain-text
   titles, `_sku`, admin edit URL), `describe_terms()` (direct SQL, because WPML may filter `get_term()` IDs).
 - Timing on DDEV (18 products, 8 attribute terms): 2–6 ms per call. Not representative; the 5,000-product check (concept §8) needs the
   generated catalog (Smooth Generator, pending).
+
+## 11. Decision for `mlstore/cross-language-consistency` (Patrick, 2026-10-14)
+
+- Price fields (`regular_price`, `sale_price`) are skipped **per language**: only where the translation's language uses a secondary
+  currency for which the original has manual prices set (`_wcml_custom_prices_status` on, and `_regular_price_{CUR}` non-empty).
+  Everywhere else prices are compared as usual.
+- ⚠️ **WCML filters `get_post_metadata` for prices** (`WCML_Multi_Currency_Prices::product_price_filter`, priority 10): outside admin it
+  returns `_price`, `_regular_price`, `_sale_price` and the min/max variation keys **converted to the visitor's currency**. For manual
+  prices it calls `get_product_custom_prices()`, which **writes post meta** (§5.5). The key list (`wcml_price_custom_fields()`) is
+  filterable, so other plugins can extend it. Rule: **product field and price values are read as raw meta via SQL**, never via
+  `get_post_meta()` / `WC_Product` getters. This also applies to the gateway's `_regular_price_{CUR}` read.
+  (`WCML_Products::filter_product_data` additionally rewrites the whole-meta read `get_post_meta( $id )` without a key.)
+
+## 12. `mlstore/cross-language-consistency` (milestone 5, ability 3)
+
+- Scope: **products only** (original any status except trash) vs. every existing translation (any status except trash/auto-draft).
+  Variations are not compared in v0.1. Missing translations are translation-completeness' job.
+- ⚠️ Deviation from concept §5.6: the ability **works without WCML**. Severity then follows WPML's copy preferences only (SyncRules),
+  instead of returning `mlstore_dependency_missing`.
+- Equality rules (`Domain\FieldComparator`): empty = missing; numeric fields compare by value; `standard` tax class = `''`;
+  stock quantity only when one side manages stock. Catalog visibility from `product_visibility` terms, mapped like
+  `WC_Product::get_catalog_visibility()`.
+- Price skip per decision §11. `summary.price_checks_skipped` makes it visible.
+- Data access: `WpmlGateway::translation_pairs()` (one SQL), `WooGateway::product_fields()` (raw SQL per batch of 200 originals,
+  `IN ( ... )` of int-cast IDs so the primary-key index is used; FIND_IN_SET on postmeta would full-scan it). Store tests cross-check
+  pairs against the hook reference and fields against `WC_Product` getters in edit context.
+- New shared trait `Gateway\AssertsQueries` (query error check + safe int ID list).
+
+## 13. Scale test (concept §8), 2026-10-14
+
+- Generated with WooCommerce Smooth Generator 1.3.0 (backup first: DDEV snapshot `before-smooth-generator` plus
+  `_backups/before-smooth-generator-2026-10-14.sql.gz` in the project root): **4,994 original products, 12,321 variations,
+  21 categories, 40 tags**, all `en-us` originals. 1,500 orders (2026-04-15 to 2026-10-13) for translation-work-queue.
+- Timings on DDEV, 3 languages, `ddev wp eval` (no HTTP overhead):
+
+  | Ability / input | Time |
+  |---|---|
+  | languages-overview | 24 ms |
+  | translation-completeness (default) | 57 ms |
+  | translation-completeness, page 50 × 100 | 89 ms |
+  | translation-completeness, status any | 65 ms |
+  | translation-completeness, attribute_term | 12 ms |
+  | cross-language-consistency (default) | 18 ms |
+
+  All far below the 2 s target, about 12 MB peak memory each.
+- ⚠️ Not yet representative for cross-language-consistency: only 8 translation pairs exist (generated products are untranslated).
+  Needs translated volume (seed script, milestone 6).
+- Store suite on this catalog: 25 tests, 2,353 assertions, about 2 minutes (the hook-based references walk all originals; that is
+  exactly why the abilities use SQL).
+- ⚠️ **Analytics lookup tables lag behind orders:** after generating 1,500 orders, `wc_order_product_lookup` and `wc_order_stats`
+  were **empty**. WooCommerce 11 defaults new installs to `woocommerce_analytics_scheduled_import = yes`, i.e. orders are imported in
+  batches (here: next run 12 h later) instead of immediately. On live stores the lookup table can therefore lag. translation-work-queue
+  must detect this (compare lookup coverage with recent orders) and report `meta.data_source` / freshness instead of "no sales".
+  For the demo, the historical import was run via `ReportsSync::regenerate_report_data()` plus
+  `wp action-scheduler run --group=wc-admin-data`: 8,279 lookup rows, 1,499 orders, 4,037 products.
