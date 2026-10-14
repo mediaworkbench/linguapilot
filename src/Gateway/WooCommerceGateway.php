@@ -1,0 +1,113 @@
+<?php
+/**
+ * WooCommerce implementation of the catalog gateway.
+ *
+ * @package MediaWorkbench\MultilingualStoreAbilities
+ */
+
+declare( strict_types = 1 );
+
+namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
+
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
+use wpdb;
+
+/**
+ * Reads catalog display data. Read-only; never calls the multilingual plugin.
+ */
+final class WooCommerceGateway implements WooGateway {
+
+	/**
+	 * Creates the gateway.
+	 *
+	 * @param wpdb $wpdb WordPress database access.
+	 */
+	public function __construct( private readonly wpdb $wpdb ) {}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function attribute_taxonomies(): array {
+		return function_exists( 'wc_get_attribute_taxonomy_names' ) ? array_values( array_filter( wc_get_attribute_taxonomy_names(), 'is_string' ) ) : array();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Primes the post and meta caches once for the whole page instead of one query per post.
+	 */
+	public function describe_posts( array $ids ): array {
+		if ( array() === $ids ) {
+			return array();
+		}
+
+		_prime_post_caches( $ids, false, true );
+
+		$items = array();
+		foreach ( $ids as $id ) {
+			$post = get_post( $id );
+			if ( null === $post ) {
+				continue;
+			}
+
+			$sku          = get_post_meta( $id, '_sku', true );
+			$items[ $id ] = new CatalogItem(
+				$id,
+				$post->post_type,
+				self::plain_text( $post->post_title ),
+				is_string( $sku ) && '' !== $sku ? $sku : null,
+				admin_url( 'post.php?post=' . $id . '&action=edit' )
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Direct SQL instead of get_term(): WPML can filter get_term() to swap IDs into the current
+	 * language ("adjust IDs"), which would return the wrong term's name.
+	 */
+	public function describe_terms( array $ids ): array {
+		if ( array() === $ids ) {
+			return array();
+		}
+
+		$wpdb = $this->wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- See method doc; read-only, one query per page.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT t.term_id, t.name, tt.taxonomy FROM %i t INNER JOIN %i tt ON tt.term_id = t.term_id WHERE FIND_IN_SET( t.term_id, %s )',
+				$wpdb->terms,
+				$wpdb->term_taxonomy,
+				implode( ',', array_map( 'intval', $ids ) )
+			),
+			ARRAY_A
+		);
+
+		$items = array();
+		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+			$id           = (int) $row['term_id'];
+			$taxonomy     = (string) $row['taxonomy'];
+			$items[ $id ] = new CatalogItem(
+				$id,
+				$taxonomy,
+				self::plain_text( (string) $row['name'] ),
+				null,
+				admin_url( 'term.php?taxonomy=' . rawurlencode( $taxonomy ) . '&tag_ID=' . $id . '&post_type=product' )
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Store content as plain text: tags stripped, entities decoded (prompt-injection hygiene, concept §9).
+	 *
+	 * @param string $text Raw title or name.
+	 */
+	private static function plain_text( string $text ): string {
+		return trim( html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+	}
+}

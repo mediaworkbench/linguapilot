@@ -13,10 +13,13 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbstractAbility;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\LanguagesOverview;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
+use MediaWorkbench\MultilingualStoreAbilities\Abilities\TranslationCompleteness;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\RuntimeEnvironment;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
+use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway;
+use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
 use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
 use MediaWorkbench\MultilingualStoreAbilities\Support\WooCommerceLogSink;
@@ -55,11 +58,13 @@ final class Plugin {
 	 * @param string              $plugin_file  Absolute path of the main plugin file.
 	 * @param Dependencies        $dependencies Dependency checker.
 	 * @param MultilingualGateway $gateway      Multilingual plugin access.
+	 * @param WooGateway          $woo          Catalog access.
 	 */
 	public function __construct(
 		private readonly string $plugin_file,
 		private readonly Dependencies $dependencies,
 		private readonly MultilingualGateway $gateway,
+		private readonly WooGateway $woo,
 	) {}
 
 	/**
@@ -75,7 +80,7 @@ final class Plugin {
 		global $wpdb;
 
 		$gateway        = new WpmlGateway( $wpdb );
-		self::$instance = new self( $plugin_file, new Dependencies( new RuntimeEnvironment( $gateway ) ), $gateway );
+		self::$instance = new self( $plugin_file, new Dependencies( new RuntimeEnvironment( $gateway ) ), $gateway, new WooCommerceGateway( $wpdb ) );
 		self::$instance->register_hooks();
 	}
 
@@ -139,6 +144,7 @@ final class Plugin {
 
 		return array(
 			new LanguagesOverview( $this->gateway, $audit, $status ),
+			new TranslationCompleteness( $this->gateway, $this->woo, $audit, $status ),
 		);
 	}
 

@@ -149,3 +149,101 @@ Without WCML only the WPML preferences count. `post_status` is never synced.
   }
 }
 ```
+
+---
+
+## `mlstore/translation-completeness`
+
+Which catalog objects lack translations, plus coverage per language across the whole catalog.
+
+**Example questions:** *"Which products are missing a French translation?"*, *"How complete are my German category translations?"*,
+*"Which colour terms are not translated?"*
+
+**Input:**
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `object_type` | `product` \| `product_cat` \| `product_tag` \| `attribute_term` | `product` | `attribute_term` = terms of global attributes (`pa_*`) |
+| `languages` | string[] | all non-default | Language codes from `languages-overview` |
+| `status` | `publish` \| `any` | `publish` | Products only: which *originals* to audit. `any` = every status except trash |
+| `taxonomy` | string | all translatable attributes | `attribute_term` only, e.g. `pa_color` |
+| `page`, `per_page` | int | 1, 50 | `per_page` max 100 |
+
+**Output:** list envelope with `objects[]`:
+`{ id, type, title, sku, missing_languages[], unpublished_languages[], edit_url }`, where `id` is the original-language ID and `type` the post type
+or taxonomy. Only objects with at least one gap are listed. `summary` covers *all* audited originals:
+`total_objects` and per language `translated`, `unpublished`, `missing`, `coverage_pct`.
+
+**Rules:**
+- *Translated* = a published translation. *Unpublished* = it exists but is draft, pending, private or scheduled. *Missing* = there is none,
+  it is in the trash, or WPML still has a row for a translation that was deleted.
+- Terms have no status: a term translation either exists or is missing.
+- Taxonomies WPML does not translate are skipped when auditing all attributes. Requesting one explicitly (or non-translatable
+  categories/tags) returns `mlstore_invalid_input`.
+- `taxonomy` together with any other `object_type` → `mlstore_invalid_input`.
+
+**Example output** (DDEV demo store, `{"per_page": 2}`):
+
+```json
+{
+  "objects": [
+    {
+      "id": 11,
+      "type": "product",
+      "title": "V-Neck T-Shirt",
+      "sku": "woo-vneck-tee",
+      "missing_languages": [
+        "de",
+        "fr"
+      ],
+      "unpublished_languages": [],
+      "edit_url": "https://mlstore-dev.ddev.site:33000/wp-admin/post.php?post=11&action=edit"
+    },
+    {
+      "id": 12,
+      "type": "product",
+      "title": "Hoodie",
+      "sku": "woo-hoodie",
+      "missing_languages": [
+        "de",
+        "fr"
+      ],
+      "unpublished_languages": [],
+      "edit_url": "https://mlstore-dev.ddev.site:33000/wp-admin/post.php?post=12&action=edit"
+    }
+  ],
+  "page": 1,
+  "per_page": 2,
+  "total_pages": 7,
+  "total_items": 14,
+  "summary": {
+    "total_objects": 18,
+    "languages": [
+      {
+        "language": "de",
+        "translated": 4,
+        "unpublished": 0,
+        "missing": 14,
+        "coverage_pct": 22.2
+      },
+      {
+        "language": "fr",
+        "translated": 4,
+        "unpublished": 0,
+        "missing": 14,
+        "coverage_pct": 22.2
+      }
+    ]
+  },
+  "meta": {
+    "generated_at": "2026-10-14T10:35:15Z",
+    "default_language": "en-us",
+    "languages": [
+      "en-us",
+      "de",
+      "fr"
+    ],
+    "plugin_version": "0.1.0"
+  }
+}
+```

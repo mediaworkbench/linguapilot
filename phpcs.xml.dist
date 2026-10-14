@@ -36,6 +36,11 @@
 		</properties>
 	</rule>
 
+	<!-- Exceptions are never printed as HTML: AbstractAbility maps them to WP_Error, or they are logged. -->
+	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+		<exclude-pattern>/src/*</exclude-pattern>
+	</rule>
+
 	<!-- The WPML gateway is the one place allowed to call WPML's own (unprefixed) hooks. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound">
 		<exclude-pattern>/src/Gateway/WpmlGateway\.php</exclude-pattern>

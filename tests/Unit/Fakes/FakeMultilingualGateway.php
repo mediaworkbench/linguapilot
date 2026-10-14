@@ -9,12 +9,17 @@ declare( strict_types = 1 );
 
 namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
 
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoveragePage;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
 
 /**
@@ -72,6 +77,13 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	 * @var bool
 	 */
 	private bool $setup_complete = true;
+
+	/**
+	 * Element type values that are not translatable.
+	 *
+	 * @var list<string>
+	 */
+	private array $untranslatable = array();
 
 	/**
 	 * Creates the fake.
@@ -151,6 +163,55 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	public function set_setup_complete( bool $complete ): self {
 		$this->setup_complete = $complete;
 		return $this;
+	}
+
+	/**
+	 * Marks an element type as not translatable.
+	 *
+	 * @param ElementType $type Element type.
+	 */
+	public function set_untranslatable( ElementType $type ): self {
+		$this->untranslatable[] = $type->value;
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function is_translatable( ElementType $type ): bool {
+		return ! in_array( $type->value, $this->untranslatable, true );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function coverage( CatalogScope $scope, array $languages ): array {
+		$rows     = $this->coverage_rows( $scope, $languages );
+		$coverage = array();
+
+		foreach ( $languages as $language ) {
+			$counts = array_fill_keys( array( 'translated', 'unpublished', 'missing' ), 0 );
+			foreach ( $rows as $row ) {
+				++$counts[ $row->states[ $language ]->value ];
+			}
+			$coverage[] = new LanguageCoverage( $language, $counts['translated'], $counts['unpublished'], $counts['missing'] );
+		}
+
+		return $coverage;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function incomplete_originals( CatalogScope $scope, array $languages, int $limit, int $offset ): CoveragePage {
+		$incomplete = array_values(
+			array_filter(
+				$this->coverage_rows( $scope, $languages ),
+				static fn ( CoverageRow $row ): bool => count( $row->languages_in( TranslationState::Translated ) ) < count( $row->states )
+			)
+		);
+
+		return new CoveragePage( array_slice( $incomplete, max( 0, $offset ), max( 1, min( 100, $limit ) ) ), count( $incomplete ) );
 	}
 
 	/**
@@ -292,6 +353,41 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	 */
 	public function post_status( int $id, ElementType $type ): ?string {
 		return $this->elements[ $type->value ][ $id ]['status'] ?? null;
+	}
+
+	/**
+	 * Coverage rows of every original in a scope, ordered by original ID.
+	 *
+	 * @param CatalogScope $scope     Scope.
+	 * @param list<string> $languages Language codes.
+	 * @return list<CoverageRow>
+	 */
+	private function coverage_rows( CatalogScope $scope, array $languages ): array {
+		$rows = array();
+		foreach ( $scope->types as $type ) {
+			foreach ( $this->elements[ $type->value ] ?? array() as $id => $element ) {
+				if ( ! $element['original'] || ( ! $type->is_term() && ! in_array( $element['status'], $scope->post_statuses, true ) ) ) {
+					continue;
+				}
+
+				$group  = $this->translations( $id, $type );
+				$states = array();
+				foreach ( $languages as $language ) {
+					$member = $group[ $language ] ?? null;
+					if ( $type->is_term() ) {
+						$states[ $language ] = null === $member ? TranslationState::Missing : TranslationState::Translated;
+					} else {
+						$states[ $language ] = TranslationState::from_post_status( null === $member ? null : $this->elements[ $type->value ][ $member ]['status'] );
+					}
+				}
+
+				$rows[ $id ] = new CoverageRow( $id, $type, $states );
+			}
+		}
+
+		ksort( $rows );
+
+		return array_values( $rows );
 	}
 
 	/**

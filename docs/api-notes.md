@@ -355,3 +355,27 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - ✅ Verified over **real MCP** (MCP Adapter 0.7.0, STDIO, protocol 2025-11-25): discover lists the ability, get-ability-info returns the
   annotations, execute succeeds. Before this milestone the input schema's top-level default was `array()`, which encodes as `[]`;
   it is now `(object) array()` → `{}`.
+
+## 10. `mlstore/translation-completeness` (milestone 5, ability 2)
+
+- Decisions (Patrick, 2026-10-14): `attribute_term` audits all translatable `pa_*` taxonomies, optionally one (`taxonomy`);
+  **trashed translations count as missing**.
+- One status rule, `Domain\Model\TranslationState::from_post_status()`: publish = translated; absent/trash/auto-draft = missing;
+  everything else = unpublished. Terms: exists = translated.
+- ⚠️ **Direct SQL on `icl_translations` (justified per concept §4/§8):** the summary needs every original's translations and the item
+  list must filter "incomplete" *before* paginating. Hooks would mean one round-trip per original on every call. The gateway uses
+  3 queries (coverage GROUP BY, incomplete page plus its count, the page's members) and mirrors TranslationState in SQL.
+  `tests/Store/TranslationCoverageStoreTest` cross-checks the fast path against a hook-based reference (`translations()` +
+  `get_post_status()`) for published products, products in any status, categories and all attributes. All agree on the DDEV store.
+- ⚠️ **`$wpdb` swallows SQL errors** and returns empty results, which an audit would report as "0 % translated". It happened during
+  development (placeholder order). WpmlGateway now checks `$wpdb->last_error` after every query and throws; AbstractAbility
+  returns `mlstore_internal_error`.
+- ⚠️ **Orphaned WPML rows in the DDEV store:** 14 `de` and 14 `fr` `post_product` rows in `icl_translations` point to posts that
+  no longer exist (translations deleted permanently while WPML kept its rows). They are correctly reported as missing.
+  Worth a mention in the docs and the demo: a typical real-world WPML artefact.
+- Translatable check via `wpml_is_translated_post_type` / `wpml_is_translated_taxonomy`; non-translatable attribute taxonomies are
+  skipped in "all attributes" mode, and requesting one explicitly is an error.
+- `WooGateway` (new): `attribute_taxonomies()` via `wc_get_attribute_taxonomy_names()`, `describe_posts()` (primes caches, plain-text
+  titles, `_sku`, admin edit URL), `describe_terms()` (direct SQL, because WPML may filter `get_term()` IDs).
+- Timing on DDEV (18 products, 8 attribute terms): 2–6 ms per call. Not representative; the 5,000-product check (concept §8) needs the
+  generated catalog (Smooth Generator, pending).

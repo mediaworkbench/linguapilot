@@ -309,7 +309,7 @@ abstract class AbstractAbility {
 
 		$invalid = array_values( array_diff( $requested, $targets ) );
 		if ( array() !== $invalid ) {
-			throw AbilityError::invalid_language( $invalid ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Mapped to a WP_Error, never printed as HTML.
+			throw AbilityError::invalid_language( $invalid );
 		}
 
 		return array_values( array_intersect( $targets, $requested ) );

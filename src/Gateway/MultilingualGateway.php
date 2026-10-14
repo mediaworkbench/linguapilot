@@ -9,10 +9,13 @@ declare( strict_types = 1 );
 
 namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
 
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoveragePage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
 
 /**
@@ -83,6 +86,35 @@ interface MultilingualGateway {
 	 * @param list<string> $post_statuses Restrict post types to these statuses; empty = any except trash and auto-draft. Ignored for terms.
 	 */
 	public function original_ids( ElementType $type, int $limit, int $offset, array $post_statuses = array() ): IdPage;
+
+	/**
+	 * Whether the multilingual plugin is set to translate this post type or taxonomy.
+	 *
+	 * @param ElementType $type Element type.
+	 */
+	public function is_translatable( ElementType $type ): bool;
+
+	/**
+	 * Translation coverage per language across every original in the scope.
+	 *
+	 * States follow {@see \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState::from_post_status()};
+	 * a term translation is translated when it exists. An original in one of the languages counts for itself.
+	 *
+	 * @param CatalogScope $scope     Originals to look at.
+	 * @param list<string> $languages Language codes.
+	 * @return list<LanguageCoverage> One entry per language, in the given order.
+	 */
+	public function coverage( CatalogScope $scope, array $languages ): array;
+
+	/**
+	 * One page of originals that are not translated (published) in at least one of the languages.
+	 *
+	 * @param CatalogScope $scope     Originals to look at.
+	 * @param list<string> $languages Language codes.
+	 * @param int          $limit     Page size (1-100).
+	 * @param int          $offset    Number of originals to skip.
+	 */
+	public function incomplete_originals( CatalogScope $scope, array $languages, int $limit, int $offset ): CoveragePage;
 
 	/**
 	 * Which product fields are kept in sync across translations.

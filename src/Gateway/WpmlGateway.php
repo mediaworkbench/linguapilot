@@ -9,20 +9,27 @@ declare( strict_types = 1 );
 
 namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
 
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoveragePage;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\CurrencySettingsParser;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\SyncRules;
+use RuntimeException;
 use wpdb;
 
 /**
  * The only place in the plugin that talks to WPML or WCML.
  *
- * Uses WPML's public hooks wherever one exists. Direct SQL is used for two things only, each
- * explained where it happens: listing originals, and term ID <-> term_taxonomy_id mapping.
+ * Uses WPML's public hooks wherever one exists. Direct SQL is used only where no hook exists or
+ * hooks would mean one call per original, each explained where it happens: listing originals,
+ * translation coverage, and term ID <-> term_taxonomy_id mapping.
  * Behavior verified against WPML 5.1.0 / WCML 5.6.3 (docs/api-notes.md §5).
  *
  * Never calls WCML's custom-price API: `WCML_Custom_Prices::get_product_custom_prices()` writes
@@ -231,6 +238,7 @@ final class WpmlGateway implements MultilingualGateway {
 		$total = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, ...$args ) );
 		$ids   = $wpdb->get_col( $wpdb->prepare( $ids_sql, ...array_merge( $args, array( $limit, $offset ) ) ) );
 		// phpcs:enable
+		$this->assert_query_succeeded();
 
 		return new IdPage( array_map( 'intval', $ids ), $total );
 	}
@@ -270,8 +278,65 @@ final class WpmlGateway implements MultilingualGateway {
 			)
 		);
 		// phpcs:enable
+		$this->assert_query_succeeded();
 
 		return new IdPage( array_map( 'intval', $ids ), $total );
+	}
+
+	/**
+	 * Fails loudly on a database error. `$wpdb` returns empty results on errors, which an audit
+	 * would otherwise report as "nothing translated". AbstractAbility turns this into
+	 * `mlstore_internal_error` and logs the message only under WP_DEBUG.
+	 *
+	 * @throws RuntimeException When the last query failed.
+	 */
+	private function assert_query_succeeded(): void {
+		if ( '' !== $this->wpdb->last_error ) {
+			throw new RuntimeException( 'Database query failed: ' . $this->wpdb->last_error );
+		}
+	}
+
+	/**
+	 * Number of originals in a scope.
+	 *
+	 * @param CatalogScope $scope Scope.
+	 */
+	private function count_scope( CatalogScope $scope ): int {
+		if ( ! $scope->is_terms() ) {
+			return $this->original_ids( $scope->types[0], 1, 0, $scope->post_statuses )->total;
+		}
+
+		$total = 0;
+		foreach ( $scope->types as $type ) {
+			$total += $this->original_ids( $type, 1, 0 )->total;
+		}
+
+		return $total;
+	}
+
+	/**
+	 * Comma-separated element type values of a scope (for FIND_IN_SET).
+	 *
+	 * @param CatalogScope $scope Scope.
+	 */
+	private static function type_list( CatalogScope $scope ): string {
+		return implode( ',', array_map( static fn ( ElementType $type ): string => $type->value, $scope->types ) );
+	}
+
+	/**
+	 * The scope's element type with the given WPML value.
+	 *
+	 * @param CatalogScope $scope Scope.
+	 * @param string       $value WPML element type.
+	 */
+	private function scope_type( CatalogScope $scope, string $value ): ElementType {
+		foreach ( $scope->types as $type ) {
+			if ( $type->value === $value ) {
+				return $type;
+			}
+		}
+
+		return $scope->types[0];
 	}
 
 	/**
@@ -279,6 +344,211 @@ final class WpmlGateway implements MultilingualGateway {
 	 */
 	private function translations_table(): string {
 		return $this->wpdb->prefix . 'icl_translations';
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function is_translatable( ElementType $type ): bool {
+		return $type->is_term()
+			? (bool) apply_filters( 'wpml_is_translated_taxonomy', false, $type->name() )
+			: (bool) apply_filters( 'wpml_is_translated_post_type', false, $type->name() );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Direct SQL: a per-language summary needs every original's translations; via hooks that is
+	 * one round-trip per original on every call (concept §8: 5,000 products x 4 languages, < 2 s).
+	 * One grouped query instead; the status rule is TranslationState::from_post_status().
+	 */
+	public function coverage( CatalogScope $scope, array $languages ): array {
+		$counts = array_fill_keys( $languages, array_fill_keys( array( 'translated', 'unpublished', 'missing' ), 0 ) );
+		if ( array() === $languages ) {
+			return array();
+		}
+
+		$wpdb  = $this->wpdb;
+		$total = $this->count_scope( $scope );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Read-only report query, see method doc.
+		if ( $scope->is_terms() ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT t.language_code, NULL AS post_status, COUNT(*) AS n
+					FROM %i o
+					INNER JOIN %i ot ON ot.term_taxonomy_id = o.element_id
+					INNER JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
+					INNER JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+					WHERE FIND_IN_SET( o.element_type, %s ) AND o.source_language_code IS NULL
+					GROUP BY t.language_code',
+					$this->translations_table(),
+					$wpdb->term_taxonomy,
+					$this->translations_table(),
+					implode( ',', $languages ),
+					$wpdb->term_taxonomy,
+					self::type_list( $scope )
+				),
+				ARRAY_A
+			);
+		} else {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT t.language_code, tp.post_status, COUNT(*) AS n
+					FROM %i o
+					INNER JOIN %i op ON op.ID = o.element_id
+					INNER JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
+					INNER JOIN %i tp ON tp.ID = t.element_id
+					WHERE o.element_type = %s AND o.source_language_code IS NULL AND FIND_IN_SET( op.post_status, %s )
+					GROUP BY t.language_code, tp.post_status',
+					$this->translations_table(),
+					$wpdb->posts,
+					$this->translations_table(),
+					implode( ',', $languages ),
+					$wpdb->posts,
+					$scope->types[0]->value,
+					implode( ',', $scope->post_statuses )
+				),
+				ARRAY_A
+			);
+		}
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+			$language = (string) $row['language_code'];
+			if ( ! isset( $counts[ $language ] ) ) {
+				continue;
+			}
+
+			$state = $scope->is_terms() ? TranslationState::Translated : TranslationState::from_post_status( (string) $row['post_status'] );
+			if ( TranslationState::Missing !== $state ) {
+				$counts[ $language ][ $state->value ] += (int) $row['n'];
+			}
+		}
+
+		$coverage = array();
+		foreach ( $counts as $language => $count ) {
+			$missing    = max( 0, $total - $count['translated'] - $count['unpublished'] );
+			$coverage[] = new LanguageCoverage( (string) $language, $count['translated'], $count['unpublished'], $missing );
+		}
+
+		return $coverage;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Direct SQL for the same reason as coverage(): filtering "incomplete" before paginating
+	 * needs every original's translations.
+	 */
+	public function incomplete_originals( CatalogScope $scope, array $languages, int $limit, int $offset ): CoveragePage {
+		if ( array() === $languages ) {
+			return new CoveragePage( array(), 0 );
+		}
+
+		$limit    = max( 1, min( 100, $limit ) );
+		$offset   = max( 0, $offset );
+		$wpdb     = $this->wpdb;
+		$table    = $this->translations_table();
+		$codes    = implode( ',', $languages );
+		$required = count( $languages );
+		$types    = self::type_list( $scope );
+		$statuses = implode( ',', $scope->post_statuses );
+
+		// An original is incomplete when fewer than all requested languages have a published (posts) or existing (terms) member.
+		// $grouped is a literal SQL string; the placeholder sniffs cannot follow it through the variable.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Read-only report query, see method doc.
+		if ( $scope->is_terms() ) {
+			$grouped = 'SELECT o.element_id, o.element_type, o.trid
+				FROM %i o
+				INNER JOIN %i ot ON ot.term_taxonomy_id = o.element_id
+				LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
+				LEFT JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+				WHERE FIND_IN_SET( o.element_type, %s ) AND o.source_language_code IS NULL
+				GROUP BY o.element_id, o.element_type, o.trid
+				HAVING COUNT( tt.term_taxonomy_id ) < %d';
+			$args    = array( $table, $wpdb->term_taxonomy, $table, $codes, $wpdb->term_taxonomy, $types, $required );
+			$total   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM ( {$grouped} ) incomplete", ...$args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
+			$page    = $wpdb->get_results( $wpdb->prepare( "{$grouped} ORDER BY o.element_id ASC LIMIT %d OFFSET %d", ...array_merge( $args, array( $limit, $offset ) ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
+		} else {
+			$grouped = "SELECT o.element_id, o.element_type, o.trid
+				FROM %i o
+				INNER JOIN %i op ON op.ID = o.element_id
+				LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
+				LEFT JOIN %i tp ON tp.ID = t.element_id AND tp.post_status = 'publish'
+				WHERE o.element_type = %s AND o.source_language_code IS NULL AND FIND_IN_SET( op.post_status, %s )
+				GROUP BY o.element_id, o.element_type, o.trid
+				HAVING COUNT( tp.ID ) < %d";
+			$args    = array( $table, $wpdb->posts, $table, $codes, $wpdb->posts, $scope->types[0]->value, $statuses, $required );
+			$total   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM ( {$grouped} ) incomplete", ...$args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
+			$page    = $wpdb->get_results( $wpdb->prepare( "{$grouped} ORDER BY o.element_id ASC LIMIT %d OFFSET %d", ...array_merge( $args, array( $limit, $offset ) ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
+		}
+
+		$this->assert_query_succeeded();
+
+		$page = is_array( $page ) ? $page : array();
+		if ( array() === $page ) {
+			return new CoveragePage( array(), $total );
+		}
+
+		// Translation members of this page's groups, in one query.
+		$trids   = implode( ',', array_map( static fn ( array $row ): int => (int) $row['trid'], $page ) );
+		$members = $scope->is_terms()
+			? $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT t.trid, t.language_code, NULL AS post_status
+					FROM %i t INNER JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+					WHERE FIND_IN_SET( t.trid, %s ) AND FIND_IN_SET( t.language_code, %s ) AND FIND_IN_SET( t.element_type, %s )',
+					$table,
+					$wpdb->term_taxonomy,
+					$trids,
+					$codes,
+					$types
+				),
+				ARRAY_A
+			)
+			: $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT t.trid, t.language_code, tp.post_status
+					FROM %i t INNER JOIN %i tp ON tp.ID = t.element_id
+					WHERE FIND_IN_SET( t.trid, %s ) AND FIND_IN_SET( t.language_code, %s ) AND t.element_type = %s',
+					$table,
+					$wpdb->posts,
+					$trids,
+					$codes,
+					$scope->types[0]->value
+				),
+				ARRAY_A
+			);
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		$status_by_trid = array();
+		foreach ( is_array( $members ) ? $members : array() as $member ) {
+			$status_by_trid[ (int) $member['trid'] ][ (string) $member['language_code'] ] = null === $member['post_status'] ? '' : (string) $member['post_status'];
+		}
+
+		$rows = array();
+		foreach ( $page as $original ) {
+			$type   = $this->scope_type( $scope, (string) $original['element_type'] );
+			$found  = $status_by_trid[ (int) $original['trid'] ] ?? array();
+			$states = array();
+			foreach ( $languages as $language ) {
+				if ( ! array_key_exists( $language, $found ) ) {
+					$states[ $language ] = TranslationState::Missing;
+				} else {
+					$states[ $language ] = $scope->is_terms() ? TranslationState::Translated : TranslationState::from_post_status( $found[ $language ] );
+				}
+			}
+
+			$object_id = $this->to_object_id( (int) $original['element_id'], $type );
+			if ( null !== $object_id ) {
+				$rows[] = new CoverageRow( $object_id, $type, $states );
+			}
+		}
+
+		return new CoveragePage( $rows, $total );
 	}
 
 	/**
