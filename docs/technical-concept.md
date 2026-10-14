@@ -1,6 +1,6 @@
-# Technical Concept: Multilingual Store Abilities
+# Technical Concept: Multilingual Store Abilities for WooCommerce
 
-**Working title:** Multilingual Store Abilities (slug candidate: `multilingual-store-abilities`)
+**Working title:** Multilingual Store Abilities (wordpress.org slug: `multilingual-store-abilities-for-woocommerce`)
 **Author:** Patrick / Media Workbench
 **Status:** Concept v0.1 for development in Claude Code
 **Date:** 2026-10-13
@@ -161,8 +161,8 @@ multilingual-store-abilities/
 - **PHP namespace:** `MediaWorkbench\MultilingualStoreAbilities`
 - **Ability namespace:** `mlstore/` (e.g. `mlstore/translation-completeness`). Own namespace, never `woocommerce/` or `wpml/`.
 - **Ability category:** `mlstore-multilingual-catalog` (verify naming rules for categories).
-- **Text domain:** `multilingual-store-abilities`
-- **Trademark note:** wordpress.org disallows slugs starting with a trademark. The display name is "Multilingual Store Abilities". wordpress.org derives the slug from the name at submission and requires the text domain to equal the slug, so a name "… for WooCommerce" would force the slug and text domain `multilingual-store-abilities-for-woocommerce`. "WPML" cannot appear in the name at all (restricted term "wp"). WooCommerce and WPML are named in the short description, tags and readme instead.
+- **Text domain:** `multilingual-store-abilities-for-woocommerce` (= wordpress.org slug; the repo folder and main file keep `multilingual-store-abilities`)
+- **Trademark note:** wordpress.org disallows slugs starting with a trademark. The display name is "Multilingual Store Abilities for WooCommerce". wordpress.org derived the slug `multilingual-store-abilities-for-woocommerce` from it at submission and requires the text domain to equal the slug. "WPML" cannot appear in the name at all (restricted term "wp"). WooCommerce and WPML are named in the short description, tags and readme instead.
 
 ### 5.2 `MultilingualGateway` interface (draft)
 

@@ -535,14 +535,14 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   writing listeners of the filters we call) around two runs of every ability. Nothing changes, and results are identical
   (excluding `generated_at` / `period_start`).
 - `docs/SECURITY.md`: threat model as built and verified. `readme.txt` for wordpress.org (contributor `mediaworkbench`, confirmed: profiles.wordpress.org/mediaworkbench).
-- i18n: `languages/multilingual-store-abilities.pot` (75 strings), `-de_DE.po/.mo` (standard de_DE spelling with ß).
+- i18n: `languages/multilingual-store-abilities-for-woocommerce.pot` (75 strings; text domain = the wordpress.org slug `multilingual-store-abilities-for-woocommerce`, assigned at submission), `-de_DE.po/.mo` (standard de_DE spelling with ß).
   Plugin Check discourages `load_plugin_textdomain()` for wordpress.org plugins, so (Patrick's decision) the plugin loads no bundled
   translations: since WP 4.6 language packs from translate.wordpress.org load automatically. The de_DE `.po` stays in the repo as the
   import source for translate.wordpress.org and is export-ignored; the release ships only the `.pot`. Locally, German shows only
   once a language pack exists (or the `.mo` is copied to `wp-content/languages/plugins/`).
   Labels and descriptions are translated when abilities register (on the request's locale); error messages when they occur.
   Technical identifiers in descriptions (`sync_error`, `mlstore/…`, field names) stay untranslated on purpose.
-  Regenerate: `ddev wp i18n make-pot wp-content/plugins/multilingual-store-abilities wp-content/plugins/multilingual-store-abilities/languages/multilingual-store-abilities.pot --exclude=vendor,tests,.claude,docs,bin`,
+  Regenerate: `ddev wp i18n make-pot wp-content/plugins/multilingual-store-abilities wp-content/plugins/multilingual-store-abilities/languages/multilingual-store-abilities-for-woocommerce.pot --slug=multilingual-store-abilities-for-woocommerce --domain=multilingual-store-abilities-for-woocommerce --exclude=vendor,tests,.claude,docs,bin,build`,
   update the .po, then `ddev wp i18n make-mo wp-content/plugins/multilingual-store-abilities/languages`.
 - ⚠️ Store-suite guard tripped twice more: Action Scheduler's **async runner** (not WP-Cron) applied Smooth Generator's scheduled sales,
   triggered by other requests to the site. With Patrick's OK, all pending `wc_product_{start,end}_scheduled_sale` actions were cancelled

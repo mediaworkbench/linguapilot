@@ -6,12 +6,14 @@
 #
 # Usage (inside the DDEV web container, from the plugin directory):
 #   ddev exec -d /var/www/html/wp-content/plugins/multilingual-store-abilities bash bin/build-release.sh
-# Output: build/multilingual-store-abilities/ and build/multilingual-store-abilities-<version>.zip
+# Output: build/multilingual-store-abilities-for-woocommerce/ and build/multilingual-store-abilities-for-woocommerce-<version>.zip
+# The wordpress.org slug (= text domain) differs from the repo folder and main file name (multilingual-store-abilities).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-SLUG="multilingual-store-abilities"
-VERSION="$(sed -n 's/^ \* Version: *//p' "${SLUG}.php" | tr -d '[:space:]')"
+SLUG="multilingual-store-abilities-for-woocommerce"
+MAIN_FILE="multilingual-store-abilities.php"
+VERSION="$(sed -n 's/^ \* Version: *//p' "${MAIN_FILE}" | tr -d '[:space:]')"
 OUT="build/${SLUG}"
 
 rm -rf build

@@ -219,7 +219,7 @@ abstract class AbstractAbility {
 
 			return new WP_Error(
 				AbilityError::INTERNAL,
-				__( 'The ability failed unexpectedly. Details were written to the WooCommerce log (source: mlstore-abilities).', 'multilingual-store-abilities' ),
+				__( 'The ability failed unexpectedly. Details were written to the WooCommerce log (source: mlstore-abilities).', 'multilingual-store-abilities-for-woocommerce' ),
 				array( 'status' => 500 )
 			);
 		} finally {
@@ -283,7 +283,7 @@ abstract class AbstractAbility {
 			'items'       => array( 'type' => 'string' ),
 			'uniqueItems' => true,
 			'default'     => array(),
-			'description' => __( 'Translation languages to check, as language codes from mlstore/languages-overview. Default: all active languages except the default language.', 'multilingual-store-abilities' ),
+			'description' => __( 'Translation languages to check, as language codes from mlstore/languages-overview. Default: all active languages except the default language.', 'multilingual-store-abilities-for-woocommerce' ),
 		);
 	}
 
@@ -350,7 +350,7 @@ abstract class AbstractAbility {
 			'generated_at'     => array(
 				'type'        => 'string',
 				'format'      => 'date-time',
-				'description' => __( 'When the response was generated (UTC).', 'multilingual-store-abilities' ),
+				'description' => __( 'When the response was generated (UTC).', 'multilingual-store-abilities-for-woocommerce' ),
 			),
 			'default_language' => array( 'type' => 'string' ),
 			'languages'        => array(

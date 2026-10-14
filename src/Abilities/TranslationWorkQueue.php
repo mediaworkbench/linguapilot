@@ -53,14 +53,14 @@ final class TranslationWorkQueue extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	protected function label(): string {
-		return __( 'Translation work queue', 'multilingual-store-abilities' );
+		return __( 'Translation work queue', 'multilingual-store-abilities-for-woocommerce' );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Ranks products that are not yet translated (published) into every requested language by their sales in a recent period, so the best sellers get translated first. Sales from all language versions of a product are summed under its original. Revenue is net revenue in the store base currency (meta.currency) from WooCommerce Analytics, with the order statuses Analytics excludes; meta.data_source says whether Analytics or raw order items were used, and meta.analytics_missing_orders how many recent orders Analytics has not imported yet.', 'multilingual-store-abilities' );
+		return __( 'Ranks products that are not yet translated (published) into every requested language by their sales in a recent period, so the best sellers get translated first. Sales from all language versions of a product are summed under its original. Revenue is net revenue in the store base currency (meta.currency) from WooCommerce Analytics, with the order statuses Analytics excludes; meta.data_source says whether Analytics or raw order items were used, and meta.analytics_missing_orders how many recent orders Analytics has not imported yet.', 'multilingual-store-abilities-for-woocommerce' );
 	}
 
 	/**
@@ -74,7 +74,7 @@ final class TranslationWorkQueue extends AbstractAbility {
 				'minimum'     => 7,
 				'maximum'     => 365,
 				'default'     => 90,
-				'description' => __( 'Sales period in days, counted back from now.', 'multilingual-store-abilities' ),
+				'description' => __( 'Sales period in days, counted back from now.', 'multilingual-store-abilities-for-woocommerce' ),
 			),
 			'rank_by'     => array(
 				'type'    => 'string',
@@ -105,13 +105,13 @@ final class TranslationWorkQueue extends AbstractAbility {
 				'rank'                  => array( 'type' => 'integer' ),
 				'product_id'            => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language product ID.', 'multilingual-store-abilities' ),
+					'description' => __( 'Original-language product ID.', 'multilingual-store-abilities-for-woocommerce' ),
 				),
 				'title'                 => array( 'type' => 'string' ),
 				'sku'                   => array( 'type' => array( 'string', 'null' ) ),
 				'revenue'               => array(
 					'type'        => 'number',
-					'description' => __( 'Net revenue in the period (store base currency), all language versions.', 'multilingual-store-abilities' ),
+					'description' => __( 'Net revenue in the period (store base currency), all language versions.', 'multilingual-store-abilities-for-woocommerce' ),
 				),
 				'units_sold'            => array( 'type' => 'integer' ),
 				'missing_languages'     => $codes,
@@ -130,7 +130,7 @@ final class TranslationWorkQueue extends AbstractAbility {
 				'untranslated_with_sales' => array( 'type' => 'integer' ),
 				'revenue_untranslated'    => array(
 					'type'        => 'number',
-					'description' => __( 'Revenue of all products with sales that are not fully translated (not only the listed ones).', 'multilingual-store-abilities' ),
+					'description' => __( 'Revenue of all products with sales that are not fully translated (not only the listed ones).', 'multilingual-store-abilities-for-woocommerce' ),
 				),
 				'revenue_total'           => array( 'type' => 'number' ),
 			),
@@ -160,7 +160,7 @@ final class TranslationWorkQueue extends AbstractAbility {
 					),
 					'analytics_missing_orders' => array(
 						'type'        => 'integer',
-						'description' => __( 'Orders in the period that WooCommerce Analytics has not imported yet (they are not in the ranking).', 'multilingual-store-abilities' ),
+						'description' => __( 'Orders in the period that WooCommerce Analytics has not imported yet (they are not in the ranking).', 'multilingual-store-abilities-for-woocommerce' ),
 					),
 				)
 			)

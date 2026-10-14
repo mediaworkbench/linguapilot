@@ -174,8 +174,8 @@ final class Plugin {
 
 		$blocking = ! $this->status->can_register_abilities();
 		$summary  = $blocking
-			? __( 'Multilingual Store Abilities is inactive: no abilities are registered until the following requirements are met.', 'multilingual-store-abilities' )
-			: __( 'Multilingual Store Abilities runs with reduced functionality: abilities that need WooCommerce Multilingual are unavailable.', 'multilingual-store-abilities' );
+			? __( 'Multilingual Store Abilities is inactive: no abilities are registered until the following requirements are met.', 'multilingual-store-abilities-for-woocommerce' )
+			: __( 'Multilingual Store Abilities runs with reduced functionality: abilities that need WooCommerce Multilingual are unavailable.', 'multilingual-store-abilities-for-woocommerce' );
 
 		printf(
 			'<div class="notice %1$s"><p>%2$s</p><ul>',
@@ -197,7 +197,7 @@ final class Plugin {
 	 */
 	private static function describe( DependencyProblem $problem ): string {
 		$names = array(
-			DependencyProblem::ABILITIES_API => __( 'WordPress Abilities API (WordPress 6.9 or newer)', 'multilingual-store-abilities' ),
+			DependencyProblem::ABILITIES_API => __( 'WordPress Abilities API (WordPress 6.9 or newer)', 'multilingual-store-abilities-for-woocommerce' ),
 			DependencyProblem::WOOCOMMERCE   => 'WooCommerce',
 			DependencyProblem::WPML          => 'WPML Multilingual CMS',
 			DependencyProblem::WPML_SETUP    => 'WPML Multilingual CMS',
@@ -206,17 +206,17 @@ final class Plugin {
 		$name  = $names[ $problem->dependency ] ?? $problem->dependency;
 
 		if ( DependencyProblem::WPML_SETUP === $problem->dependency ) {
-			return __( 'The WPML setup wizard has not been completed (WPML → Setup).', 'multilingual-store-abilities' );
+			return __( 'The WPML setup wizard has not been completed (WPML → Setup).', 'multilingual-store-abilities-for-woocommerce' );
 		}
 
 		if ( $problem->is_missing() ) {
 			/* translators: %s: Name of the required plugin or API. */
-			return sprintf( __( '%s is not active.', 'multilingual-store-abilities' ), $name );
+			return sprintf( __( '%s is not active.', 'multilingual-store-abilities-for-woocommerce' ), $name );
 		}
 
 		return sprintf(
 			/* translators: 1: Plugin name, 2: Installed version, 3: Minimum required version. */
-			__( '%1$s %2$s is active, but version %3$s or newer is required.', 'multilingual-store-abilities' ),
+			__( '%1$s %2$s is active, but version %3$s or newer is required.', 'multilingual-store-abilities-for-woocommerce' ),
 			$name,
 			(string) $problem->installed_version,
 			(string) $problem->required_version

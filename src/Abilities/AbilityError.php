@@ -50,7 +50,7 @@ final class AbilityError extends RuntimeException {
 		return new self(
 			self::DEPENDENCY_MISSING,
 			/* translators: %s: Plugin name. */
-			esc_html( sprintf( __( 'This ability requires %s, which is not active.', 'multilingual-store-abilities' ), $dependency ) ),
+			esc_html( sprintf( __( 'This ability requires %s, which is not active.', 'multilingual-store-abilities-for-woocommerce' ), $dependency ) ),
 			424
 		);
 	}
@@ -64,7 +64,7 @@ final class AbilityError extends RuntimeException {
 		return new self(
 			self::INVALID_LANGUAGE,
 			/* translators: %s: Comma-separated language codes. */
-			sprintf( esc_html__( 'Unknown or not allowed language codes: %s. Use mlstore/languages-overview to list the active languages.', 'multilingual-store-abilities' ), implode( ', ', $codes ) )
+			sprintf( esc_html__( 'Unknown or not allowed language codes: %s. Use mlstore/languages-overview to list the active languages.', 'multilingual-store-abilities-for-woocommerce' ), implode( ', ', $codes ) )
 		);
 	}
 
@@ -92,7 +92,7 @@ final class AbilityError extends RuntimeException {
 	public static function currency_disabled(): self {
 		return new self(
 			self::CURRENCY_DISABLED,
-			esc_html__( 'WooCommerce Multilingual multi-currency is not enabled.', 'multilingual-store-abilities' ),
+			esc_html__( 'WooCommerce Multilingual multi-currency is not enabled.', 'multilingual-store-abilities-for-woocommerce' ),
 			409
 		);
 	}

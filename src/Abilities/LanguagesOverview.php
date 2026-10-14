@@ -29,14 +29,14 @@ final class LanguagesOverview extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	protected function label(): string {
-		return __( 'Multilingual store overview', 'multilingual-store-abilities' );
+		return __( 'Multilingual store overview', 'multilingual-store-abilities-for-woocommerce' );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Call this first. Returns the store\'s languages (the default language is the source of translations), whether WooCommerce Multilingual and multi-currency are active, the currencies per language, which product fields are kept in sync across translations, and how many original-language products, variations, categories and tags exist. Other mlstore abilities take the language and currency codes listed here.', 'multilingual-store-abilities' );
+		return __( 'Call this first. Returns the store\'s languages (the default language is the source of translations), whether WooCommerce Multilingual and multi-currency are active, the currencies per language, which product fields are kept in sync across translations, and how many original-language products, variations, categories and tags exist. Other mlstore abilities take the language and currency codes listed here.', 'multilingual-store-abilities-for-woocommerce' );
 	}
 
 	/**
@@ -67,7 +67,7 @@ final class LanguagesOverview extends AbstractAbility {
 			array(
 				'default_language'       => array(
 					'type'        => 'string',
-					'description' => __( 'Code of the default (source) language.', 'multilingual-store-abilities' ),
+					'description' => __( 'Code of the default (source) language.', 'multilingual-store-abilities-for-woocommerce' ),
 				),
 				'languages'              => array(
 					'type'  => 'array',
@@ -84,7 +84,7 @@ final class LanguagesOverview extends AbstractAbility {
 				'multi_currency_enabled' => array( 'type' => 'boolean' ),
 				'default_currency'       => array(
 					'type'        => 'string',
-					'description' => __( 'Store base currency; analytics revenue is reported in it.', 'multilingual-store-abilities' ),
+					'description' => __( 'Store base currency; analytics revenue is reported in it.', 'multilingual-store-abilities-for-woocommerce' ),
 				),
 				'currencies'             => array(
 					'type'  => 'array',
@@ -98,8 +98,8 @@ final class LanguagesOverview extends AbstractAbility {
 				),
 				'sync_settings'          => self::strict_object(
 					array(
-						'synced_fields'   => $fields + array( 'description' => __( 'A difference between translations in these fields is a sync error.', 'multilingual-store-abilities' ) ),
-						'unsynced_fields' => $fields + array( 'description' => __( 'These fields may legitimately differ per language.', 'multilingual-store-abilities' ) ),
+						'synced_fields'   => $fields + array( 'description' => __( 'A difference between translations in these fields is a sync error.', 'multilingual-store-abilities-for-woocommerce' ) ),
+						'unsynced_fields' => $fields + array( 'description' => __( 'These fields may legitimately differ per language.', 'multilingual-store-abilities-for-woocommerce' ) ),
 					)
 				),
 				'catalog_size'           => self::strict_object(
@@ -109,7 +109,7 @@ final class LanguagesOverview extends AbstractAbility {
 						'product_categories' => array( 'type' => 'integer' ),
 						'product_tags'       => array( 'type' => 'integer' ),
 					),
-					__( 'Original-language objects only (translations not counted), any status except trash.', 'multilingual-store-abilities' )
+					__( 'Original-language objects only (translations not counted), any status except trash.', 'multilingual-store-abilities-for-woocommerce' )
 				),
 			),
 			$this->meta_schema()

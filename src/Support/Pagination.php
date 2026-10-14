@@ -69,14 +69,14 @@ final class Pagination {
 				'type'        => 'integer',
 				'minimum'     => 1,
 				'default'     => 1,
-				'description' => __( 'Page number to return (1-indexed).', 'multilingual-store-abilities' ),
+				'description' => __( 'Page number to return (1-indexed).', 'multilingual-store-abilities-for-woocommerce' ),
 			),
 			'per_page' => array(
 				'type'        => 'integer',
 				'minimum'     => 1,
 				'maximum'     => self::MAX_PER_PAGE,
 				'default'     => self::clamp_per_page( $default_per_page ),
-				'description' => __( 'Maximum number of items per page.', 'multilingual-store-abilities' ),
+				'description' => __( 'Maximum number of items per page.', 'multilingual-store-abilities-for-woocommerce' ),
 			),
 		);
 	}
