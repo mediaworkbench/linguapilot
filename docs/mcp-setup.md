@@ -5,7 +5,8 @@ The agent sees three tools: `mcp-adapter-discover-abilities`, `mcp-adapter-get-a
 
 ## 1. A dedicated user
 
-Do not connect with an administrator account. Create a user that can only do what the abilities need:
+Do not connect with an administrator account. Create a user that can only do what the abilities need
+(on the DDEV demo store, prefix every command with `ddev`, e.g. `ddev wp user create …`; a host `wp` cannot reach DDEV's database):
 
 ```bash
 wp user create mcp-agent mcp-agent@example.test --role=shop_manager
