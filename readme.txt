@@ -1,4 +1,4 @@
-=== Multilingual Store Abilities for WooCommerce ===
+=== Multilingual Store Abilities ===
 Contributors: mediaworkbench
 Tags: woocommerce, multilingual, translation, mcp, ai
 Requires at least: 6.9

@@ -534,7 +534,7 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - ✅ **Read-only, at runtime:** `tests/Store/ReadOnlyGuaranteeStoreTest` checksums **all 84 tables** (options included, which covers
   writing listeners of the filters we call) around two runs of every ability. Nothing changes, and results are identical
   (excluding `generated_at` / `period_start`).
-- `docs/SECURITY.md`: threat model as built and verified. `readme.txt` for wordpress.org (contributor `mediaworkbench` to confirm).
+- `docs/SECURITY.md`: threat model as built and verified. `readme.txt` for wordpress.org (contributor `mediaworkbench`, confirmed: profiles.wordpress.org/mediaworkbench).
 - i18n: `languages/multilingual-store-abilities.pot` (75 strings), `-de_DE.po/.mo` (standard de_DE spelling with ß).
   Plugin Check discourages `load_plugin_textdomain()` for wordpress.org plugins, so (Patrick's decision) the plugin loads no bundled
   translations: since WP 4.6 language packs from translate.wordpress.org load automatically. The de_DE `.po` stays in the repo as the

@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilingual Store Abilities for WooCommerce 0.1.0\n"
+"Project-Id-Version: Multilingual Store Abilities 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multilingual-"
 "store-abilities\n"
 "POT-Creation-Date: 2026-10-14T20:14:40+02:00\n"
@@ -19,8 +19,8 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: multilingual-store-abilities.php
-msgid "Multilingual Store Abilities for WooCommerce"
-msgstr "Multilingual Store Abilities für WooCommerce"
+msgid "Multilingual Store Abilities"
+msgstr "Multilingual Store Abilities"
 
 #. Description of the plugin
 #: multilingual-store-abilities.php
