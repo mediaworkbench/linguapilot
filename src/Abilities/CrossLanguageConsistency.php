@@ -62,7 +62,7 @@ final class CrossLanguageConsistency extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Finds product translations whose SKU, stock, tax class, catalog visibility, post status or prices differ from the original. Each difference has a severity: sync_error when the field is supposed to be kept in sync across translations (see sync_settings in mlstore/languages-overview), so the data is out of sync; deviation when the field may legitimately differ per language. Prices are not compared for a language whose currency has manual prices on the product (use mlstore/currency-price-gaps for those). Only translations with at least one difference are listed.', 'multilingual-store-abilities' );
+		return __( 'Finds product and variation translations whose SKU, stock, tax class, catalog visibility, post status or prices differ from the original. Each difference has a severity: sync_error when the field is supposed to be kept in sync across translations (see sync_settings in mlstore/languages-overview), so the data is out of sync; deviation when the field may legitimately differ per language. Prices are not compared for a language whose currency has manual prices on the product (use mlstore/currency-price-gaps for those). Only translations with at least one difference are listed.', 'multilingual-store-abilities' );
 	}
 
 	/**
@@ -71,7 +71,7 @@ final class CrossLanguageConsistency extends AbstractAbility {
 	protected function input_properties(): array {
 		return array_merge(
 			array(
-				'fields'    => array(
+				'fields'             => array(
 					'type'        => 'array',
 					'items'       => array(
 						'type' => 'string',
@@ -81,7 +81,12 @@ final class CrossLanguageConsistency extends AbstractAbility {
 					'default'     => array(),
 					'description' => __( 'Fields to compare. Default: all.', 'multilingual-store-abilities' ),
 				),
-				'languages' => self::languages_input_property(),
+				'languages'          => self::languages_input_property(),
+				'include_variations' => array(
+					'type'        => 'boolean',
+					'default'     => true,
+					'description' => __( 'Also compare translated variations (SKU, stock, prices, enabled/disabled per variation).', 'multilingual-store-abilities' ),
+				),
 			),
 			Pagination::input_properties()
 		);
@@ -119,7 +124,11 @@ final class CrossLanguageConsistency extends AbstractAbility {
 			'properties'           => array(
 				'product_id'     => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language product ID.', 'multilingual-store-abilities' ),
+					'description' => __( 'Original-language product ID (the parent product for variation rows).', 'multilingual-store-abilities' ),
+				),
+				'variation_id'   => array(
+					'type'        => array( 'integer', 'null' ),
+					'description' => __( 'Original-language variation ID; null for product-level rows.', 'multilingual-store-abilities' ),
 				),
 				'title'          => array( 'type' => 'string' ),
 				'sku'            => array( 'type' => array( 'string', 'null' ) ),
@@ -127,14 +136,14 @@ final class CrossLanguageConsistency extends AbstractAbility {
 				'translation_id' => array( 'type' => 'integer' ),
 				'edit_url'       => array(
 					'type'        => 'string',
-					'description' => __( 'Edit link of the translation.', 'multilingual-store-abilities' ),
+					'description' => __( 'Edit link of the translation (for variations: of the translated parent product).', 'multilingual-store-abilities' ),
 				),
 				'differences'    => array(
 					'type'  => 'array',
 					'items' => $difference,
 				),
 			),
-			'required'             => array( 'product_id', 'title', 'sku', 'language', 'translation_id', 'edit_url', 'differences' ),
+			'required'             => array( 'product_id', 'variation_id', 'title', 'sku', 'language', 'translation_id', 'edit_url', 'differences' ),
 			'additionalProperties' => false,
 		);
 
@@ -142,6 +151,7 @@ final class CrossLanguageConsistency extends AbstractAbility {
 			'type'                 => 'object',
 			'properties'           => array(
 				'products_checked'     => array( 'type' => 'integer' ),
+				'variations_checked'   => array( 'type' => 'integer' ),
 				'translations_checked' => array( 'type' => 'integer' ),
 				'sync_errors'          => array( 'type' => 'integer' ),
 				'deviations'           => array( 'type' => 'integer' ),
@@ -150,7 +160,7 @@ final class CrossLanguageConsistency extends AbstractAbility {
 					'description' => __( 'Translations whose prices were not compared because their currency has manual prices.', 'multilingual-store-abilities' ),
 				),
 			),
-			'required'             => array( 'products_checked', 'translations_checked', 'sync_errors', 'deviations', 'price_checks_skipped' ),
+			'required'             => array( 'products_checked', 'variations_checked', 'translations_checked', 'sync_errors', 'deviations', 'price_checks_skipped' ),
 			'additionalProperties' => false,
 		);
 
@@ -168,7 +178,9 @@ final class CrossLanguageConsistency extends AbstractAbility {
 			? ProductField::cases()
 			: array_values( array_filter( ProductField::cases(), static fn ( ProductField $field ): bool => in_array( $field->value, $requested, true ) ) );
 
-		$result = ( new ConsistencyChecker( $this->gateway, $this->woo ) )->check( $fields, $languages, $pagination );
+		$variations = is_bool( $input['include_variations'] ?? null ) ? $input['include_variations'] : true;
+
+		$result = ( new ConsistencyChecker( $this->gateway, $this->woo ) )->check( $fields, $languages, $pagination, $variations );
 
 		return OutputEnvelope::collection( 'translations', $result['items'], $pagination, $result['total_items'], $this->meta(), $result['summary'] );
 	}

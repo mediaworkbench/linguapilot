@@ -58,7 +58,7 @@ final class WooCommerceGateway implements WooGateway {
 		$list = self::id_list( $ids );
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Raw reads by design (see interface); $list holds only integers (id_list()).
-		$posts = $wpdb->get_results( "SELECT ID, post_status FROM {$wpdb->posts} WHERE ID IN ( {$list} )", ARRAY_A );
+		$posts = $wpdb->get_results( "SELECT ID, post_status, post_parent FROM {$wpdb->posts} WHERE ID IN ( {$list} )", ARRAY_A );
 		$this->assert_query_succeeded();
 		$meta = $wpdb->get_results(
 			"SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta}
@@ -81,6 +81,7 @@ final class WooCommerceGateway implements WooGateway {
 			$fields[ (int) $post['ID'] ] = array_fill_keys( array_keys( self::FIELD_META_KEYS ), null ) + array(
 				'post_status'        => (string) $post['post_status'],
 				'catalog_visibility' => 'visible',
+				'parent_id'          => (string) $post['post_parent'],
 			);
 		}
 
@@ -125,12 +126,15 @@ final class WooCommerceGateway implements WooGateway {
 			}
 
 			$sku          = get_post_meta( $id, '_sku', true );
+			$is_variation = 'product_variation' === $post->post_type;
 			$items[ $id ] = new CatalogItem(
 				$id,
 				$post->post_type,
 				self::plain_text( $post->post_title ),
 				is_string( $sku ) && '' !== $sku ? $sku : null,
-				admin_url( 'post.php?post=' . $id . '&action=edit' )
+				// Variations are edited on their parent product's screen.
+				admin_url( 'post.php?post=' . ( $is_variation ? $post->post_parent : $id ) . '&action=edit' ),
+				$is_variation ? $post->post_parent : null
 			);
 		}
 

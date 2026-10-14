@@ -396,8 +396,9 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 
 ## 12. `mlstore/cross-language-consistency` (milestone 5, ability 3)
 
-- Scope: **products only** (original any status except trash) vs. every existing translation (any status except trash/auto-draft).
-  Variations are not compared in v0.1. Missing translations are translation-completeness' job.
+- Scope: products **and variations** (Patrick, 2026-10-14), originals in any status except trash, vs. every existing translation
+  (any status except trash/auto-draft). Missing translations are translation-completeness' job. Variations skip `catalog_visibility`;
+  `post_status` there means enabled (`publish`) vs disabled (`private`).
 - ⚠️ Deviation from concept §5.6: the ability **works without WCML**. Severity then follows WPML's copy preferences only (SyncRules),
   instead of returning `mlstore_dependency_missing`.
 - Equality rules (`Domain\FieldComparator`): empty = missing; numeric fields compare by value; `standard` tax class = `''`;
@@ -436,3 +437,14 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   must detect this (compare lookup coverage with recent orders) and report `meta.data_source` / freshness instead of "no sales".
   For the demo, the historical import was run via `ReportsSync::regenerate_report_data()` plus
   `wp action-scheduler run --group=wc-admin-data`: 8,279 lookup rows, 1,499 orders, 4,037 products.
+
+## 14. Translation jobs (`icl_translation_status`), verified 2026-10-14
+
+- Patrick confirmed: the 14 + 14 `element_id = NULL` rows (§10) are products he **sent to translation without completing**.
+- `{prefix}icl_translation_status` joins on `translation_id`. Statuses are WPML constants (`inc/constants.php`): `0` not translated,
+  `1` waiting for translator, `2` in progress, `3` needs update, `4` ready to download, `9` duplicate, `10` complete, `30` needs review,
+  `40` ATE needs retry, `42` ATE cancelled, `102` pending (translation service). Column `needs_update` = 1 when the original changed after translation.
+- DDEV data: the 28 NULL rows → status `1`; the 8 real translations → status `10`.
+- ❓ Proposal to Patrick (not implemented): in translation-completeness, report `in_progress_languages` (no element yet, open job:
+  1/2/4/30/40/102) separately from `missing_languages`, and `outdated_languages` (`needs_update = 1`).
+- Seed data for consistency `sync_error`/`deviation` examples: in the milestone 6 seed script (Patrick, 2026-10-14).

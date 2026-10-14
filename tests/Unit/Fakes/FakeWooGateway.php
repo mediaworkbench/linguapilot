@@ -58,6 +58,19 @@ final class FakeWooGateway implements WooGateway {
 	}
 
 	/**
+	 * Adds a variation.
+	 *
+	 * @param int         $id        Variation post ID.
+	 * @param int         $parent_id Parent product ID.
+	 * @param string      $title     Title.
+	 * @param string|null $sku       SKU.
+	 */
+	public function add_variation( int $id, int $parent_id, string $title, ?string $sku = null ): self {
+		$this->posts[ $id ] = new CatalogItem( $id, 'product_variation', $title, $sku, "https://shop.test/wp-admin/post.php?post={$parent_id}&action=edit", $parent_id );
+		return $this;
+	}
+
+	/**
 	 * Adds a term.
 	 *
 	 * @param int    $id       Term ID.
@@ -87,7 +100,7 @@ final class FakeWooGateway implements WooGateway {
 		$result = array();
 		foreach ( $ids as $id ) {
 			if ( isset( $this->fields[ $id ] ) ) {
-				$result[ $id ] = $this->fields[ $id ];
+				$result[ $id ] = $this->fields[ $id ] + array( 'parent_id' => (string) ( $this->posts[ $id ]->parent_id ?? 0 ) );
 			}
 		}
 

@@ -25,7 +25,15 @@ use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
  */
 final class ConsistencyStoreTest extends StoreTestCase {
 
-	public function test_translation_pairs_match_hook_reference(): void {
+	/**
+	 * Pairs from SQL equal the hook-based reference.
+	 *
+	 * @dataProvider pair_types
+	 *
+	 * @param string $post_type Post type.
+	 */
+	public function test_translation_pairs_match_hook_reference( string $post_type ): void {
+		$type      = ElementType::post_type( $post_type );
 		$gateway   = new WpmlGateway( self::wpdb() );
 		$languages = array_values(
 			array_map(
@@ -37,9 +45,9 @@ final class ConsistencyStoreTest extends StoreTestCase {
 		$expected = array();
 		$offset   = 0;
 		do {
-			$page = $gateway->original_ids( ElementType::product(), 100, $offset, CatalogScope::ANY_POST_STATUS );
+			$page = $gateway->original_ids( $type, 100, $offset, CatalogScope::ANY_POST_STATUS );
 			foreach ( $page->ids as $original ) {
-				$group = $gateway->translations( $original, ElementType::product() );
+				$group = $gateway->translations( $original, $type );
 				foreach ( $languages as $language ) {
 					$member = $group[ $language ] ?? null;
 					if ( null === $member || $member === $original ) {
@@ -56,10 +64,22 @@ final class ConsistencyStoreTest extends StoreTestCase {
 
 		$actual = array_map(
 			static fn ( TranslationPair $pair ): array => array( $pair->original_id, $pair->translation_id, $pair->language ),
-			$gateway->translation_pairs( new CatalogScope( array( ElementType::product() ), CatalogScope::ANY_POST_STATUS ), $languages )
+			$gateway->translation_pairs( new CatalogScope( array( $type ), CatalogScope::ANY_POST_STATUS ), $languages )
 		);
 
 		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Post types with translation pairs.
+	 *
+	 * @return array<string, array{string}>
+	 */
+	public static function pair_types(): array {
+		return array(
+			'products'   => array( 'product' ),
+			'variations' => array( 'product_variation' ),
+		);
 	}
 
 	public function test_product_fields_match_woocommerce_getters(): void {

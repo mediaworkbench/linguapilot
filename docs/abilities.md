@@ -252,7 +252,7 @@ or taxonomy. Only objects with at least one gap are listed. `summary` covers *al
 
 ## `mlstore/cross-language-consistency`
 
-Translations whose shop data differs from the original, with a severity that separates broken syncs from intentional differences.
+Product and variation translations whose shop data differs from the original, with a severity that separates broken syncs from intentional differences.
 
 **Example questions:** *"Are there translations whose SKU, stock or visibility differ from the original?"*, *"Which French products are still drafts although the original is live?"*
 
@@ -262,11 +262,15 @@ Translations whose shop data differs from the original, with a severity that sep
 |---|---|---|---|
 | `fields` | string[] | all | Any of `sku`, `stock_status`, `stock_quantity`, `manage_stock`, `tax_class`, `catalog_visibility`, `post_status`, `regular_price`, `sale_price` |
 | `languages` | string[] | all non-default | Language codes from `languages-overview` |
+| `include_variations` | bool | `true` | Also compare translated variations |
 | `page`, `per_page` | int | 1, 50 | `per_page` max 100 |
 
 **Output:** list envelope with `translations[]`:
-`{ product_id, title, sku, language, translation_id, edit_url, differences[]: { field, original, translation, severity } }`.
-`edit_url` opens the translation (the side to fix). `summary`: `products_checked`, `translations_checked`, `sync_errors`, `deviations`, `price_checks_skipped`.
+`{ product_id, variation_id, title, sku, language, translation_id, edit_url, differences[]: { field, original, translation, severity } }`.
+`product_id` is always the original parent product; `variation_id` is the original variation, or `null` for product-level rows.
+`edit_url` opens the translation (for variations: the translated parent product, where variations are edited).
+`summary`: `products_checked`, `variations_checked`, `translations_checked`, `sync_errors`, `deviations`, `price_checks_skipped`.
+Rows are ordered by product, then variation (product row first), then language.
 
 **Rules:**
 - **Severity:** `sync_error` when the field is synced (see `sync_settings` in `languages-overview`), so the difference means the sync failed or the data was edited around it; `deviation` otherwise (may be intentional, e.g. a translation still in draft).
@@ -274,4 +278,5 @@ Translations whose shop data differs from the original, with a severity that sep
 - **Equality:** empty = missing; numbers compare by value (`10` = `10.00`); the standard tax class may be stored as `""` or `standard`. Stock quantity is compared only when at least one side manages stock.
 - **Prices** are skipped for a translation when its language uses a secondary currency for which the original has a manual price set (WCML "set prices manually"). Those prices are `currency-price-gaps`' job. The count is in `summary.price_checks_skipped`.
 - Values are read raw from the database, because WCML converts price meta reads into the visitor's currency.
-- Products only; variations are not compared in v0.1.
+- **Variations** are compared on every field except `catalog_visibility` (variations have none). `post_status` is `publish`
+  (enabled) or `private` (disabled). Manual prices are checked on the original variation.

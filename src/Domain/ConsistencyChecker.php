@@ -49,28 +49,109 @@ final class ConsistencyChecker {
 	) {}
 
 	/**
-	 * Checks every translated product.
+	 * Checks every translated product and, optionally, every translated variation.
 	 *
 	 * Scans all pairs (field values are fetched in batches) so that pagination counts only pairs
-	 * with differences.
+	 * with differences. Results are ordered by parent product, variation (product row first), language.
 	 *
-	 * @param list<ProductField> $fields     Fields to compare.
-	 * @param list<string>       $languages  Translation languages (validated by the caller).
-	 * @param Pagination         $pagination Page of pairs with differences.
+	 * @param list<ProductField> $fields             Fields to compare.
+	 * @param list<string>       $languages          Translation languages (validated by the caller).
+	 * @param Pagination         $pagination         Page of pairs with differences.
+	 * @param bool               $include_variations Whether to compare variations too.
 	 * @return array{
-	 *     items: list<array{product_id: int, title: string, sku: string|null, language: string, translation_id: int, edit_url: string, differences: list<array{field: string, original: string|null, translation: string|null, severity: string}>}>,
+	 *     items: list<array{product_id: int, variation_id: int|null, title: string, sku: string|null, language: string, translation_id: int, edit_url: string, differences: list<array{field: string, original: string|null, translation: string|null, severity: string}>}>,
 	 *     total_items: int,
-	 *     summary: array{products_checked: int, translations_checked: int, sync_errors: int, deviations: int, price_checks_skipped: int}
+	 *     summary: array{products_checked: int, variations_checked: int, translations_checked: int, sync_errors: int, deviations: int, price_checks_skipped: int}
 	 * }
 	 */
-	public function check( array $fields, array $languages, Pagination $pagination ): array {
-		$pairs   = array() === $languages ? array() : $this->gateway->translation_pairs( new CatalogScope( array( ElementType::product() ), CatalogScope::ANY_POST_STATUS ), $languages );
-		$sync    = $this->gateway->sync_settings();
-		$skipped = 0;
-		$errors  = 0;
-		$devs    = 0;
-		$found   = array();
-		$prices  = array() !== array_filter( $fields, static fn ( ProductField $field ): bool => in_array( $field, self::PRICE_FIELDS, true ) );
+	public function check( array $fields, array $languages, Pagination $pagination, bool $include_variations = true ): array {
+		$product_pairs   = $this->pairs( ElementType::product(), $languages );
+		$variation_pairs = $include_variations ? $this->pairs( ElementType::variation(), $languages ) : array();
+		$sync            = $this->gateway->sync_settings();
+		$prices          = array() !== array_filter( $fields, static fn ( ProductField $field ): bool => in_array( $field, self::PRICE_FIELDS, true ) );
+		// Variations have no catalog visibility of their own.
+		$variation_fields = array_values( array_filter( $fields, static fn ( ProductField $field ): bool => ProductField::CatalogVisibility !== $field ) );
+
+		$counts = array(
+			'skipped' => 0,
+			'errors'  => 0,
+			'devs'    => 0,
+		);
+		$found  = array_merge(
+			$this->compare_all( $product_pairs, $fields, $sync, $prices, false, $counts ),
+			$this->compare_all( $variation_pairs, $variation_fields, $sync, $prices, true, $counts )
+		);
+
+		$order = array_flip( $languages );
+		usort(
+			$found,
+			static fn ( array $a, array $b ): int => array( $a['product_id'], $a['variation_id'] ?? 0, $order[ $a['pair']->language ] ?? PHP_INT_MAX )
+				<=> array( $b['product_id'], $b['variation_id'] ?? 0, $order[ $b['pair']->language ] ?? PHP_INT_MAX )
+		);
+
+		$page = array_slice( $found, $pagination->offset(), $pagination->per_page );
+		$ids  = array();
+		foreach ( $page as $entry ) {
+			$ids[] = $entry['pair']->original_id;
+			$ids[] = $entry['pair']->translation_id;
+		}
+		$items = $this->woo->describe_posts( array_values( array_unique( $ids ) ) );
+
+		$result = array();
+		foreach ( $page as $entry ) {
+			$pair        = $entry['pair'];
+			$item        = $items[ $pair->original_id ] ?? null;
+			$translation = $items[ $pair->translation_id ] ?? null;
+			$result[]    = array(
+				'product_id'     => $entry['product_id'],
+				'variation_id'   => $entry['variation_id'],
+				'title'          => null === $item ? '' : $item->title,
+				'sku'            => null === $item ? null : $item->sku,
+				'language'       => $pair->language,
+				'translation_id' => $pair->translation_id,
+				'edit_url'       => null === $translation ? '' : $translation->edit_url,
+				'differences'    => $entry['differences'],
+			);
+		}
+
+		return array(
+			'items'       => $result,
+			'total_items' => count( $found ),
+			'summary'     => array(
+				'products_checked'     => self::count_originals( $product_pairs ),
+				'variations_checked'   => self::count_originals( $variation_pairs ),
+				'translations_checked' => count( $product_pairs ) + count( $variation_pairs ),
+				'sync_errors'          => $counts['errors'],
+				'deviations'           => $counts['devs'],
+				'price_checks_skipped' => $counts['skipped'],
+			),
+		);
+	}
+
+	/**
+	 * Translation pairs of one element type (originals in any status except trash).
+	 *
+	 * @param ElementType  $type      Product or variation.
+	 * @param list<string> $languages Languages.
+	 * @return list<TranslationPair>
+	 */
+	private function pairs( ElementType $type, array $languages ): array {
+		return array() === $languages ? array() : $this->gateway->translation_pairs( new CatalogScope( array( $type ), CatalogScope::ANY_POST_STATUS ), $languages );
+	}
+
+	/**
+	 * Compares all pairs in batches and returns those with differences.
+	 *
+	 * @param list<TranslationPair>                       $pairs        Pairs.
+	 * @param list<ProductField>                          $fields       Fields to compare.
+	 * @param SyncSettings                                $sync         Sync settings.
+	 * @param bool                                        $prices       Whether price fields are among the fields.
+	 * @param bool                                        $is_variation Whether the pairs are variations.
+	 * @param array{skipped: int, errors: int, devs: int} $counts      Running counters (updated).
+	 * @return list<array{pair: TranslationPair, product_id: int, variation_id: int|null, differences: list<array{field: string, original: string|null, translation: string|null, severity: string}>}>
+	 */
+	private function compare_all( array $pairs, array $fields, SyncSettings $sync, bool $prices, bool $is_variation, array &$counts ): array {
+		$found = array();
 
 		foreach ( array_chunk( $pairs, self::BATCH_SIZE ) as $batch ) {
 			$ids = array();
@@ -83,7 +164,7 @@ final class ConsistencyChecker {
 			foreach ( $batch as $pair ) {
 				$skip_prices = $prices && $this->has_manual_prices_for_language( $pair );
 				if ( $skip_prices ) {
-					++$skipped;
+					++$counts['skipped'];
 				}
 
 				$differences = $this->differences( $pair, $fields, $values, $sync, $skip_prices );
@@ -92,46 +173,28 @@ final class ConsistencyChecker {
 				}
 
 				foreach ( $differences as $difference ) {
-					self::SYNC_ERROR === $difference['severity'] ? ++$errors : ++$devs;
+					self::SYNC_ERROR === $difference['severity'] ? ++$counts['errors'] : ++$counts['devs'];
 				}
-				$found[] = array( $pair, $differences );
+
+				$found[] = array(
+					'pair'         => $pair,
+					'product_id'   => $is_variation ? (int) ( $values[ $pair->original_id ]['parent_id'] ?? 0 ) : $pair->original_id,
+					'variation_id' => $is_variation ? $pair->original_id : null,
+					'differences'  => $differences,
+				);
 			}
 		}
 
-		$page = array_slice( $found, $pagination->offset(), $pagination->per_page );
-		$ids  = array();
-		foreach ( $page as list( $pair ) ) {
-			$ids[] = $pair->original_id;
-			$ids[] = $pair->translation_id;
-		}
-		$items = $this->woo->describe_posts( array_values( array_unique( $ids ) ) );
+		return $found;
+	}
 
-		$result = array();
-		foreach ( $page as list( $pair, $differences ) ) {
-			$item        = $items[ $pair->original_id ] ?? null;
-			$translation = $items[ $pair->translation_id ] ?? null;
-			$result[]    = array(
-				'product_id'     => $pair->original_id,
-				'title'          => null === $item ? '' : $item->title,
-				'sku'            => null === $item ? null : $item->sku,
-				'language'       => $pair->language,
-				'translation_id' => $pair->translation_id,
-				'edit_url'       => null === $translation ? '' : $translation->edit_url,
-				'differences'    => $differences,
-			);
-		}
-
-		return array(
-			'items'       => $result,
-			'total_items' => count( $found ),
-			'summary'     => array(
-				'products_checked'     => count( array_unique( array_map( static fn ( TranslationPair $pair ): int => $pair->original_id, $pairs ) ) ),
-				'translations_checked' => count( $pairs ),
-				'sync_errors'          => $errors,
-				'deviations'           => $devs,
-				'price_checks_skipped' => $skipped,
-			),
-		);
+	/**
+	 * Number of distinct originals among pairs.
+	 *
+	 * @param list<TranslationPair> $pairs Pairs.
+	 */
+	private static function count_originals( array $pairs ): int {
+		return count( array_unique( array_map( static fn ( TranslationPair $pair ): int => $pair->original_id, $pairs ) ) );
 	}
 
 	/**

@@ -48,6 +48,13 @@ final class CrossLanguageConsistencyTest extends WP_UnitTestCase {
 					'fr' => 21,
 				)
 			)
+			->add_group(
+				ElementType::variation(),
+				array(
+					'de' => 5,
+					'en' => 15,
+				)
+			)
 			->set_sync_settings( new SyncSettings( array( ProductField::Sku ) ) );
 
 		$base = array(
@@ -61,7 +68,11 @@ final class CrossLanguageConsistencyTest extends WP_UnitTestCase {
 			->add_product( 21, 'Hoodie FR' )
 			->set_fields( 1, $base )
 			->set_fields( 11, array( 'sku' => 'Y' ) + $base )
-			->set_fields( 21, array( 'regular_price' => '25' ) + $base );
+			->set_fields( 21, array( 'regular_price' => '25' ) + $base )
+			->add_variation( 5, 1, 'Hoodie - Red' )
+			->add_variation( 15, 11, 'Hoodie EN - Red' )
+			->set_fields( 5, $base )
+			->set_fields( 15, array( 'sku' => 'Z' ) + $base );
 
 		$this->register_abilities( new CrossLanguageConsistency( $gateway, $woo, new AuditLogger( new MemoryLogSink() ), new DependencyStatus( array() ) ) );
 	}
@@ -106,10 +117,19 @@ final class CrossLanguageConsistencyTest extends WP_UnitTestCase {
 		$result = $this->run_as_shop_manager();
 
 		$this->assertIsArray( $result, $result instanceof WP_Error ? $result->get_error_message() : '' );
-		$this->assertSame( array( 'en', 'fr' ), array_column( $result['translations'], 'language' ) );
+		$this->assertSame( array( array( null, 'en' ), array( null, 'fr' ), array( 5, 'en' ) ), array_map( static fn ( array $row ): array => array( $row['variation_id'], $row['language'] ), $result['translations'] ) );
+		$this->assertSame( 1, $result['translations'][2]['product_id'], 'variation rows point to the original parent' );
 		$this->assertSame( 'sync_error', $result['translations'][0]['differences'][0]['severity'] );
 		$this->assertSame( 'deviation', $result['translations'][1]['differences'][0]['severity'] );
-		$this->assertSame( 1, $result['summary']['sync_errors'] );
+		$this->assertSame( 2, $result['summary']['sync_errors'] );
+		$this->assertSame( 1, $result['summary']['variations_checked'] );
+	}
+
+	public function test_variations_can_be_excluded(): void {
+		$result = $this->run_as_shop_manager( array( 'include_variations' => false ) );
+
+		$this->assertIsArray( $result );
+		$this->assertSame( array( null ), array_values( array_unique( array_column( $result['translations'], 'variation_id' ) ) ) );
 	}
 
 	public function test_field_filter(): void {

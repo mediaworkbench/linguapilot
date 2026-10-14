@@ -21,7 +21,8 @@ final class CatalogItem {
 	 * @param string      $type     Post type or taxonomy slug.
 	 * @param string      $title    Plain-text title or term name.
 	 * @param string|null $sku      SKU (products only; null when none).
-	 * @param string      $edit_url Admin edit URL.
+	 * @param string      $edit_url  Admin edit URL (for a variation: its parent product's).
+	 * @param int|null    $parent_id Parent product ID (variations only).
 	 */
 	public function __construct(
 		public readonly int $id,
@@ -29,5 +30,6 @@ final class CatalogItem {
 		public readonly string $title,
 		public readonly ?string $sku,
 		public readonly string $edit_url,
+		public readonly ?int $parent_id = null,
 	) {}
 }

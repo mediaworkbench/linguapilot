@@ -26,6 +26,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
  * - 2 Beanie: EN and FR identical, FR draft → only post_status deviation for FR
  * - 3 Cap:    no translations → nothing to compare
  * - 4 Scarf:  FR trashed → not compared; EN identical
+ * - 6 Hoodie variation (parent 1): EN stock quantity differs (sync_error), FR disabled (post_status deviation)
  *
  * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\ConsistencyChecker
  */
@@ -94,6 +95,16 @@ final class ConsistencyCheckerTest extends TestCase {
 				null,
 				array( 'fr' => 'trash' )
 			)
+			->add_group(
+				ElementType::variation(),
+				array(
+					'de' => 6,
+					'en' => 16,
+					'fr' => 26,
+				),
+				null,
+				array( 'fr' => 'private' )
+			)
 			->set_sync_settings( new SyncSettings( array( ProductField::Sku, ProductField::StockStatus, ProductField::StockQuantity, ProductField::ManageStock ) ) );
 
 		$this->woo = ( new FakeWooGateway() )
@@ -102,11 +113,23 @@ final class ConsistencyCheckerTest extends TestCase {
 			->add_product( 4, 'Scarf' )
 			->add_product( 11, 'Hoodie EN' )
 			->add_product( 21, 'Hoodie FR' )
-			->add_product( 22, 'Beanie FR' );
+			->add_product( 22, 'Beanie FR' )
+			->add_variation( 6, 1, 'Hoodie - Red', 'HD-1-R' )
+			->add_variation( 16, 11, 'Hoodie EN - Red' )
+			->add_variation( 26, 21, 'Hoodie FR - Red' );
 
-		foreach ( array( 1, 2, 3, 4, 12, 14 ) as $id ) {
+		foreach ( array( 1, 2, 3, 4, 12, 14, 6 ) as $id ) {
 			$this->woo->set_fields( $id, self::BASE );
 		}
+		$this->woo
+			->set_fields( 16, array( 'stock_quantity' => '3' ) + self::BASE )
+			->set_fields(
+				26,
+				array(
+					'post_status'        => 'private',
+					'catalog_visibility' => 'hidden',
+				) + self::BASE
+			);
 		$this->woo
 			->set_fields( 11, array( 'sku' => 'HD-1-EN' ) + self::BASE )
 			->set_fields( 21, array( 'regular_price' => '25.00' ) + self::BASE )
@@ -119,12 +142,16 @@ final class ConsistencyCheckerTest extends TestCase {
 
 		$this->assertSame(
 			array(
-				array( 1, 'en', 11, array( array( 'sku', 'X', 'HD-1-EN', 'sync_error' ) ) ),
-				array( 1, 'fr', 21, array( array( 'regular_price', '20', '25.00', 'deviation' ) ) ),
-				array( 2, 'fr', 22, array( array( 'post_status', 'publish', 'draft', 'deviation' ) ) ),
+				array( 1, null, 'en', 11, array( array( 'sku', 'X', 'HD-1-EN', 'sync_error' ) ) ),
+				array( 1, null, 'fr', 21, array( array( 'regular_price', '20', '25.00', 'deviation' ) ) ),
+				array( 1, 6, 'en', 16, array( array( 'stock_quantity', '5', '3', 'sync_error' ) ) ),
+				array( 1, 6, 'fr', 26, array( array( 'post_status', 'publish', 'private', 'deviation' ) ) ),
+				array( 2, null, 'fr', 22, array( array( 'post_status', 'publish', 'draft', 'deviation' ) ) ),
 			),
 			self::compact( $result['items'] )
 		);
+		$this->assertSame( 'Hoodie - Red', $result['items'][2]['title'], 'variation rows carry the variation title' );
+		$this->assertSame( 'HD-1-R', $result['items'][2]['sku'] );
 		$this->assertSame( 'Hoodie', $result['items'][0]['title'] );
 		$this->assertSame( 'HD-1', $result['items'][0]['sku'] );
 		$this->assertSame( 'https://shop.test/wp-admin/post.php?post=11&action=edit', $result['items'][0]['edit_url'], 'edit link of the translation to fix' );
@@ -136,9 +163,10 @@ final class ConsistencyCheckerTest extends TestCase {
 		$this->assertSame(
 			array(
 				'products_checked'     => 3,
-				'translations_checked' => 5,
-				'sync_errors'          => 1,
-				'deviations'           => 2,
+				'variations_checked'   => 1,
+				'translations_checked' => 7,
+				'sync_errors'          => 2,
+				'deviations'           => 3,
 				'price_checks_skipped' => 0,
 			),
 			$summary
@@ -149,7 +177,33 @@ final class ConsistencyCheckerTest extends TestCase {
 		$result = $this->check( array( ProductField::Sku ), array( 'fr' ) );
 
 		$this->assertSame( array(), $result['items'] );
-		$this->assertSame( 2, $result['summary']['translations_checked'] );
+		$this->assertSame( 3, $result['summary']['translations_checked'] );
+	}
+
+	public function test_variations_can_be_excluded(): void {
+		$result = $this->check( null, null, null, false );
+
+		$this->assertSame( array( null ), array_values( array_unique( array_column( $result['items'], 'variation_id' ) ) ) );
+		$this->assertSame( 0, $result['summary']['variations_checked'] );
+		$this->assertSame( 5, $result['summary']['translations_checked'] );
+	}
+
+	public function test_catalog_visibility_is_not_compared_for_variations(): void {
+		$result = $this->check( array( ProductField::CatalogVisibility ), array( 'fr' ) );
+
+		$this->assertSame( array(), $result['items'], 'variation 26 has a different visibility value, but variations have no catalog visibility' );
+	}
+
+	public function test_variation_prices_are_skipped_when_the_variation_has_manual_prices(): void {
+		$this->woo->set_fields( 26, array( 'regular_price' => '99' ) + self::BASE );
+		$this->gateway
+			->set_currencies( new CurrencySettings( true, 'EUR', array( new Currency( 'EUR', array( 'de', 'en' ) ), new Currency( 'CHF', array( 'fr' ) ) ) ) )
+			->set_manual_prices( 6, array( 'CHF' => '30' ) );
+
+		$result = $this->check( array( ProductField::RegularPrice ), array( 'fr' ) );
+
+		$this->assertSame( array( 21 ), array_column( $result['items'], 'translation_id' ) );
+		$this->assertSame( 1, $result['summary']['price_checks_skipped'] );
 	}
 
 	public function test_prices_are_skipped_only_for_languages_whose_currency_has_manual_prices(): void {
@@ -182,7 +236,7 @@ final class ConsistencyCheckerTest extends TestCase {
 				) + self::BASE
 			);
 
-		$result = $this->check( array( ProductField::StockQuantity ), array( 'en' ) );
+		$result = $this->check( array( ProductField::StockQuantity ), array( 'en' ), null, false );
 
 		$this->assertSame( array(), $result['items'] );
 	}
@@ -199,8 +253,8 @@ final class ConsistencyCheckerTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 3, $page['total_items'] );
-		$this->assertSame( array( array( 2, 'fr', 22, array( array( 'post_status', 'publish', 'draft', 'deviation' ) ) ) ), self::compact( $page['items'] ) );
+		$this->assertSame( 5, $page['total_items'] );
+		$this->assertSame( array( 16, 26 ), array_column( $page['items'], 'translation_id' ) );
 	}
 
 	/**
@@ -209,27 +263,30 @@ final class ConsistencyCheckerTest extends TestCase {
 	 * @param list<ProductField>|null $fields     Fields; default all.
 	 * @param list<string>|null       $languages  Languages; default EN, FR.
 	 * @param Pagination|null         $pagination Pagination; default first page of 50.
+	 * @param bool                    $variations Whether to include variations.
 	 * @return array<string, mixed>
 	 */
-	private function check( ?array $fields = null, ?array $languages = null, ?Pagination $pagination = null ): array {
+	private function check( ?array $fields = null, ?array $languages = null, ?Pagination $pagination = null, bool $variations = true ): array {
 		return ( new ConsistencyChecker( $this->gateway, $this->woo ) )->check(
 			$fields ?? ProductField::cases(),
 			$languages ?? array( 'en', 'fr' ),
-			$pagination ?? Pagination::from_input( array() )
+			$pagination ?? Pagination::from_input( array() ),
+			$variations
 		);
 	}
 
 	/**
-	 * Compact form of items for assertions: [product_id, language, translation_id, [[field, original, translation, severity]]].
+	 * Compact form of items: [product_id, variation_id, language, translation_id, [[field, original, translation, severity]]].
 	 *
 	 * @param array<int, array<string, mixed>> $items Items.
-	 * @return list<array{mixed, mixed, mixed, array<array<mixed>>}>
+	 * @return list<array{mixed, mixed, mixed, mixed, array<array<mixed>>}>
 	 */
 	private static function compact( array $items ): array {
 		return array_values(
 			array_map(
 				static fn ( array $item ): array => array(
 					$item['product_id'],
+					$item['variation_id'],
 					$item['language'],
 					$item['translation_id'],
 					array_map( static fn ( array $d ): array => array( $d['field'], $d['original'], $d['translation'], $d['severity'] ), $item['differences'] ),

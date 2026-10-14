@@ -24,7 +24,8 @@ interface WooGateway {
 	public function attribute_taxonomies(): array;
 
 	/**
-	 * Raw values of the comparable product fields, keyed by post ID, then by ProductField value.
+	 * Raw values of the comparable product fields, keyed by post ID, then by ProductField value,
+	 * plus `parent_id` (the parent product's ID for variations, otherwise "0").
 	 *
 	 * Read from the database directly: WCML filters price meta reads into the visitor's currency
 	 * and may write while doing so (docs/api-notes.md §11). Unknown IDs are omitted.
