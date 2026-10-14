@@ -285,6 +285,62 @@ Rows are ordered by product, then variation (product row first), then language.
 - **Variations** are compared on every field except `catalog_visibility` (variations have none). `post_status` is `publish`
   (enabled) or `private` (disabled). Manual prices are checked on the original variation.
 
+**Example output** (seeded demo store, `{"per_page": 2}`):
+
+```json
+{
+  "translations": [
+    {
+      "product_id": 19008,
+      "variation_id": null,
+      "title": "[Seed] Draft DE Cap",
+      "sku": "SEED-CAP",
+      "language": "de",
+      "translation_id": 19018,
+      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19018&action=edit",
+      "differences": [
+        {
+          "field": "post_status",
+          "original": "publish",
+          "translation": "draft",
+          "severity": "deviation"
+        }
+      ]
+    },
+    {
+      "product_id": 19009,
+      "variation_id": null,
+      "title": "[Seed] Sync Error Scarf",
+      "sku": "SEED-SCARF",
+      "language": "de",
+      "translation_id": 19020,
+      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19020&action=edit",
+      "differences": [
+        {
+          "field": "sku",
+          "original": "SEED-SCARF",
+          "translation": "SEED-SCARF-DE",
+          "severity": "sync_error"
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "per_page": 2,
+  "total_pages": 2,
+  "total_items": 3,
+  "summary": {
+    "products_checked": 11,
+    "variations_checked": 2,
+    "translations_checked": 24,
+    "sync_errors": 2,
+    "deviations": 1,
+    "price_checks_skipped": 4
+  },
+  "meta": "…"
+}
+```
+
 ---
 
 ## `mlstore/untranslated-variations`
@@ -321,6 +377,66 @@ language with at least one issue. `summary`: `products_checked`, `translations_c
 selectable option **exactly** (case-sensitive). That means the option text for custom attributes (split at `|`, trimmed) and the term slug
 for global attributes. An empty value means "any" and is always valid.
 
+**Example output** (seeded Variable Hoodie, French translation deliberately broken, `{"product_id": …, "languages": ["fr"]}`):
+
+```json
+{
+  "products": [
+    {
+      "product_id": 19012,
+      "title": "[Seed] Variable Hoodie",
+      "language": "fr",
+      "translation_id": 19029,
+      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19029&action=edit",
+      "issues": [
+        {
+          "type": "variation_missing",
+          "severity": "error",
+          "variation_id": 19014
+        },
+        {
+          "type": "attribute_term_untranslated",
+          "severity": "error",
+          "taxonomy": "pa_color",
+          "term_id": 1030,
+          "term_name": "[Seed] Blue"
+        },
+        {
+          "type": "local_attribute_options_mismatch",
+          "severity": "error",
+          "attribute": "Size",
+          "original_value": "S | M | L",
+          "translation_value": "P | M"
+        },
+        {
+          "type": "local_attribute_label_untranslated",
+          "severity": "review",
+          "attribute": "Size"
+        },
+        {
+          "type": "variation_attribute_value_invalid",
+          "severity": "error",
+          "variation_id": 19013,
+          "attribute": "Size",
+          "translation_value": "S"
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "per_page": 50,
+  "total_pages": 1,
+  "total_items": 1,
+  "summary": {
+    "products_checked": 1,
+    "translations_checked": 1,
+    "errors": 4,
+    "reviews": 1
+  },
+  "meta": "…"
+}
+```
+
 ---
 
 ## `mlstore/currency-price-gaps`
@@ -349,6 +465,62 @@ currencies. Customers paying in such a currency silently get an exchange-rate co
 - A currency is missing when the original's `_regular_price_{CUR}` is empty or absent. Translations inherit manual prices from the original.
 - Originals in any status except trash. Variable parent products are skipped, because their prices live on the variations.
 - Prices are read raw from the database (WCML converts price reads into the visitor's currency).
+
+**Example output** (seeded demo store, `{"per_page": 2}`):
+
+```json
+{
+  "items": [
+    {
+      "product_id": 19010,
+      "variation_id": null,
+      "title": "[Seed] Manual Price Lamp",
+      "sku": "SEED-LAMP",
+      "manual_pricing": true,
+      "missing_currencies": [
+        "USD"
+      ],
+      "base_regular_price": "40",
+      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19010&action=edit"
+    },
+    {
+      "product_id": 19012,
+      "variation_id": 19014,
+      "title": "[Seed] Variable Hoodie - [Seed] Blue, M",
+      "sku": null,
+      "manual_pricing": true,
+      "missing_currencies": [
+        "CHF"
+      ],
+      "base_regular_price": "30",
+      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19012&action=edit"
+    }
+  ],
+  "page": 1,
+  "per_page": 2,
+  "total_pages": 1,
+  "total_items": 2,
+  "summary": {
+    "currencies_checked": [
+      "CHF",
+      "USD"
+    ],
+    "objects_checked": 3,
+    "objects_with_gaps": 2,
+    "missing_by_currency": [
+      {
+        "currency": "CHF",
+        "missing": 1
+      },
+      {
+        "currency": "USD",
+        "missing": 1
+      }
+    ]
+  },
+  "meta": "…"
+}
+```
 
 ---
 
@@ -380,3 +552,23 @@ in_progress_languages[], edit_url }`. `summary`: `products_with_sales`, `untrans
 - **Freshness:** WooCommerce imports orders into Analytics in batches, so recent orders can be missing. `meta.analytics_missing_orders` says
   how many orders in the period are not imported yet. Only when Analytics is unavailable, or empty while orders exist, is the ranking
   computed from order line items instead (`meta.data_source: "orders"`; refunds are not subtracted there).
+
+**Example** (one entry of the seeded store's queue): the Cap sold 5 units through its French translation and 1 through the original;
+all 6 count for the original, and its German translation is still a draft.
+
+```json
+{
+  "rank": 130,
+  "product_id": 19008,
+  "title": "[Seed] Draft DE Cap",
+  "sku": "SEED-CAP",
+  "revenue": 60,
+  "units_sold": 6,
+  "missing_languages": [],
+  "unpublished_languages": [
+    "de"
+  ],
+  "in_progress_languages": [],
+  "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19008&action=edit"
+}
+```

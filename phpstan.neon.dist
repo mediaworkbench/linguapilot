@@ -9,5 +9,6 @@ parameters:
 	scanFiles:
 		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 		- vendor/php-stubs/wordpress-tests-stubs/wordpress-tests-stubs.php
+		- tests/phpstan/wp-cli-stub.php
 	excludePaths:
 		- tests/Integration/bootstrap.php

@@ -507,3 +507,20 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - ⚠️ Timing on the generated store: 90 days = 2,573 sold products, **~780 ms** (7 days: 94 ms). Within §8's 2 s, but the slowest ability.
   The cost is translation states for every sold product in batches of 100. Optimisation candidate: one coverage query for all sold
   originals, or a larger batch size.
+
+## 18. Demo seed (milestone 6), 2026-10-14
+
+- `tests/Fixtures/seed-demo.php` (run with `wp eval-file`; no `strict_types`, because eval() rejects it). Cases and expectations in
+  `docs/demo-store.md`, assertions in `tests/Store/SeedScenarioStoreTest.php`. All six abilities report exactly the planned issues on real WPML/WCML data.
+- Order of operations verified: build originals completely, then create and link translations (`wpml_set_element_language_details`),
+  then apply deliberate mistakes as direct meta writes on translations. Done this way, WCML did not "repair" any of the deliberate mistakes.
+- WooCommerce rejects a duplicate SKU on a new post until WPML knows it is a translation, so translation SKUs are written after linking.
+- Orders are imported into Analytics immediately via `OrdersScheduler::import()` (internal WooCommerce API, dev tooling only).
+- ⚠️ **DDEV regenerates `wp-config.php`** (`#ddev-generated`): the constants from milestone 1 (`wp config set WP_ENVIRONMENT_TYPE` etc.)
+  were gone, `wp_get_environment_type()` returned `production`, and the seed refused to run. Fixed durably with
+  `ddev config --web-environment-add=WP_ENVIRONMENT_TYPE=local`; `WP_DEBUG` comes from DDEV's own wp-config-ddev.php.
+  `WP_DEBUG_LOG` is currently off (re-add via `web_environment` if needed).
+- After the restart the site URL is `https://mlstore-dev.ddev.site` (port 443 was free); `wp-config-ddev.php` follows `DDEV_PRIMARY_URL`.
+- `php-stubs/wp-cli-stubs` cannot be installed next to `wordpress-stubs` 7.1 (it requires ≤ 6.x); `tests/phpstan/wp-cli-stub.php` declares
+  the three WP-CLI methods the seed uses.
+- Not seeded: open translation jobs and `needs_update` (no safe public API). The 14 hand-sent products cover "in progress".
