@@ -309,7 +309,7 @@ abstract class AbstractAbility {
 
 		$invalid = array_values( array_diff( $requested, $targets ) );
 		if ( array() !== $invalid ) {
-			throw AbilityError::invalid_language( $invalid );
+			throw AbilityError::invalid_language( array_map( 'esc_html', $invalid ) );
 		}
 
 		return array_values( array_intersect( $targets, $requested ) );

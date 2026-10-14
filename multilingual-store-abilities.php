@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Multilingual Store Abilities for WooCommerce & WPML
+ * Plugin Name:       Multilingual Store Abilities for WooCommerce
  * Description:       Read-only abilities (WordPress Abilities API) that let AI agents audit translations, cross-language consistency and multi-currency prices in WooCommerce stores running WPML.
  * Version:           0.1.0
  * Requires at least: 6.9

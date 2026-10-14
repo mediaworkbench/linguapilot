@@ -196,12 +196,12 @@ final class UntranslatedVariations extends AbstractAbility {
 		$original = $this->gateway->original_id( $product_id, ElementType::product() );
 		if ( null === $original ) {
 			/* translators: %d: Product ID. */
-			throw new AbilityError( AbilityError::NOT_FOUND, sprintf( __( 'Product %d not found.', 'multilingual-store-abilities' ), $product_id ), 404 );
+			throw AbilityError::not_found( esc_html( sprintf( __( 'Product %d not found.', 'multilingual-store-abilities' ), $product_id ) ) );
 		}
 
 		if ( array() === $this->woo->variable_product_ids( array( $original ) ) ) {
 			/* translators: %d: Product ID. */
-			throw new AbilityError( AbilityError::INVALID_INPUT, sprintf( __( 'Product %d is not a variable product.', 'multilingual-store-abilities' ), $product_id ) );
+			throw AbilityError::invalid_input( esc_html( sprintf( __( 'Product %d is not a variable product.', 'multilingual-store-abilities' ), $product_id ) ) );
 		}
 
 		return $original;

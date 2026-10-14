@@ -45,6 +45,7 @@ final class AbstractAbilityTest extends TestCase {
 	protected function set_up(): void {
 		parent::set_up();
 		Functions\stubTranslationFunctions();
+		Functions\stubEscapeFunctions();
 		Functions\when( 'get_current_user_id' )->justReturn( 42 );
 		$this->sink = new MemoryLogSink();
 	}

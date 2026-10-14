@@ -216,30 +216,39 @@ final class WpmlGateway implements MultilingualGateway {
 	 * @param list<string> $post_statuses Statuses to include; empty = any except trash and auto-draft.
 	 */
 	private function original_post_ids( ElementType $type, int $limit, int $offset, array $post_statuses ): IdPage {
-		$wpdb = $this->wpdb;
-		$base = array( $this->translations_table(), $wpdb->posts, $type->name(), $type->value );
+		$wpdb     = $this->wpdb;
+		$statuses = implode( ',', $post_statuses ); // Empty = any status (trash and auto-draft are always excluded).
 
-		// Statuses are passed as one comma-separated value (FIND_IN_SET) to keep the SQL literal; status slugs contain no commas.
-		if ( array() === $post_statuses ) {
-			$count_sql = "SELECT COUNT(*) FROM %i t INNER JOIN %i p ON p.ID = t.element_id AND p.post_type = %s
-				WHERE t.element_type = %s AND t.source_language_code IS NULL AND p.post_status NOT IN ('trash', 'auto-draft')";
-			$ids_sql   = "SELECT p.ID FROM %i t INNER JOIN %i p ON p.ID = t.element_id AND p.post_type = %s
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Read-only report query, see original_ids().
+		$total = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM %i t INNER JOIN %i p ON p.ID = t.element_id AND p.post_type = %s
 				WHERE t.element_type = %s AND t.source_language_code IS NULL AND p.post_status NOT IN ('trash', 'auto-draft')
-				ORDER BY p.ID ASC LIMIT %d OFFSET %d";
-			$args      = $base;
-		} else {
-			$count_sql = 'SELECT COUNT(*) FROM %i t INNER JOIN %i p ON p.ID = t.element_id AND p.post_type = %s
-				WHERE t.element_type = %s AND t.source_language_code IS NULL AND FIND_IN_SET( p.post_status, %s )';
-			$ids_sql   = 'SELECT p.ID FROM %i t INNER JOIN %i p ON p.ID = t.element_id AND p.post_type = %s
-				WHERE t.element_type = %s AND t.source_language_code IS NULL AND FIND_IN_SET( p.post_status, %s )
-				ORDER BY p.ID ASC LIMIT %d OFFSET %d';
-			$args      = array_merge( $base, array( implode( ',', $post_statuses ) ) );
-		}
-
-		// The SQL strings are literals chosen above; the sniffs cannot follow them through a variable.
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Read-only report query, see original_ids().
-		$total = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, ...$args ) );
-		$ids   = $wpdb->get_col( $wpdb->prepare( $ids_sql, ...array_merge( $args, array( $limit, $offset ) ) ) );
+				AND ( %s = '' OR FIND_IN_SET( p.post_status, %s ) )",
+				$this->translations_table(),
+				$wpdb->posts,
+				$type->name(),
+				$type->value,
+				$statuses,
+				$statuses
+			)
+		);
+		$ids   = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT p.ID FROM %i t INNER JOIN %i p ON p.ID = t.element_id AND p.post_type = %s
+				WHERE t.element_type = %s AND t.source_language_code IS NULL AND p.post_status NOT IN ('trash', 'auto-draft')
+				AND ( %s = '' OR FIND_IN_SET( p.post_status, %s ) )
+				ORDER BY p.ID ASC LIMIT %d OFFSET %d",
+				$this->translations_table(),
+				$wpdb->posts,
+				$type->name(),
+				$type->value,
+				$statuses,
+				$statuses,
+				$limit,
+				$offset
+			)
+		);
 		// phpcs:enable
 		$this->assert_query_succeeded();
 
@@ -458,46 +467,64 @@ final class WpmlGateway implements MultilingualGateway {
 		$types    = self::type_list( $scope );
 
 		// A gap: fewer than all requested languages have a published (posts) or existing (terms) member,
-		// or such a member is marked as needing an update (CoverageRow::has_gap()).
-		// $grouped is a literal SQL string; the placeholder sniffs cannot follow it through the variable.
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Read-only report query, see method doc.
-		if ( $scope->is_terms() ) {
-			$grouped = 'SELECT o.element_id, o.element_type, o.trid
-				FROM %i o
-				INNER JOIN %i ot ON ot.term_taxonomy_id = o.element_id
-				LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
-				LEFT JOIN %i tt ON tt.term_taxonomy_id = t.element_id
-				LEFT JOIN %i s ON s.translation_id = t.translation_id
-				WHERE FIND_IN_SET( o.element_type, %s ) AND o.source_language_code IS NULL
-				GROUP BY o.element_id, o.element_type, o.trid
-				HAVING COUNT( tt.term_taxonomy_id ) < %d OR SUM( CASE WHEN tt.term_taxonomy_id IS NOT NULL AND s.needs_update = 1 THEN 1 ELSE 0 END ) > 0';
-			$args    = array( $table, $wpdb->term_taxonomy, $table, $codes, $wpdb->term_taxonomy, $status, $types, $required );
-		} else {
-			$grouped = "SELECT o.element_id, o.element_type, o.trid
-				FROM %i o
-				INNER JOIN %i op ON op.ID = o.element_id
-				LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
-				LEFT JOIN %i tp ON tp.ID = t.element_id AND tp.post_status = 'publish'
-				LEFT JOIN %i s ON s.translation_id = t.translation_id
-				WHERE o.element_type = %s AND o.source_language_code IS NULL AND FIND_IN_SET( op.post_status, %s )
-				GROUP BY o.element_id, o.element_type, o.trid
-				HAVING COUNT( tp.ID ) < %d OR SUM( CASE WHEN tp.ID IS NOT NULL AND s.needs_update = 1 THEN 1 ELSE 0 END ) > 0";
-			$args    = array( $table, $wpdb->posts, $table, $codes, $wpdb->posts, $status, $scope->types[0]->value, implode( ',', $scope->post_statuses ), $required );
-		}
-
-		$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM ( {$grouped} ) incomplete", ...$args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
-		$this->assert_query_succeeded();
-		$page = $wpdb->get_results( $wpdb->prepare( "{$grouped} ORDER BY o.element_id ASC LIMIT %d OFFSET %d", ...array_merge( $args, array( $limit, $offset ) ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
-		$this->assert_query_succeeded();
-
-		$page = $page ?? array();
-		if ( array() === $page ) {
-			return new CoveragePage( array(), $total );
-		}
-
+		// or such a member is marked as needing an update (CoverageRow::has_gap()). One grouped query returns
+		// every incomplete original as (element_id, element_type, trid); the page is sliced in PHP.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Read-only report query, see method doc.
+		$incomplete = $scope->is_terms()
+			? $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT o.element_id, o.element_type, o.trid
+					FROM %i o
+					INNER JOIN %i ot ON ot.term_taxonomy_id = o.element_id
+					LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
+					LEFT JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+					LEFT JOIN %i s ON s.translation_id = t.translation_id
+					WHERE FIND_IN_SET( o.element_type, %s ) AND o.source_language_code IS NULL
+					GROUP BY o.element_id, o.element_type, o.trid
+					HAVING COUNT( tt.term_taxonomy_id ) < %d OR SUM( CASE WHEN tt.term_taxonomy_id IS NOT NULL AND s.needs_update = 1 THEN 1 ELSE 0 END ) > 0
+					ORDER BY o.element_id ASC',
+					$table,
+					$wpdb->term_taxonomy,
+					$table,
+					$codes,
+					$wpdb->term_taxonomy,
+					$status,
+					$types,
+					$required
+				),
+				ARRAY_A
+			)
+			: $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT o.element_id, o.element_type, o.trid
+					FROM %i o
+					INNER JOIN %i op ON op.ID = o.element_id
+					LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
+					LEFT JOIN %i tp ON tp.ID = t.element_id AND tp.post_status = 'publish'
+					LEFT JOIN %i s ON s.translation_id = t.translation_id
+					WHERE o.element_type = %s AND o.source_language_code IS NULL AND FIND_IN_SET( op.post_status, %s )
+					GROUP BY o.element_id, o.element_type, o.trid
+					HAVING COUNT( tp.ID ) < %d OR SUM( CASE WHEN tp.ID IS NOT NULL AND s.needs_update = 1 THEN 1 ELSE 0 END ) > 0
+					ORDER BY o.element_id ASC",
+					$table,
+					$wpdb->posts,
+					$table,
+					$codes,
+					$wpdb->posts,
+					$status,
+					$scope->types[0]->value,
+					implode( ',', $scope->post_statuses ),
+					$required
+				),
+				ARRAY_A
+			);
 		// phpcs:enable
+		$this->assert_query_succeeded();
 
-		return new CoveragePage( $this->rows_for_originals( $scope, $page, $languages ), $total );
+		$incomplete = $incomplete ?? array();
+		$page       = array_slice( $incomplete, $offset, $limit );
+
+		return new CoveragePage( $this->rows_for_originals( $scope, $page, $languages ), count( $incomplete ) );
 	}
 
 	/**
@@ -708,13 +735,11 @@ final class WpmlGateway implements MultilingualGateway {
 			return array();
 		}
 
-		$wpdb  = $this->wpdb;
-		$list  = self::id_list( $original_ids );
-		$table = $this->translations_table();
-		$kind  = $type->value; // Validated slug (ElementType).
-		// No prepare(): IN ( ... ) keeps the element_id index usable; every interpolated value is validated (int IDs, prefixed table, slug).
+		$wpdb = $this->wpdb;
+		$list = implode( ',', wp_parse_id_list( $original_ids ) );
+		// No prepare(): IN ( ... ) keeps the element_id index usable. $list: wp_parse_id_list(); element type: esc_sql() of a validated slug.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- See comment above.
-		$originals = $wpdb->get_results( "SELECT element_id, element_type, trid FROM {$table} WHERE element_type = '{$kind}' AND source_language_code IS NULL AND element_id IN ( {$list} )", ARRAY_A );
+		$originals = $wpdb->get_results( "SELECT element_id, element_type, trid FROM {$wpdb->prefix}icl_translations WHERE element_type = '" . esc_sql( $type->value ) . "' AND source_language_code IS NULL AND element_id IN ( {$list} )", ARRAY_A );
 		$this->assert_query_succeeded();
 
 		return $this->rows_for_originals( new CatalogScope( array( $type ), CatalogScope::ANY_POST_STATUS ), $originals, $languages );
@@ -735,13 +760,11 @@ final class WpmlGateway implements MultilingualGateway {
 			return array();
 		}
 
-		$wpdb  = $this->wpdb;
-		$table = $this->translations_table();
-		$list  = self::id_list( $ids );
-		$kind  = $type->value; // Validated slug (ElementType).
+		$wpdb = $this->wpdb;
+		$list = implode( ',', wp_parse_id_list( $ids ) );
 		// No prepare(): see coverage_of().
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- See coverage_of().
-		$rows = $wpdb->get_results( "SELECT t.element_id AS id, o.element_id AS original FROM {$table} t INNER JOIN {$table} o ON o.trid = t.trid AND o.element_type = t.element_type AND o.source_language_code IS NULL WHERE t.element_type = '{$kind}' AND t.element_id IN ( {$list} )", ARRAY_A );
+		$rows = $wpdb->get_results( "SELECT t.element_id AS id, o.element_id AS original FROM {$wpdb->prefix}icl_translations t INNER JOIN {$wpdb->prefix}icl_translations o ON o.trid = t.trid AND o.element_type = t.element_type AND o.source_language_code IS NULL WHERE t.element_type = '" . esc_sql( $type->value ) . "' AND t.element_id IN ( {$list} )", ARRAY_A );
 		$this->assert_query_succeeded();
 
 		$result = array();
@@ -827,10 +850,11 @@ final class WpmlGateway implements MultilingualGateway {
 		}
 
 		$wpdb = $this->wpdb;
-		$list = self::id_list( $ids );
-		$keys = "'" . implode( "','", array_map( static fn ( string $code ): string => '_regular_price_' . $code, $currencies ) ) . "'";
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers; $keys only validated ISO codes.
-		$rows = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$list} ) AND meta_key IN ( {$keys} )", ARRAY_A );
+		$list = implode( ',', wp_parse_id_list( $ids ) );
+		$keys = implode( ',', array_map( static fn ( string $code ): string => '_regular_price_' . $code, $currencies ) );
+		// No prepare(): IN ( ... ) keeps the post_id index usable. $list: wp_parse_id_list(); meta keys: esc_sql() of validated ISO codes.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- See comment above.
+		$rows = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$list} ) AND FIND_IN_SET( meta_key, '" . esc_sql( $keys ) . "' )", ARRAY_A );
 		$this->assert_query_succeeded();
 
 		$result = array();

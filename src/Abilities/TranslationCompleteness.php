@@ -205,7 +205,7 @@ final class TranslationCompleteness extends AbstractAbility {
 		$taxonomy    = isset( $input['taxonomy'] ) && is_string( $input['taxonomy'] ) ? $input['taxonomy'] : null;
 
 		if ( null !== $taxonomy && 'attribute_term' !== $object_type ) {
-			throw new AbilityError( AbilityError::INVALID_INPUT, __( 'taxonomy can only be used with object_type attribute_term.', 'multilingual-store-abilities' ) );
+			throw AbilityError::invalid_input( esc_html__( 'taxonomy can only be used with object_type attribute_term.', 'multilingual-store-abilities' ) );
 		}
 
 		if ( 'attribute_term' === $object_type ) {
@@ -236,7 +236,7 @@ final class TranslationCompleteness extends AbstractAbility {
 		if ( null !== $taxonomy ) {
 			if ( ! in_array( $taxonomy, $taxonomies, true ) ) {
 				/* translators: %s: Taxonomy slug. */
-				throw new AbilityError( AbilityError::INVALID_INPUT, sprintf( __( '%s is not a global product attribute.', 'multilingual-store-abilities' ), $taxonomy ) );
+				throw AbilityError::invalid_input( esc_html( sprintf( __( '%s is not a global product attribute.', 'multilingual-store-abilities' ), $taxonomy ) ) );
 			}
 
 			$type = ElementType::taxonomy( $taxonomy );
@@ -264,7 +264,7 @@ final class TranslationCompleteness extends AbstractAbility {
 	private function assert_translatable( ElementType $type ): void {
 		if ( ! $this->gateway->is_translatable( $type ) ) {
 			/* translators: %s: Post type or taxonomy slug. */
-			throw new AbilityError( AbilityError::INVALID_INPUT, sprintf( __( '%s is not set to be translated in WPML.', 'multilingual-store-abilities' ), $type->name() ) );
+			throw AbilityError::invalid_input( esc_html( sprintf( __( '%s is not set to be translated in WPML.', 'multilingual-store-abilities' ), $type->name() ) ) );
 		}
 	}
 }

@@ -59,9 +59,9 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		$wpdb = $this->wpdb;
-		$list = self::id_list( $ids );
+		$list = implode( ',', wp_parse_id_list( $ids ) );
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Raw reads by design (see interface); $list holds only integers (id_list()).
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Raw reads by design (see interface); $list holds only integers (wp_parse_id_list()).
 		$posts = $wpdb->get_results( "SELECT ID, post_status, post_parent FROM {$wpdb->posts} WHERE ID IN ( {$list} )", ARRAY_A );
 		$this->assert_query_succeeded();
 		$meta = $wpdb->get_results(
@@ -277,8 +277,8 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		$wpdb = $this->wpdb;
-		$list = self::id_list( $ids );
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$list = implode( ',', wp_parse_id_list( $ids ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (wp_parse_id_list()).
 		$found = $wpdb->get_col(
 			"SELECT tr.object_id FROM {$wpdb->term_relationships} tr
 			INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'product_type'
@@ -302,8 +302,8 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		$wpdb = $this->wpdb;
-		$list = self::id_list( $ids );
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$list = implode( ',', wp_parse_id_list( $ids ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (wp_parse_id_list()).
 		$rows = $wpdb->get_results( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$list} ) AND meta_key = '_product_attributes'", ARRAY_A );
 		// phpcs:enable
 		$this->assert_query_succeeded();
@@ -340,8 +340,8 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		$wpdb = $this->wpdb;
-		$list = self::id_list( $parent_ids );
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$list = implode( ',', wp_parse_id_list( $parent_ids ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (wp_parse_id_list()).
 		$rows = $wpdb->get_results(
 			"SELECT ID, post_parent FROM {$wpdb->posts}
 			WHERE post_parent IN ( {$list} ) AND post_type = 'product_variation' AND post_status NOT IN ( 'trash', 'auto-draft' )
@@ -368,8 +368,8 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		$wpdb = $this->wpdb;
-		$list = self::id_list( $variation_ids );
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()).
+		$list = implode( ',', wp_parse_id_list( $variation_ids ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (wp_parse_id_list()).
 		$rows = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$list} ) AND meta_key LIKE 'attribute\\_%'", ARRAY_A );
 		// phpcs:enable
 		$this->assert_query_succeeded();
@@ -398,15 +398,14 @@ final class WooCommerceGateway implements WooGateway {
 			return array();
 		}
 
-		$wpdb  = $this->wpdb;
-		$list  = self::id_list( $ids );
-		$names = "'" . implode( "','", $taxonomies ) . "'";
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (id_list()); $names only validated slugs.
+		$wpdb = $this->wpdb;
+		$list = implode( ',', wp_parse_id_list( $ids ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers (wp_parse_id_list()); taxonomies: esc_sql() of validated slugs.
 		$rows = $wpdb->get_results(
 			"SELECT tr.object_id, tt.taxonomy, t.term_id, t.slug, t.name FROM {$wpdb->term_relationships} tr
 			INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
 			INNER JOIN {$wpdb->terms} t ON t.term_id = tt.term_id
-			WHERE tr.object_id IN ( {$list} ) AND tt.taxonomy IN ( {$names} )
+			WHERE tr.object_id IN ( {$list} ) AND FIND_IN_SET( tt.taxonomy, '" . esc_sql( implode( ',', $taxonomies ) ) . "' )
 			ORDER BY t.term_id ASC",
 			ARRAY_A
 		);

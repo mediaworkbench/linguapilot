@@ -19,3 +19,6 @@ CLAUDE.md
 .DS_Store
 /.idea/
 /.vscode/
+
+# Release build output (bin/build-release.sh)
+/build/

@@ -175,13 +175,14 @@ final class CurrencyPriceGaps extends AbstractAbility {
 		$requested = is_array( $input['currencies'] ?? null ) ? array_values( array_filter( $input['currencies'], 'is_string' ) ) : array();
 		$invalid   = array_values( array_diff( $requested, $secondary ) );
 		if ( array() !== $invalid ) {
-			throw new AbilityError(
-				AbilityError::INVALID_INPUT,
-				sprintf(
+			throw AbilityError::invalid_input(
+				esc_html(
+					sprintf(
 					/* translators: 1: Requested currency codes, 2: Available secondary currency codes. */
-					__( 'Not a secondary currency: %1$s. Secondary currencies: %2$s.', 'multilingual-store-abilities' ),
-					implode( ', ', $invalid ),
-					array() === $secondary ? '-' : implode( ', ', $secondary )
+						__( 'Not a secondary currency: %1$s. Secondary currencies: %2$s.', 'multilingual-store-abilities' ),
+						implode( ', ', $invalid ),
+						array() === $secondary ? '-' : implode( ', ', $secondary )
+					)
 				)
 			);
 		}

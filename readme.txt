@@ -1,4 +1,4 @@
-=== Multilingual Store Abilities for WooCommerce & WPML ===
+=== Multilingual Store Abilities for WooCommerce ===
 Contributors: mediaworkbench
 Tags: woocommerce, multilingual, translation, mcp, ai
 Requires at least: 6.9
@@ -8,7 +8,7 @@ Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Read-only abilities that let AI agents audit translations, cross-language consistency and multi-currency prices of a multilingual WooCommerce store.
+Read-only abilities that let AI agents audit translations, cross-language consistency and multi-currency prices in WooCommerce stores running WPML.
 
 == Description ==
 

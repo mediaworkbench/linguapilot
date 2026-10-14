@@ -15,6 +15,7 @@ use RuntimeException;
  * Thrown by abilities and domain services; mapped to a WP_Error by {@see AbstractAbility}.
  *
  * Error codes are part of the public contract: agents branch on them, so never rename one.
+ * Messages are plain text, escaped with esc_html() where they are built (Plugin Check requires escaped exception messages).
  */
 final class AbilityError extends RuntimeException {
 
@@ -49,7 +50,7 @@ final class AbilityError extends RuntimeException {
 		return new self(
 			self::DEPENDENCY_MISSING,
 			/* translators: %s: Plugin name. */
-			sprintf( __( 'This ability requires %s, which is not active.', 'multilingual-store-abilities' ), $dependency ),
+			esc_html( sprintf( __( 'This ability requires %s, which is not active.', 'multilingual-store-abilities' ), $dependency ) ),
 			424
 		);
 	}
@@ -57,14 +58,32 @@ final class AbilityError extends RuntimeException {
 	/**
 	 * Requested languages are not active (or not allowed here).
 	 *
-	 * @param list<string> $codes Offending language codes.
+	 * @param list<string> $codes Offending language codes, already escaped by the caller.
 	 */
 	public static function invalid_language( array $codes ): self {
 		return new self(
 			self::INVALID_LANGUAGE,
 			/* translators: %s: Comma-separated language codes. */
-			sprintf( __( 'Unknown or not allowed language codes: %s. Use mlstore/languages-overview to list the active languages.', 'multilingual-store-abilities' ), implode( ', ', $codes ) )
+			sprintf( esc_html__( 'Unknown or not allowed language codes: %s. Use mlstore/languages-overview to list the active languages.', 'multilingual-store-abilities' ), implode( ', ', $codes ) )
 		);
+	}
+
+	/**
+	 * Input is valid per schema but not usable.
+	 *
+	 * @param string $message Escaped, translated message.
+	 */
+	public static function invalid_input( string $message ): self {
+		return new self( self::INVALID_INPUT, $message );
+	}
+
+	/**
+	 * A referenced object does not exist.
+	 *
+	 * @param string $message Escaped, translated message.
+	 */
+	public static function not_found( string $message ): self {
+		return new self( self::NOT_FOUND, $message, 404 );
 	}
 
 	/**
@@ -73,7 +92,7 @@ final class AbilityError extends RuntimeException {
 	public static function currency_disabled(): self {
 		return new self(
 			self::CURRENCY_DISABLED,
-			__( 'WooCommerce Multilingual multi-currency is not enabled.', 'multilingual-store-abilities' ),
+			esc_html__( 'WooCommerce Multilingual multi-currency is not enabled.', 'multilingual-store-abilities' ),
 			409
 		);
 	}

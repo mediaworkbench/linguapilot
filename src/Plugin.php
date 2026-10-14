@@ -100,16 +100,7 @@ final class Plugin {
 	 */
 	public function register_hooks(): void {
 		add_action( 'before_woocommerce_init', array( $this, 'declare_woocommerce_compatibility' ) );
-		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'plugins_loaded', array( $this, 'boot' ) );
-	}
-
-	/**
-	 * Loads bundled translations from `languages/`. Language packs from translate.wordpress.org load
-	 * automatically and take precedence once they exist.
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain( 'multilingual-store-abilities', false, dirname( plugin_basename( $this->plugin_file ) ) . '/languages' );
 	}
 
 	/**

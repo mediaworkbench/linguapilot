@@ -2,29 +2,36 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilingual Store Abilities for WooCommerce & WPML 0.1.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multilingual-store-abilities\n"
+"Project-Id-Version: Multilingual Store Abilities for WooCommerce 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multilingual-"
+"store-abilities\n"
+"POT-Creation-Date: 2026-10-14T20:14:40+02:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T19:29:26+02:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: multilingual-store-abilities\n"
 
 #. Plugin Name of the plugin
 #: multilingual-store-abilities.php
-msgid "Multilingual Store Abilities for WooCommerce & WPML"
-msgstr "Multilingual Store Abilities für WooCommerce & WPML"
+msgid "Multilingual Store Abilities for WooCommerce"
+msgstr "Multilingual Store Abilities für WooCommerce"
 
 #. Description of the plugin
 #: multilingual-store-abilities.php
-msgid "Read-only abilities (WordPress Abilities API) that let AI agents audit translations, cross-language consistency and multi-currency prices in WooCommerce stores running WPML."
-msgstr "Nur lesende Abilities (WordPress Abilities API), mit denen KI-Agenten Übersetzungen, sprachübergreifende Konsistenz und Preise in mehreren Währungen in WooCommerce-Shops mit WPML prüfen."
+msgid ""
+"Read-only abilities (WordPress Abilities API) that let AI agents audit "
+"translations, cross-language consistency and multi-currency prices in "
+"WooCommerce stores running WPML."
+msgstr ""
+"Nur lesende Abilities (WordPress Abilities API), mit denen KI-Agenten "
+"Übersetzungen, sprachübergreifende Konsistenz und Preise in mehreren "
+"Währungen in WooCommerce-Shops mit WPML prüfen."
 
 #. Author of the plugin
 #: multilingual-store-abilities.php
@@ -32,28 +39,41 @@ msgid "Media Workbench"
 msgstr "Media Workbench"
 
 #. translators: %s: Plugin name.
-#: src/Abilities/AbilityError.php:52
+#: src/Abilities/AbilityError.php:53
 #, php-format
 msgid "This ability requires %s, which is not active."
 msgstr "Diese Ability benötigt %s, das nicht aktiv ist."
 
 #. translators: %s: Comma-separated language codes.
-#: src/Abilities/AbilityError.php:66
+#: src/Abilities/AbilityError.php:67
 #, php-format
-msgid "Unknown or not allowed language codes: %s. Use mlstore/languages-overview to list the active languages."
-msgstr "Unbekannte oder nicht erlaubte Sprachcodes: %s. Die aktiven Sprachen liefert mlstore/languages-overview."
+msgid ""
+"Unknown or not allowed language codes: %s. Use mlstore/languages-overview to "
+"list the active languages."
+msgstr ""
+"Unbekannte oder nicht erlaubte Sprachcodes: %s. Die aktiven Sprachen liefert "
+"mlstore/languages-overview."
 
-#: src/Abilities/AbilityError.php:76
+#: src/Abilities/AbilityError.php:95
 msgid "WooCommerce Multilingual multi-currency is not enabled."
-msgstr "Die Mehrwährungsfunktion von WooCommerce Multilingual ist nicht aktiviert."
+msgstr ""
+"Die Mehrwährungsfunktion von WooCommerce Multilingual ist nicht aktiviert."
 
 #: src/Abilities/AbstractAbility.php:222
-msgid "The ability failed unexpectedly. Details were written to the WooCommerce log (source: mlstore-abilities)."
-msgstr "Die Ability ist unerwartet fehlgeschlagen. Details stehen im WooCommerce-Log (Quelle: mlstore-abilities)."
+msgid ""
+"The ability failed unexpectedly. Details were written to the WooCommerce log "
+"(source: mlstore-abilities)."
+msgstr ""
+"Die Ability ist unerwartet fehlgeschlagen. Details stehen im WooCommerce-Log "
+"(Quelle: mlstore-abilities)."
 
 #: src/Abilities/AbstractAbility.php:286
-msgid "Translation languages to check, as language codes from mlstore/languages-overview. Default: all active languages except the default language."
-msgstr "Zu prüfende Übersetzungssprachen als Sprachcodes aus mlstore/languages-overview. Standard: alle aktiven Sprachen außer der Standardsprache."
+msgid ""
+"Translation languages to check, as language codes from mlstore/languages-"
+"overview. Default: all active languages except the default language."
+msgstr ""
+"Zu prüfende Übersetzungssprachen als Sprachcodes aus mlstore/languages-"
+"overview. Standard: alle aktiven Sprachen außer der Standardsprache."
 
 #: src/Abilities/AbstractAbility.php:353
 msgid "When the response was generated (UTC)."
@@ -64,16 +84,37 @@ msgid "Cross-language consistency"
 msgstr "Sprachübergreifende Konsistenz"
 
 #: src/Abilities/CrossLanguageConsistency.php:65
-msgid "Finds product and variation translations whose SKU, stock, tax class, catalog visibility, post status or prices differ from the original. Each difference has a severity: sync_error when the field is supposed to be kept in sync across translations (see sync_settings in mlstore/languages-overview), so the data is out of sync; deviation when the field may legitimately differ per language. Prices are not compared for a language whose currency has manual prices on the product (use mlstore/currency-price-gaps for those). Only translations with at least one difference are listed."
-msgstr "Findet Übersetzungen von Produkten und Varianten, deren Artikelnummer (SKU), Lagerbestand, Steuerklasse, Katalogsichtbarkeit, Beitragsstatus oder Preise vom Original abweichen. Jede Abweichung hat einen Schweregrad: sync_error, wenn das Feld zwischen Übersetzungen synchron gehalten werden soll (siehe sync_settings in mlstore/languages-overview) und die Daten daher nicht synchron sind; deviation, wenn das Feld je Sprache legitim abweichen darf. Preise werden für eine Sprache nicht verglichen, deren Währung manuelle Preise am Produkt hat (dafür mlstore/currency-price-gaps verwenden). Aufgeführt werden nur Übersetzungen mit mindestens einer Abweichung."
+msgid ""
+"Finds product and variation translations whose SKU, stock, tax class, "
+"catalog visibility, post status or prices differ from the original. Each "
+"difference has a severity: sync_error when the field is supposed to be kept "
+"in sync across translations (see sync_settings in mlstore/languages-"
+"overview), so the data is out of sync; deviation when the field may "
+"legitimately differ per language. Prices are not compared for a language "
+"whose currency has manual prices on the product (use mlstore/currency-price-"
+"gaps for those). Only translations with at least one difference are listed."
+msgstr ""
+"Findet Übersetzungen von Produkten und Varianten, deren Artikelnummer (SKU), "
+"Lagerbestand, Steuerklasse, Katalogsichtbarkeit, Beitragsstatus oder Preise "
+"vom Original abweichen. Jede Abweichung hat einen Schweregrad: sync_error, "
+"wenn das Feld zwischen Übersetzungen synchron gehalten werden soll (siehe "
+"sync_settings in mlstore/languages-overview) und die Daten daher nicht "
+"synchron sind; deviation, wenn das Feld je Sprache legitim abweichen darf. "
+"Preise werden für eine Sprache nicht verglichen, deren Währung manuelle "
+"Preise am Produkt hat (dafür mlstore/currency-price-gaps verwenden). "
+"Aufgeführt werden nur Übersetzungen mit mindestens einer Abweichung."
 
 #: src/Abilities/CrossLanguageConsistency.php:82
 msgid "Fields to compare. Default: all."
 msgstr "Zu vergleichende Felder. Standard: alle."
 
 #: src/Abilities/CrossLanguageConsistency.php:88
-msgid "Also compare translated variations (SKU, stock, prices, enabled/disabled per variation)."
-msgstr "Auch übersetzte Varianten vergleichen (SKU, Lagerbestand, Preise, aktiviert/deaktiviert je Variante)."
+msgid ""
+"Also compare translated variations (SKU, stock, prices, enabled/disabled per "
+"variation)."
+msgstr ""
+"Auch übersetzte Varianten vergleichen (SKU, Lagerbestand, Preise, aktiviert/"
+"deaktiviert je Variante)."
 
 #: src/Abilities/CrossLanguageConsistency.php:101
 msgid "Raw stored value; null when empty."
@@ -81,31 +122,55 @@ msgstr "Gespeicherter Rohwert; null, wenn leer."
 
 #: src/Abilities/CrossLanguageConsistency.php:127
 msgid "Original-language product ID (the parent product for variation rows)."
-msgstr "Produkt-ID in der Originalsprache (bei Varianten das übergeordnete Produkt)."
+msgstr ""
+"Produkt-ID in der Originalsprache (bei Varianten das übergeordnete Produkt)."
 
 #: src/Abilities/CrossLanguageConsistency.php:131
 msgid "Original-language variation ID; null for product-level rows."
 msgstr "Varianten-ID in der Originalsprache; null bei Zeilen auf Produktebene."
 
 #: src/Abilities/CrossLanguageConsistency.php:139
-msgid "Edit link of the translation (for variations: of the translated parent product)."
-msgstr "Bearbeitungslink der Übersetzung (bei Varianten: des übersetzten übergeordneten Produkts)."
+msgid ""
+"Edit link of the translation (for variations: of the translated parent "
+"product)."
+msgstr ""
+"Bearbeitungslink der Übersetzung (bei Varianten: des übersetzten "
+"übergeordneten Produkts)."
 
 #: src/Abilities/CrossLanguageConsistency.php:160
-msgid "Translations whose prices were not compared because their currency has manual prices."
-msgstr "Übersetzungen, deren Preise nicht verglichen wurden, weil ihre Währung manuelle Preise hat."
+msgid ""
+"Translations whose prices were not compared because their currency has "
+"manual prices."
+msgstr ""
+"Übersetzungen, deren Preise nicht verglichen wurden, weil ihre Währung "
+"manuelle Preise hat."
 
 #: src/Abilities/CurrencyPriceGaps.php:57
 msgid "Currency price gaps"
 msgstr "Fehlende Währungspreise"
 
 #: src/Abilities/CurrencyPriceGaps.php:64
-msgid "Lists products and variations that have WooCommerce Multilingual \"set prices manually\" enabled but no regular price in one or more secondary currencies. Customers paying in such a currency silently get an exchange-rate conversion of the base price instead. Requires WCML multi-currency; otherwise returns mlstore_currency_disabled."
-msgstr "Listet Produkte und Varianten auf, bei denen in WooCommerce Multilingual \"Preise manuell festlegen\" aktiviert ist, aber in einer oder mehreren Zweitwährungen kein regulärer Preis hinterlegt ist. Wer in einer solchen Währung bezahlt, erhält stillschweigend den mit dem Wechselkurs umgerechneten Grundpreis. Erfordert die Mehrwährungsfunktion von WCML; andernfalls wird mlstore_currency_disabled zurückgegeben."
+msgid ""
+"Lists products and variations that have WooCommerce Multilingual \"set "
+"prices manually\" enabled but no regular price in one or more secondary "
+"currencies. Customers paying in such a currency silently get an exchange-"
+"rate conversion of the base price instead. Requires WCML multi-currency; "
+"otherwise returns mlstore_currency_disabled."
+msgstr ""
+"Listet Produkte und Varianten auf, bei denen in WooCommerce Multilingual "
+"\"Preise manuell festlegen\" aktiviert ist, aber in einer oder mehreren "
+"Zweitwährungen kein regulärer Preis hinterlegt ist. Wer in einer solchen "
+"Währung bezahlt, erhält stillschweigend den mit dem Wechselkurs "
+"umgerechneten Grundpreis. Erfordert die Mehrwährungsfunktion von WCML; "
+"andernfalls wird mlstore_currency_disabled zurückgegeben."
 
 #: src/Abilities/CurrencyPriceGaps.php:88
-msgid "Secondary currency codes to check, e.g. CHF. Default: all secondary currencies (see mlstore/languages-overview)."
-msgstr "Zu prüfende Zweitwährungen als Codes, z. B. CHF. Standard: alle Zweitwährungen (siehe mlstore/languages-overview)."
+msgid ""
+"Secondary currency codes to check, e.g. CHF. Default: all secondary "
+"currencies (see mlstore/languages-overview)."
+msgstr ""
+"Zu prüfende Zweitwährungen als Codes, z. B. CHF. Standard: alle "
+"Zweitwährungen (siehe mlstore/languages-overview)."
 
 #: src/Abilities/CurrencyPriceGaps.php:93
 msgid "Also check variations (manual prices are set per variation)."
@@ -113,7 +178,8 @@ msgstr "Auch Varianten prüfen (manuelle Preise werden je Variante festgelegt)."
 
 #: src/Abilities/CurrencyPriceGaps.php:114
 msgid "Original-language product ID (the parent product for variations)."
-msgstr "Produkt-ID in der Originalsprache (bei Varianten das übergeordnete Produkt)."
+msgstr ""
+"Produkt-ID in der Originalsprache (bei Varianten das übergeordnete Produkt)."
 
 #: src/Abilities/CurrencyPriceGaps.php:126
 msgid "Regular price in the store base currency, as stored."
@@ -134,8 +200,21 @@ msgid "Multilingual store overview"
 msgstr "Übersicht des mehrsprachigen Shops"
 
 #: src/Abilities/LanguagesOverview.php:39
-msgid "Call this first. Returns the store's languages (the default language is the source of translations), whether WooCommerce Multilingual and multi-currency are active, the currencies per language, which product fields are kept in sync across translations, and how many original-language products, variations, categories and tags exist. Other mlstore abilities take the language and currency codes listed here."
-msgstr "Zuerst aufrufen. Liefert die Sprachen des Shops (die Standardsprache ist die Quelle der Übersetzungen), ob WooCommerce Multilingual und die Mehrwährungsfunktion aktiv sind, die Währungen je Sprache, welche Produktfelder zwischen Übersetzungen synchron gehalten werden und wie viele Produkte, Varianten, Kategorien und Schlagwörter es in der Originalsprache gibt. Andere mlstore-Abilities erwarten die hier aufgeführten Sprach- und Währungscodes."
+msgid ""
+"Call this first. Returns the store's languages (the default language is the "
+"source of translations), whether WooCommerce Multilingual and multi-currency "
+"are active, the currencies per language, which product fields are kept in "
+"sync across translations, and how many original-language products, "
+"variations, categories and tags exist. Other mlstore abilities take the "
+"language and currency codes listed here."
+msgstr ""
+"Zuerst aufrufen. Liefert die Sprachen des Shops (die Standardsprache ist die "
+"Quelle der Übersetzungen), ob WooCommerce Multilingual und die "
+"Mehrwährungsfunktion aktiv sind, die Währungen je Sprache, welche "
+"Produktfelder zwischen Übersetzungen synchron gehalten werden und wie viele "
+"Produkte, Varianten, Kategorien und Schlagwörter es in der Originalsprache "
+"gibt. Andere mlstore-Abilities erwarten die hier aufgeführten Sprach- und "
+"Währungscodes."
 
 #: src/Abilities/LanguagesOverview.php:70
 msgid "Code of the default (source) language."
@@ -147,35 +226,69 @@ msgstr "Basiswährung des Shops; Umsätze aus Analytics werden in ihr angegeben.
 
 #: src/Abilities/LanguagesOverview.php:101
 msgid "A difference between translations in these fields is a sync error."
-msgstr "Eine Abweichung zwischen Übersetzungen in diesen Feldern ist ein Synchronisationsfehler."
+msgstr ""
+"Eine Abweichung zwischen Übersetzungen in diesen Feldern ist ein "
+"Synchronisationsfehler."
 
 #: src/Abilities/LanguagesOverview.php:102
 msgid "These fields may legitimately differ per language."
 msgstr "Diese Felder dürfen je Sprache legitim abweichen."
 
 #: src/Abilities/LanguagesOverview.php:112
-msgid "Original-language objects only (translations not counted), any status except trash."
-msgstr "Nur Objekte in der Originalsprache (Übersetzungen nicht mitgezählt), jeder Status außer Papierkorb."
+msgid ""
+"Original-language objects only (translations not counted), any status except "
+"trash."
+msgstr ""
+"Nur Objekte in der Originalsprache (Übersetzungen nicht mitgezählt), jeder "
+"Status außer Papierkorb."
 
 #: src/Abilities/TranslationCompleteness.php:61
 msgid "Translation completeness"
 msgstr "Vollständigkeit der Übersetzungen"
 
 #: src/Abilities/TranslationCompleteness.php:68
-msgid "Lists original-language products, product categories, product tags or global attribute terms that are not translated into one or more languages, with a coverage summary per language across the whole catalog. A translation that exists but is not published (draft, pending, private, scheduled) is reported in unpublished_languages; one that was sent to translation but is not done yet in in_progress_languages; a missing or trashed one in missing_languages; an existing translation whose original changed since in outdated_languages. Only objects with at least one gap are listed."
-msgstr "Listet Produkte, Produktkategorien, Produktschlagwörter oder Begriffe globaler Eigenschaften in der Originalsprache auf, die in eine oder mehrere Sprachen nicht übersetzt sind, mit einer Abdeckungsübersicht je Sprache über den gesamten Katalog. Eine vorhandene, aber nicht veröffentlichte Übersetzung (Entwurf, ausstehend, privat, geplant) steht in unpublished_languages; eine zur Übersetzung gesendete, noch nicht fertige in in_progress_languages; eine fehlende oder gelöschte in missing_languages; eine vorhandene Übersetzung, deren Original sich seither geändert hat, in outdated_languages. Aufgeführt werden nur Objekte mit mindestens einer Lücke."
+msgid ""
+"Lists original-language products, product categories, product tags or global "
+"attribute terms that are not translated into one or more languages, with a "
+"coverage summary per language across the whole catalog. A translation that "
+"exists but is not published (draft, pending, private, scheduled) is reported "
+"in unpublished_languages; one that was sent to translation but is not done "
+"yet in in_progress_languages; a missing or trashed one in missing_languages; "
+"an existing translation whose original changed since in outdated_languages. "
+"Only objects with at least one gap are listed."
+msgstr ""
+"Listet Produkte, Produktkategorien, Produktschlagwörter oder Begriffe "
+"globaler Eigenschaften in der Originalsprache auf, die in eine oder mehrere "
+"Sprachen nicht übersetzt sind, mit einer Abdeckungsübersicht je Sprache über "
+"den gesamten Katalog. Eine vorhandene, aber nicht veröffentlichte "
+"Übersetzung (Entwurf, ausstehend, privat, geplant) steht in "
+"unpublished_languages; eine zur Übersetzung gesendete, noch nicht fertige in "
+"in_progress_languages; eine fehlende oder gelöschte in missing_languages; "
+"eine vorhandene Übersetzung, deren Original sich seither geändert hat, in "
+"outdated_languages. Aufgeführt werden nur Objekte mit mindestens einer Lücke."
 
 #: src/Abilities/TranslationCompleteness.php:81
-msgid "What to audit. attribute_term = terms of global product attributes (pa_*)."
-msgstr "Was geprüft wird. attribute_term = Begriffe globaler Produkteigenschaften (pa_*)."
+msgid ""
+"What to audit. attribute_term = terms of global product attributes (pa_*)."
+msgstr ""
+"Was geprüft wird. attribute_term = Begriffe globaler Produkteigenschaften "
+"(pa_*)."
 
 #: src/Abilities/TranslationCompleteness.php:88
-msgid "Products only: audit published originals, or originals in any status except trash."
-msgstr "Nur für Produkte: veröffentlichte Originale prüfen oder Originale in jedem Status außer Papierkorb."
+msgid ""
+"Products only: audit published originals, or originals in any status except "
+"trash."
+msgstr ""
+"Nur für Produkte: veröffentlichte Originale prüfen oder Originale in jedem "
+"Status außer Papierkorb."
 
 #: src/Abilities/TranslationCompleteness.php:93
-msgid "attribute_term only: limit to one attribute taxonomy, e.g. pa_color. Default: all translatable attributes."
-msgstr "Nur für attribute_term: auf eine Eigenschafts-Taxonomie beschränken, z. B. pa_color. Standard: alle übersetzbaren Eigenschaften."
+msgid ""
+"attribute_term only: limit to one attribute taxonomy, e.g. pa_color. "
+"Default: all translatable attributes."
+msgstr ""
+"Nur für attribute_term: auf eine Eigenschafts-Taxonomie beschränken, z. B. "
+"pa_color. Standard: alle übersetzbaren Eigenschaften."
 
 #: src/Abilities/TranslationCompleteness.php:114
 msgid "Original-language post or term ID."
@@ -187,15 +300,24 @@ msgstr "Inhaltstyp oder Taxonomie, z. B. product, product_cat, pa_color."
 
 #: src/Abilities/TranslationCompleteness.php:124
 msgid "Sent to translation (open WPML translation job), not translated yet."
-msgstr "Zur Übersetzung gesendet (offener WPML-Übersetzungsauftrag), noch nicht übersetzt."
+msgstr ""
+"Zur Übersetzung gesendet (offener WPML-Übersetzungsauftrag), noch nicht "
+"übersetzt."
 
 #: src/Abilities/TranslationCompleteness.php:125
-msgid "Translation exists, but the original changed since and it needs an update."
-msgstr "Übersetzung vorhanden, aber das Original hat sich seither geändert und sie muss aktualisiert werden."
+msgid ""
+"Translation exists, but the original changed since and it needs an update."
+msgstr ""
+"Übersetzung vorhanden, aber das Original hat sich seither geändert und sie "
+"muss aktualisiert werden."
 
 #: src/Abilities/TranslationCompleteness.php:145
-msgid "Existing translations that need an update (already counted in translated or unpublished)."
-msgstr "Vorhandene Übersetzungen, die aktualisiert werden müssen (bereits in translated oder unpublished mitgezählt)."
+msgid ""
+"Existing translations that need an update (already counted in translated or "
+"unpublished)."
+msgstr ""
+"Vorhandene Übersetzungen, die aktualisiert werden müssen (bereits in "
+"translated oder unpublished mitgezählt)."
 
 #: src/Abilities/TranslationCompleteness.php:149
 msgid "Share of originals with a published translation, in percent."
@@ -226,8 +348,25 @@ msgid "Translation work queue"
 msgstr "Arbeitsliste für Übersetzungen"
 
 #: src/Abilities/TranslationWorkQueue.php:63
-msgid "Ranks products that are not yet translated (published) into every requested language by their sales in a recent period, so the best sellers get translated first. Sales from all language versions of a product are summed under its original. Revenue is net revenue in the store base currency (meta.currency) from WooCommerce Analytics, with the order statuses Analytics excludes; meta.data_source says whether Analytics or raw order items were used, and meta.analytics_missing_orders how many recent orders Analytics has not imported yet."
-msgstr "Ordnet Produkte, die noch nicht in alle angefragten Sprachen übersetzt (veröffentlicht) sind, nach ihren Verkäufen in einem aktuellen Zeitraum, damit die Bestseller zuerst übersetzt werden. Verkäufe aller Sprachversionen eines Produkts werden beim Original zusammengezählt. Der Umsatz ist der Nettoumsatz in der Basiswährung des Shops (meta.currency) aus WooCommerce Analytics, ohne die Bestellstatus, die Analytics ausschließt; meta.data_source gibt an, ob Analytics oder die Bestellpositionen verwendet wurden, und meta.analytics_missing_orders, wie viele aktuelle Bestellungen Analytics noch nicht importiert hat."
+msgid ""
+"Ranks products that are not yet translated (published) into every requested "
+"language by their sales in a recent period, so the best sellers get "
+"translated first. Sales from all language versions of a product are summed "
+"under its original. Revenue is net revenue in the store base currency "
+"(meta.currency) from WooCommerce Analytics, with the order statuses "
+"Analytics excludes; meta.data_source says whether Analytics or raw order "
+"items were used, and meta.analytics_missing_orders how many recent orders "
+"Analytics has not imported yet."
+msgstr ""
+"Ordnet Produkte, die noch nicht in alle angefragten Sprachen übersetzt "
+"(veröffentlicht) sind, nach ihren Verkäufen in einem aktuellen Zeitraum, "
+"damit die Bestseller zuerst übersetzt werden. Verkäufe aller Sprachversionen "
+"eines Produkts werden beim Original zusammengezählt. Der Umsatz ist der "
+"Nettoumsatz in der Basiswährung des Shops (meta.currency) aus WooCommerce "
+"Analytics, ohne die Bestellstatus, die Analytics ausschließt; "
+"meta.data_source gibt an, ob Analytics oder die Bestellpositionen verwendet "
+"wurden, und meta.analytics_missing_orders, wie viele aktuelle Bestellungen "
+"Analytics noch nicht importiert hat."
 
 #: src/Abilities/TranslationWorkQueue.php:77
 msgid "Sales period in days, counted back from now."
@@ -240,27 +379,57 @@ msgstr "Produkt-ID in der Originalsprache."
 
 #: src/Abilities/TranslationWorkQueue.php:114
 msgid "Net revenue in the period (store base currency), all language versions."
-msgstr "Nettoumsatz im Zeitraum (Basiswährung des Shops), alle Sprachversionen."
+msgstr ""
+"Nettoumsatz im Zeitraum (Basiswährung des Shops), alle Sprachversionen."
 
 #: src/Abilities/TranslationWorkQueue.php:133
-msgid "Revenue of all products with sales that are not fully translated (not only the listed ones)."
-msgstr "Umsatz aller verkauften Produkte, die nicht vollständig übersetzt sind (nicht nur der aufgeführten)."
+msgid ""
+"Revenue of all products with sales that are not fully translated (not only "
+"the listed ones)."
+msgstr ""
+"Umsatz aller verkauften Produkte, die nicht vollständig übersetzt sind "
+"(nicht nur der aufgeführten)."
 
 #: src/Abilities/TranslationWorkQueue.php:163
-msgid "Orders in the period that WooCommerce Analytics has not imported yet (they are not in the ranking)."
-msgstr "Bestellungen im Zeitraum, die WooCommerce Analytics noch nicht importiert hat (sie fehlen in der Rangliste)."
+msgid ""
+"Orders in the period that WooCommerce Analytics has not imported yet (they "
+"are not in the ranking)."
+msgstr ""
+"Bestellungen im Zeitraum, die WooCommerce Analytics noch nicht importiert "
+"hat (sie fehlen in der Rangliste)."
 
 #: src/Abilities/UntranslatedVariations.php:68
 msgid "Untranslated variations"
 msgstr "Nicht übersetzte Varianten"
 
 #: src/Abilities/UntranslatedVariations.php:75
-msgid "Finds translated variable products whose variations or variation attributes are not properly translated, the classic cause of broken variation selectors in translated shops. Issues per product and language: variation_missing, attribute_term_untranslated, local_attribute_missing, local_attribute_options_mismatch and variation_attribute_value_invalid (severity error: shoppers are affected); local_attribute_identical and local_attribute_label_untranslated (severity review: may be intentional, e.g. sizes like S | M | L)."
-msgstr "Findet übersetzte variable Produkte, deren Varianten oder Varianten-Eigenschaften nicht korrekt übersetzt sind, die klassische Ursache für nicht funktionierende Variantenauswahl in übersetzten Shops. Probleme je Produkt und Sprache: variation_missing, attribute_term_untranslated, local_attribute_missing, local_attribute_options_mismatch und variation_attribute_value_invalid (Schweregrad error: Kundinnen und Kunden sind betroffen); local_attribute_identical und local_attribute_label_untranslated (Schweregrad review: möglicherweise beabsichtigt, z. B. Größen wie S | M | L)."
+msgid ""
+"Finds translated variable products whose variations or variation attributes "
+"are not properly translated, the classic cause of broken variation selectors "
+"in translated shops. Issues per product and language: variation_missing, "
+"attribute_term_untranslated, local_attribute_missing, "
+"local_attribute_options_mismatch and variation_attribute_value_invalid "
+"(severity error: shoppers are affected); local_attribute_identical and "
+"local_attribute_label_untranslated (severity review: may be intentional, "
+"e.g. sizes like S | M | L)."
+msgstr ""
+"Findet übersetzte variable Produkte, deren Varianten oder Varianten-"
+"Eigenschaften nicht korrekt übersetzt sind, die klassische Ursache für nicht "
+"funktionierende Variantenauswahl in übersetzten Shops. Probleme je Produkt "
+"und Sprache: variation_missing, attribute_term_untranslated, "
+"local_attribute_missing, local_attribute_options_mismatch und "
+"variation_attribute_value_invalid (Schweregrad error: Kundinnen und Kunden "
+"sind betroffen); local_attribute_identical und "
+"local_attribute_label_untranslated (Schweregrad review: möglicherweise "
+"beabsichtigt, z. B. Größen wie S | M | L)."
 
 #: src/Abilities/UntranslatedVariations.php:88
-msgid "Limit to one variable product (any language version; reported under its original)."
-msgstr "Auf ein variables Produkt beschränken (beliebige Sprachversion; wird unter dem Original gemeldet)."
+msgid ""
+"Limit to one variable product (any language version; reported under its "
+"original)."
+msgstr ""
+"Auf ein variables Produkt beschränken (beliebige Sprachversion; wird unter "
+"dem Original gemeldet)."
 
 #: src/Abilities/UntranslatedVariations.php:112
 msgid "Original-language variation ID."
@@ -291,12 +460,20 @@ msgid "Product %d is not a variable product."
 msgstr "Produkt %d ist kein variables Produkt."
 
 #: src/Plugin.php:177
-msgid "Multilingual Store Abilities is inactive: no abilities are registered until the following requirements are met."
-msgstr "Multilingual Store Abilities ist inaktiv: Es werden keine Abilities registriert, bis die folgenden Voraussetzungen erfüllt sind."
+msgid ""
+"Multilingual Store Abilities is inactive: no abilities are registered until "
+"the following requirements are met."
+msgstr ""
+"Multilingual Store Abilities ist inaktiv: Es werden keine Abilities "
+"registriert, bis die folgenden Voraussetzungen erfüllt sind."
 
 #: src/Plugin.php:178
-msgid "Multilingual Store Abilities runs with reduced functionality: abilities that need WooCommerce Multilingual are unavailable."
-msgstr "Multilingual Store Abilities läuft mit eingeschränktem Funktionsumfang: Abilities, die WooCommerce Multilingual benötigen, sind nicht verfügbar."
+msgid ""
+"Multilingual Store Abilities runs with reduced functionality: abilities that "
+"need WooCommerce Multilingual are unavailable."
+msgstr ""
+"Multilingual Store Abilities läuft mit eingeschränktem Funktionsumfang: "
+"Abilities, die WooCommerce Multilingual benötigen, sind nicht verfügbar."
 
 #: src/Plugin.php:200
 msgid "WordPress Abilities API (WordPress 6.9 or newer)"
@@ -304,7 +481,9 @@ msgstr "WordPress Abilities API (WordPress 6.9 oder neuer)"
 
 #: src/Plugin.php:209
 msgid "The WPML setup wizard has not been completed (WPML → Setup)."
-msgstr "Der WPML-Einrichtungsassistent wurde nicht abgeschlossen (WPML → Einrichtung)."
+msgstr ""
+"Der WPML-Einrichtungsassistent wurde nicht abgeschlossen (WPML → "
+"Einrichtung)."
 
 #. translators: %s: Name of the required plugin or API.
 #: src/Plugin.php:214
@@ -322,8 +501,7 @@ msgstr "%1$s %2$s ist aktiv, benötigt wird aber Version %3$s oder neuer."
 msgid "Current page."
 msgstr "Aktuelle Seite."
 
-#: src/Support/OutputEnvelope.php:80
-#: src/Support/Pagination.php:79
+#: src/Support/OutputEnvelope.php:80 src/Support/Pagination.php:79
 msgid "Maximum number of items per page."
 msgstr "Maximale Anzahl Einträge pro Seite."
 
