@@ -524,3 +524,24 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - `php-stubs/wp-cli-stubs` cannot be installed next to `wordpress-stubs` 7.1 (it requires ≤ 6.x); `tests/phpstan/wp-cli-stub.php` declares
   the three WP-CLI methods the seed uses.
 - Not seeded: open translation jobs and `needs_update` (no safe public API). The 14 hand-sent products cover "in progress".
+
+## 19. Milestone 7: verification, security, readme, translation (2026-10-14)
+
+- ✅ **Read-only, statically:** grep over `src/` for the write patterns from `wp-abilities-verify` (annotation-correctness.md):
+  the only write is `WooCommerceLogSink` (audit log). Its suppression is `verify-ignore: all`, because an append-only log fails both
+  `readonly` and `idempotent` in that skill's definition. The plugin calls `do_action()` nowhere; filters called: `mlstore_*`,
+  WPML read filters, two WooCommerce Analytics status filters.
+- ✅ **Read-only, at runtime:** `tests/Store/ReadOnlyGuaranteeStoreTest` checksums **all 84 tables** (options included, which covers
+  writing listeners of the filters we call) around two runs of every ability. Nothing changes, and results are identical
+  (excluding `generated_at` / `period_start`).
+- `docs/SECURITY.md`: threat model as built and verified. `readme.txt` for wordpress.org (contributor `mediaworkbench` to confirm).
+- i18n: `languages/multilingual-store-abilities.pot` (75 strings), `-de_DE.po/.mo` (standard de_DE spelling with ß).
+  `Plugin::load_textdomain()` on `init` loads the bundled files; wordpress.org language packs take precedence once they exist.
+  Labels and descriptions are translated when abilities register (on the request's locale); error messages when they occur.
+  Technical identifiers in descriptions (`sync_error`, `mlstore/…`, field names) stay untranslated on purpose.
+  Regenerate: `ddev wp i18n make-pot wp-content/plugins/multilingual-store-abilities wp-content/plugins/multilingual-store-abilities/languages/multilingual-store-abilities.pot --exclude=vendor,tests,.claude,docs,bin`,
+  update the .po, then `ddev wp i18n make-mo wp-content/plugins/multilingual-store-abilities/languages`.
+- ⚠️ Store-suite guard tripped twice more: Action Scheduler's **async runner** (not WP-Cron) applied Smooth Generator's scheduled sales,
+  triggered by other requests to the site. With Patrick's OK, all pending `wc_product_{start,end}_scheduled_sale` actions were cancelled
+  (snapshot before) and `wpml-baseline` was retaken. Three consecutive full store-suite runs passed afterwards. One failure in between could not
+  be attributed: no scheduler activity was logged and its details were not captured. The guard message names the changed tables for next time.

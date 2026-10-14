@@ -22,7 +22,8 @@ final class WooCommerceLogSink implements LogSink {
 			return;
 		}
 
-		// verify-ignore: readonly -- audit log; the one write approved for v0.1 (docs/api-notes.md §4).
+		// verify-ignore: all -- audit log (observability, file-based, append-only); the one write approved for v0.1 (docs/api-notes.md §4). Not business state.
+		// Appending a line per call would otherwise fail both `readonly` and `idempotent` in wp-abilities-verify.
 		wc_get_logger()->log( $level, $message, $context );
 	}
 }

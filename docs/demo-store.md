@@ -40,7 +40,8 @@ outdated translations (`needs_update`).
 |---|---|
 | `before-smooth-generator` | before generating catalog and orders |
 | `before-seed` | before the first seed run |
-| `wpml-baseline` | seeded store, reference state for the store suite and the demo |
+| `before-cancel-scheduled-sales` | before cancelling the generated scheduled sales |
+| `wpml-baseline` | seeded store with scheduled sales cancelled: the reference state for the store suite and the demo |
 
 Restore with `ddev snapshot restore <name>`. Gzipped SQL exports of the first two are in the project root's `_backups/` (outside the repo).
 
@@ -48,5 +49,8 @@ Restore with `ddev snapshot restore <name>`. Gzipped SQL exports of the first tw
 
 - `WP_ENVIRONMENT_TYPE=local` is set in `.ddev/config.yaml` (`web_environment`). DDEV regenerates `wp-config.php`, so constants added
   with `wp config set` are lost on restart.
-- WP-Cron runs scheduled sales of the generated products every few minutes (price meta writes). The store suite disables cron for its
-  own process. Other requests to the site can still trigger it during a run.
+- Smooth Generator scheduled ~3,300 sale start/end actions that Action Scheduler ran every few minutes (price meta writes, triggered by
+  any request to the site), which made the store suite's write guard trip. They were **cancelled** on 2026-10-14
+  (`wp action-scheduler action cancel wc_product_{start,end}_scheduled_sale --all`; snapshot `before-cancel-scheduled-sales` before that).
+  The store suite disables WP-Cron for its own process. Daily WooCommerce maintenance jobs can still run, so avoid browsing the DDEV site
+  while the suite runs.

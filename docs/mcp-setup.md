@@ -39,6 +39,24 @@ Remote (HTTP, via `@automattic/mcp-wordpress-remote`):
 
 `NODE_EXTRA_CA_CERTS` is only needed for DDEV's local TLS certificate. Never commit a configuration that contains the application password.
 
+**Desktop apps (LM Studio, Claude Desktop):** apps started from the Dock often do not see your shell's `PATH`. Use the full path to `npx`
+(e.g. `/opt/homebrew/bin/npx` with Homebrew) and add `"PATH": "/opt/homebrew/bin:/usr/bin:/bin"` to `env`. Tested with LM Studio (2026-10).
+
+**Check the connection first**, independent of any client:
+
+```bash
+curl -s -u 'mcp-agent:<application password>' -H 'Content-Type: application/json' \
+  -X POST https://mlstore-dev.ddev.site/wp-json/mcp/mcp-adapter-default-server \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
+```
+
+A JSON answer with `"MCP Adapter Default Server"` means the store side works; 401 means wrong credentials.
+
+**Models:** use one with reliable tool calling. The default server works in three steps (discover → get info → execute), and small
+local models sometimes stop after discovering. Naming the steps in the prompt helps:
+*"Use the MCP tools: discover the abilities, get the info for mlstore/languages-overview, then execute it."*
+Each call appears in WooCommerce → Status → Logs (source `mlstore-abilities`) with the calling user's ID.
+
 Local alternative without HTTP (STDIO through WP-CLI inside DDEV):
 
 ```json
