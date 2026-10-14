@@ -11,11 +11,15 @@ namespace MediaWorkbench\MultilingualStoreAbilities;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbstractAbility;
+use MediaWorkbench\MultilingualStoreAbilities\Abilities\LanguagesOverview;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\RuntimeEnvironment;
+use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
+use MediaWorkbench\MultilingualStoreAbilities\Support\WooCommerceLogSink;
 
 /**
  * Wires hooks and holds the dependency status for the current request.
@@ -48,12 +52,14 @@ final class Plugin {
 	/**
 	 * Creates the plugin.
 	 *
-	 * @param string       $plugin_file  Absolute path of the main plugin file.
-	 * @param Dependencies $dependencies Dependency checker.
+	 * @param string              $plugin_file  Absolute path of the main plugin file.
+	 * @param Dependencies        $dependencies Dependency checker.
+	 * @param MultilingualGateway $gateway      Multilingual plugin access.
 	 */
 	public function __construct(
 		private readonly string $plugin_file,
 		private readonly Dependencies $dependencies,
+		private readonly MultilingualGateway $gateway,
 	) {}
 
 	/**
@@ -68,7 +74,8 @@ final class Plugin {
 
 		global $wpdb;
 
-		self::$instance = new self( $plugin_file, new Dependencies( new RuntimeEnvironment( new WpmlGateway( $wpdb ) ) ) );
+		$gateway        = new WpmlGateway( $wpdb );
+		self::$instance = new self( $plugin_file, new Dependencies( new RuntimeEnvironment( $gateway ) ), $gateway );
 		self::$instance->register_hooks();
 	}
 
@@ -109,7 +116,7 @@ final class Plugin {
 		}
 
 		if ( $this->status->can_register_abilities() ) {
-			$this->registrar = new Registrar( $this->create_abilities() );
+			$this->registrar = new Registrar( $this->create_abilities( $this->status ) );
 			$this->registrar->register_hooks();
 		}
 	}
@@ -124,10 +131,15 @@ final class Plugin {
 	/**
 	 * Creates every ability the plugin provides.
 	 *
+	 * @param DependencyStatus $status Detected dependencies.
 	 * @return list<AbstractAbility>
 	 */
-	private function create_abilities(): array {
-		return array();
+	private function create_abilities( DependencyStatus $status ): array {
+		$audit = new AuditLogger( new WooCommerceLogSink() );
+
+		return array(
+			new LanguagesOverview( $this->gateway, $audit, $status ),
+		);
 	}
 
 

@@ -78,6 +78,24 @@ final class SyncRulesTest extends TestCase {
 		$this->assertTrue( $settings->is_synced( ProductField::CatalogVisibility ) );
 	}
 
+	public function test_without_wcml_only_wpml_copy_preferences_count(): void {
+		$settings = SyncRules::from_preferences( self::WCML_DEFAULTS, false );
+
+		$this->assertTrue( $settings->is_synced( ProductField::Sku ) );
+		$this->assertTrue( $settings->is_synced( ProductField::StockStatus ), '_stock_status is a WPML copy field' );
+		$this->assertFalse( $settings->is_synced( ProductField::StockQuantity ), 'only WCML code syncs stock quantity' );
+		$this->assertFalse( $settings->is_synced( ProductField::CatalogVisibility ), 'only WCML code syncs visibility' );
+	}
+
+	public function test_unsynced_fields_are_the_complement(): void {
+		$settings = SyncRules::from_preferences( array( '_tax_class' => 1 ) );
+
+		$this->assertSame(
+			array( ProductField::Sku, ProductField::ManageStock, ProductField::PostStatus, ProductField::RegularPrice, ProductField::SalePrice ),
+			$settings->unsynced_fields()
+		);
+	}
+
 	public function test_synced_fields_are_listed_in_enum_order(): void {
 		$settings = SyncRules::from_preferences( array( '_tax_class' => 1 ) );
 

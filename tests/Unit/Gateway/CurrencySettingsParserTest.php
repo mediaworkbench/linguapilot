@@ -107,6 +107,20 @@ final class CurrencySettingsParserTest extends TestCase {
 		);
 	}
 
+	public function test_without_wcml_multi_currency_is_reported_disabled(): void {
+		$settings = CurrencySettingsParser::parse(
+			array(
+				'enable_multi_currency' => 2,
+				'currency_options'      => array( 'CHF' => array( 'languages' => array( 'de' => 1 ) ) ),
+			),
+			'EUR',
+			false
+		);
+
+		$this->assertFalse( $settings->enabled );
+		$this->assertSame( array( 'EUR' ), $settings->codes() );
+	}
+
 	public function test_invalid_currency_codes_and_language_maps_are_skipped(): void {
 		$settings = CurrencySettingsParser::parse(
 			array(

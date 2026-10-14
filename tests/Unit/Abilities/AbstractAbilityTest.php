@@ -71,7 +71,8 @@ final class AbstractAbilityTest extends TestCase {
 		);
 		$this->assertSame( 'object', $args['input_schema']['type'] );
 		$this->assertFalse( $args['input_schema']['additionalProperties'] );
-		$this->assertSame( array(), $args['input_schema']['default'] );
+		$this->assertEquals( (object) array(), $args['input_schema']['default'] );
+		$this->assertSame( '{}', json_encode( $args['input_schema']['default'] ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- No WordPress in unit tests.
 		$this->assertSame( 'object', $args['output_schema']['type'] );
 		$this->assertIsCallable( $args['execute_callback'] );
 		$this->assertIsCallable( $args['permission_callback'] );

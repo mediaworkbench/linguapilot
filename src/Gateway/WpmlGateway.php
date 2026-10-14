@@ -291,7 +291,7 @@ final class WpmlGateway implements MultilingualGateway {
 				? $management['custom_fields_translation']
 				: array();
 
-			$this->sync_settings = SyncRules::from_preferences( $preferences );
+			$this->sync_settings = SyncRules::from_preferences( $preferences, $this->is_wcml_running() );
 		}
 
 		return $this->sync_settings;
@@ -305,7 +305,7 @@ final class WpmlGateway implements MultilingualGateway {
 	public function currencies(): CurrencySettings {
 		if ( null === $this->currencies ) {
 			$default          = get_option( 'woocommerce_currency' );
-			$this->currencies = CurrencySettingsParser::parse( get_option( '_wcml_settings' ), is_string( $default ) ? $default : '' );
+			$this->currencies = CurrencySettingsParser::parse( get_option( '_wcml_settings' ), is_string( $default ) ? $default : '', $this->is_wcml_running() );
 		}
 
 		return $this->currencies;
@@ -376,6 +376,13 @@ final class WpmlGateway implements MultilingualGateway {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Whether WCML is loaded and running: WCML only creates this global when its own dependency check passes.
+	 */
+	private function is_wcml_running(): bool {
+		return isset( $GLOBALS['woocommerce_wpml'] );
 	}
 
 	/**

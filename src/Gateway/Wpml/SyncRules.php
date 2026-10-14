@@ -30,6 +30,7 @@ final class SyncRules {
 	 */
 	private const META_KEYS = array(
 		'sku'           => '_sku',
+		'stock_status'  => '_stock_status',
 		'manage_stock'  => '_manage_stock',
 		'tax_class'     => '_tax_class',
 		'regular_price' => '_regular_price',
@@ -46,12 +47,13 @@ final class SyncRules {
 	 * Builds sync settings from WPML's stored preferences.
 	 *
 	 * @param array<mixed> $preferences `custom_fields_translation` map: meta key => preference (0-3, possibly as string).
+	 * @param bool         $wcml_active Whether WCML is running; without it, only WPML's copy preferences apply.
 	 */
-	public static function from_preferences( array $preferences ): SyncSettings {
+	public static function from_preferences( array $preferences, bool $wcml_active = true ): SyncSettings {
 		$synced = array();
 
 		foreach ( ProductField::cases() as $field ) {
-			if ( in_array( $field->value, self::SYNCED_BY_WCML, true ) ) {
+			if ( $wcml_active && in_array( $field->value, self::SYNCED_BY_WCML, true ) ) {
 				$synced[] = $field;
 				continue;
 			}

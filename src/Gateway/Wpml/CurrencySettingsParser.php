@@ -29,11 +29,12 @@ final class CurrencySettingsParser {
 	 *
 	 * @param mixed  $wcml_settings    Raw value of the `_wcml_settings` option.
 	 * @param string $default_currency Store base currency (`woocommerce_currency`).
+	 * @param bool   $wcml_active      Whether WCML is running; its stored settings are ignored when it is not.
 	 */
-	public static function parse( mixed $wcml_settings, string $default_currency ): CurrencySettings {
+	public static function parse( mixed $wcml_settings, string $default_currency, bool $wcml_active = true ): CurrencySettings {
 		$settings = is_array( $wcml_settings ) ? $wcml_settings : array();
 		$mode     = $settings['enable_multi_currency'] ?? null;
-		$enabled  = is_numeric( $mode ) && self::MODE_ENABLED === (int) $mode;
+		$enabled  = $wcml_active && is_numeric( $mode ) && self::MODE_ENABLED === (int) $mode;
 		$options  = $enabled && isset( $settings['currency_options'] ) && is_array( $settings['currency_options'] )
 			? $settings['currency_options']
 			: array();

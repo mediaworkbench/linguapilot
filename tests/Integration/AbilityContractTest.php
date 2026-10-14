@@ -10,7 +10,6 @@ declare( strict_types = 1 );
 namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Integration;
 
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbilityError;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
 use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
 use MediaWorkbench\MultilingualStoreAbilities\Tests\Support\ProbeAbility;
@@ -30,30 +29,21 @@ final class AbilityContractTest extends WP_UnitTestCase {
 
 	private const NAME = 'mlstore/probe';
 
+	use RegistersAbilities;
+
 	/**
-	 * Registers the probe as if during `wp_abilities_api_init`.
+	 * Registers the probe ability.
 	 */
 	public function set_up(): void {
 		parent::set_up();
-
-		wp_get_abilities(); // Fires the registry's init hooks (WooCommerce registers its category there).
-
-		$registrar = new Registrar( array( new ProbeAbility( new FakeMultilingualGateway(), new AuditLogger( new MemoryLogSink() ), new DependencyStatus( array() ) ) ) );
-
-		global $wp_current_filter;
-		$wp_current_filter[] = 'wp_abilities_api_init'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulates the registration window core requires.
-		try {
-			$registrar->register();
-		} finally {
-			array_pop( $wp_current_filter );
-		}
+		$this->register_abilities( new ProbeAbility( new FakeMultilingualGateway(), new AuditLogger( new MemoryLogSink() ), new DependencyStatus( array() ) ) );
 	}
 
 	/**
 	 * Removes the probe again.
 	 */
 	public function tear_down(): void {
-		wp_unregister_ability( self::NAME );
+		$this->unregister_abilities();
 		parent::tear_down();
 	}
 
@@ -173,17 +163,5 @@ final class AbilityContractTest extends WP_UnitTestCase {
 		$request->set_body_params( array( 'input' => array() ) );
 
 		$this->assertGreaterThanOrEqual( 400, rest_do_request( $request )->get_status() );
-	}
-
-	/**
-	 * Creates a user with the given role and returns its ID.
-	 *
-	 * @param string $role Role slug.
-	 */
-	private function create_user( string $role ): int {
-		$user_id = self::factory()->user->create( array( 'role' => $role ) );
-		$this->assertIsInt( $user_id );
-
-		return $user_id;
 	}
 }

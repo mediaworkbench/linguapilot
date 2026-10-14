@@ -38,4 +38,13 @@ final class SyncSettings {
 	public function synced_fields(): array {
 		return $this->synced_fields;
 	}
+
+	/**
+	 * All fields that are not synced, in enum order.
+	 *
+	 * @return list<ProductField>
+	 */
+	public function unsynced_fields(): array {
+		return array_values( array_filter( ProductField::cases(), fn ( ProductField $field ): bool => ! $this->is_synced( $field ) ) );
+	}
 }

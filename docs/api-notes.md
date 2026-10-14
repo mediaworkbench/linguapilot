@@ -341,3 +341,17 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   The result keeps the site's language order.
 - Audit log: `wc_get_logger()->log()`; WooCommerce turns the `source` into the log file name (`wc-logs/mlstore-abilities-*.log`).
   Context: ability, user_id, 16-char input hash, result_count, duration_ms, error_code. No raw input, no output.
+
+## 9. `mlstore/languages-overview` (milestone 5, ability 1)
+
+- ⚠️ Concept §6.1 `languages[].active` replaced by **`is_default`**. Every language WPML returns is enabled, and WPML's own `active`
+  key means "current language" (§5.7), so the field would be either redundant or misleading.
+- Field names otherwise follow §6.1: `wcml_active`, `multi_currency_enabled`, `default_currency`, `currencies[]` (+ `is_default`),
+  `sync_settings{synced_fields, unsynced_fields}`, `catalog_size{products, variations, product_categories, product_tags}` (originals only).
+- Without WCML: multi-currency is reported off (its stored settings are ignored) and the WCML-code-synced fields (stock quantity,
+  catalog visibility) count as unsynced. `stock_status` stays synced when its WPML preference is copy.
+- Currency `languages` are returned in the site's language order. WCML stores them in arbitrary order and may still list removed languages.
+- No caching (decision §4), and none is needed: one call runs a handful of hook calls plus 4 indexed COUNT queries.
+- ✅ Verified over **real MCP** (MCP Adapter 0.7.0, STDIO, protocol 2025-11-25): discover lists the ability, get-ability-info returns the
+  annotations, execute succeeds. Before this milestone the input schema's top-level default was `array()`, which encodes as `[]`;
+  it is now `(object) array()` → `{}`.

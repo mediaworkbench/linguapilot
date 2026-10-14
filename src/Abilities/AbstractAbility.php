@@ -92,6 +92,13 @@ abstract class AbstractAbility {
 	abstract protected function run( array $input ): array;
 
 	/**
+	 * Detected dependencies.
+	 */
+	protected function status(): DependencyStatus {
+		return $this->status;
+	}
+
+	/**
 	 * Whether the ability needs WooCommerce Multilingual.
 	 */
 	protected function requires_wcml(): bool {
@@ -143,11 +150,19 @@ abstract class AbstractAbility {
 	 * @return array<string, mixed>
 	 */
 	public function input_schema(): array {
-		return array(
-			'type'                 => 'object',
-			'properties'           => $this->input_properties(),
+		$schema     = array( 'type' => 'object' );
+		$properties = $this->input_properties();
+
+		// An empty PHP array would be JSON-encoded as `[]`, which is not a valid `properties` value.
+		if ( array() !== $properties ) {
+			$schema['properties'] = $properties;
+		}
+
+		// `(object) array()` encodes as `{}`: a valid default for an object schema. Core then passes an empty
+		// stdClass, which execute() treats as "no input".
+		return $schema + array(
 			'additionalProperties' => false,
-			'default'              => array(),
+			'default'              => (object) array(),
 		);
 	}
 
