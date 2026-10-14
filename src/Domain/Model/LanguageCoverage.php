@@ -20,20 +20,24 @@ final class LanguageCoverage {
 	 * @param string $language    Language code.
 	 * @param int    $translated  Published translations.
 	 * @param int    $unpublished Translations that exist but are not published.
-	 * @param int    $missing     Originals without a usable translation.
+	 * @param int    $missing     Originals without a translation or an open translation job.
+	 * @param int    $in_progress Originals without a translation but with an open translation job.
+	 * @param int    $outdated    Existing translations (translated or unpublished) marked as needing an update.
 	 */
 	public function __construct(
 		public readonly string $language,
 		public readonly int $translated,
 		public readonly int $unpublished,
 		public readonly int $missing,
+		public readonly int $in_progress = 0,
+		public readonly int $outdated = 0,
 	) {}
 
 	/**
-	 * Number of originals.
+	 * Number of originals (outdated translations are already counted as translated or unpublished).
 	 */
 	public function total(): int {
-		return $this->translated + $this->unpublished + $this->missing;
+		return $this->translated + $this->unpublished + $this->in_progress + $this->missing;
 	}
 
 	/**

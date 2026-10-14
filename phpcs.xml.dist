@@ -41,9 +41,10 @@
 		<exclude-pattern>/src/*</exclude-pattern>
 	</rule>
 
-	<!-- The WPML gateway is the one place allowed to call WPML's own (unprefixed) hooks. -->
+	<!-- The WPML gateway is the one place allowed to call WPML's own (unprefixed) hooks; store tests call them as references. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound">
 		<exclude-pattern>/src/Gateway/WpmlGateway\.php</exclude-pattern>
+		<exclude-pattern>/tests/Store/*</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">

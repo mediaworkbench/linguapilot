@@ -113,6 +113,8 @@ final class TranslationAuditTest extends TestCase {
 					'sku'                   => 'HD-1',
 					'missing_languages'     => array(),
 					'unpublished_languages' => array( 'fr' ),
+					'in_progress_languages' => array(),
+					'outdated_languages'    => array(),
 					'edit_url'              => 'https://shop.test/wp-admin/post.php?post=1&action=edit',
 				),
 				array(
@@ -122,6 +124,8 @@ final class TranslationAuditTest extends TestCase {
 					'sku'                   => null,
 					'missing_languages'     => array( 'en', 'fr' ),
 					'unpublished_languages' => array(),
+					'in_progress_languages' => array(),
+					'outdated_languages'    => array(),
 					'edit_url'              => 'https://shop.test/wp-admin/post.php?post=3&action=edit',
 				),
 			),
@@ -140,19 +144,49 @@ final class TranslationAuditTest extends TestCase {
 					'language'     => 'en',
 					'translated'   => 3,
 					'unpublished'  => 0,
+					'in_progress'  => 0,
 					'missing'      => 1,
+					'outdated'     => 0,
 					'coverage_pct' => 75.0,
 				),
 				array(
 					'language'     => 'fr',
 					'translated'   => 1,
 					'unpublished'  => 1,
+					'in_progress'  => 0,
 					'missing'      => 2,
+					'outdated'     => 0,
 					'coverage_pct' => 25.0,
 				),
 			),
 			$summary['languages']
 		);
+	}
+
+	public function test_open_translation_jobs_are_in_progress_not_missing(): void {
+		$this->gateway->add_job( ElementType::product(), 3, 'fr' );
+
+		$result = $this->audit( new CatalogScope( array( ElementType::product() ) ), array( 'en', 'fr' ) );
+		$cap    = $result['objects'][1];
+
+		$this->assertSame( 3, $cap['id'] );
+		$this->assertSame( array( 'en' ), $cap['missing_languages'] );
+		$this->assertSame( array( 'fr' ), $cap['in_progress_languages'] );
+		$this->assertSame( 1, $result['summary']['languages'][1]['in_progress'] );
+		$this->assertSame( 1, $result['summary']['languages'][1]['missing'] );
+	}
+
+	public function test_outdated_translations_are_listed_even_when_otherwise_complete(): void {
+		$this->gateway->mark_outdated( ElementType::product(), 22 );
+
+		$result = $this->audit( new CatalogScope( array( ElementType::product() ) ), array( 'en', 'fr' ) );
+		$beanie = array_values( array_filter( $result['objects'], static fn ( array $item ): bool => 2 === $item['id'] ) );
+
+		$this->assertCount( 1, $beanie, 'complete but outdated product is listed' );
+		$this->assertSame( array( 'fr' ), $beanie[0]['outdated_languages'] );
+		$this->assertSame( array(), $beanie[0]['missing_languages'] );
+		$this->assertSame( 1, $result['summary']['languages'][1]['outdated'] );
+		$this->assertSame( 1, $result['summary']['languages'][1]['translated'], 'outdated still counts as translated (only product 2 has a published FR translation)' );
 	}
 
 	public function test_status_any_includes_unpublished_originals(): void {

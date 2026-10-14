@@ -65,7 +65,7 @@ final class TranslationCompleteness extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Lists original-language products, product categories, product tags or global attribute terms that are not translated into one or more languages, with a coverage summary per language across the whole catalog. A translation that exists but is not published (draft, pending, private, scheduled) is reported in unpublished_languages; a missing or trashed one in missing_languages. Only objects with at least one gap are listed.', 'multilingual-store-abilities' );
+		return __( 'Lists original-language products, product categories, product tags or global attribute terms that are not translated into one or more languages, with a coverage summary per language across the whole catalog. A translation that exists but is not published (draft, pending, private, scheduled) is reported in unpublished_languages; one that was sent to translation but is not done yet in in_progress_languages; a missing or trashed one in missing_languages; an existing translation whose original changed since in outdated_languages. Only objects with at least one gap are listed.', 'multilingual-store-abilities' );
 	}
 
 	/**
@@ -121,12 +121,14 @@ final class TranslationCompleteness extends AbstractAbility {
 				'sku'                   => array( 'type' => array( 'string', 'null' ) ),
 				'missing_languages'     => $codes,
 				'unpublished_languages' => $codes,
+				'in_progress_languages' => $codes + array( 'description' => __( 'Sent to translation (open WPML translation job), not translated yet.', 'multilingual-store-abilities' ) ),
+				'outdated_languages'    => $codes + array( 'description' => __( 'Translation exists, but the original changed since and it needs an update.', 'multilingual-store-abilities' ) ),
 				'edit_url'              => array(
 					'type'   => 'string',
 					'format' => 'uri',
 				),
 			),
-			'required'             => array( 'id', 'type', 'title', 'sku', 'missing_languages', 'unpublished_languages', 'edit_url' ),
+			'required'             => array( 'id', 'type', 'title', 'sku', 'missing_languages', 'unpublished_languages', 'in_progress_languages', 'outdated_languages', 'edit_url' ),
 			'additionalProperties' => false,
 		);
 
@@ -136,13 +138,18 @@ final class TranslationCompleteness extends AbstractAbility {
 				'language'     => array( 'type' => 'string' ),
 				'translated'   => array( 'type' => 'integer' ),
 				'unpublished'  => array( 'type' => 'integer' ),
+				'in_progress'  => array( 'type' => 'integer' ),
 				'missing'      => array( 'type' => 'integer' ),
+				'outdated'     => array(
+					'type'        => 'integer',
+					'description' => __( 'Existing translations that need an update (already counted in translated or unpublished).', 'multilingual-store-abilities' ),
+				),
 				'coverage_pct' => array(
 					'type'        => 'number',
 					'description' => __( 'Share of originals with a published translation, in percent.', 'multilingual-store-abilities' ),
 				),
 			),
-			'required'             => array( 'language', 'translated', 'unpublished', 'missing', 'coverage_pct' ),
+			'required'             => array( 'language', 'translated', 'unpublished', 'in_progress', 'missing', 'outdated', 'coverage_pct' ),
 			'additionalProperties' => false,
 		);
 

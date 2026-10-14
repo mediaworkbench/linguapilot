@@ -80,6 +80,20 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	private bool $setup_complete = true;
 
 	/**
+	 * Open translation jobs without a translated element: type => original ID => languages.
+	 *
+	 * @var array<string, array<int, list<string>>>
+	 */
+	private array $jobs = array();
+
+	/**
+	 * Translations marked as needing an update: type => member IDs.
+	 *
+	 * @var array<string, list<int>>
+	 */
+	private array $outdated = array();
+
+	/**
 	 * Element type values that are not translatable.
 	 *
 	 * @var list<string>
@@ -167,6 +181,29 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	}
 
 	/**
+	 * Adds an open translation job (no translated element yet) for an original.
+	 *
+	 * @param ElementType $type        Element type.
+	 * @param int         $original_id Original ID.
+	 * @param string      $language    Target language.
+	 */
+	public function add_job( ElementType $type, int $original_id, string $language ): self {
+		$this->jobs[ $type->value ][ $original_id ][] = $language;
+		return $this;
+	}
+
+	/**
+	 * Marks an existing translation as needing an update.
+	 *
+	 * @param ElementType $type      Element type.
+	 * @param int         $member_id Translation ID.
+	 */
+	public function mark_outdated( ElementType $type, int $member_id ): self {
+		$this->outdated[ $type->value ][] = $member_id;
+		return $this;
+	}
+
+	/**
 	 * Marks an element type as not translatable.
 	 *
 	 * @param ElementType $type Element type.
@@ -191,11 +228,14 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 		$coverage = array();
 
 		foreach ( $languages as $language ) {
-			$counts = array_fill_keys( array( 'translated', 'unpublished', 'missing' ), 0 );
+			$counts = array_fill_keys( array( 'translated', 'unpublished', 'in_progress', 'missing', 'outdated' ), 0 );
 			foreach ( $rows as $row ) {
 				++$counts[ $row->states[ $language ]->value ];
+				if ( in_array( $language, $row->outdated, true ) ) {
+					++$counts['outdated'];
+				}
 			}
-			$coverage[] = new LanguageCoverage( $language, $counts['translated'], $counts['unpublished'], $counts['missing'] );
+			$coverage[] = new LanguageCoverage( $language, $counts['translated'], $counts['unpublished'], $counts['missing'], $counts['in_progress'], $counts['outdated'] );
 		}
 
 		return $coverage;
@@ -208,7 +248,7 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 		$incomplete = array_values(
 			array_filter(
 				$this->coverage_rows( $scope, $languages ),
-				static fn ( CoverageRow $row ): bool => count( $row->languages_in( TranslationState::Translated ) ) < count( $row->states )
+				static fn ( CoverageRow $row ): bool => $row->has_gap()
 			)
 		);
 
@@ -395,18 +435,25 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 					continue;
 				}
 
-				$group  = $this->translations( $id, $type );
-				$states = array();
+				$group    = $this->translations( $id, $type );
+				$states   = array();
+				$outdated = array();
 				foreach ( $languages as $language ) {
-					$member = $group[ $language ] ?? null;
-					if ( $type->is_term() ) {
-						$states[ $language ] = null === $member ? TranslationState::Missing : TranslationState::Translated;
-					} else {
-						$states[ $language ] = TranslationState::from_post_status( null === $member ? null : $this->elements[ $type->value ][ $member ]['status'] );
+					$member              = $group[ $language ] ?? null;
+					$has_job             = in_array( $language, $this->jobs[ $type->value ][ $id ] ?? array(), true );
+					$states[ $language ] = TranslationState::classify(
+						$type->is_term(),
+						null !== $member,
+						null === $member ? null : $this->elements[ $type->value ][ $member ]['status'],
+						$has_job ? 1 : null
+					);
+					if ( null !== $member && in_array( $member, $this->outdated[ $type->value ] ?? array(), true )
+						&& in_array( $states[ $language ], array( TranslationState::Translated, TranslationState::Unpublished ), true ) ) {
+						$outdated[] = $language;
 					}
 				}
 
-				$rows[ $id ] = new CoverageRow( $id, $type, $states );
+				$rows[ $id ] = new CoverageRow( $id, $type, $states, $outdated );
 			}
 		}
 

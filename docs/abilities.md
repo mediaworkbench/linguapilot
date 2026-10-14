@@ -170,13 +170,17 @@ Which catalog objects lack translations, plus coverage per language across the w
 | `page`, `per_page` | int | 1, 50 | `per_page` max 100 |
 
 **Output:** list envelope with `objects[]`:
-`{ id, type, title, sku, missing_languages[], unpublished_languages[], edit_url }`, where `id` is the original-language ID and `type` the post type
-or taxonomy. Only objects with at least one gap are listed. `summary` covers *all* audited originals:
-`total_objects` and per language `translated`, `unpublished`, `missing`, `coverage_pct`.
+`{ id, type, title, sku, missing_languages[], unpublished_languages[], in_progress_languages[], outdated_languages[], edit_url }`, where `id`
+is the original-language ID and `type` the post type or taxonomy. Only objects with at least one gap are listed. `summary` covers *all*
+audited originals: `total_objects` and per language `translated`, `unpublished`, `in_progress`, `missing`, `outdated`, `coverage_pct`.
 
 **Rules:**
-- *Translated* = a published translation. *Unpublished* = it exists but is draft, pending, private or scheduled. *Missing* = there is none,
-  it is in the trash, or WPML still has a row for a translation that was deleted.
+- *Translated* = a published translation. *Unpublished* = it exists but is draft, pending, private or scheduled.
+  *In progress* = no translation yet, but it was sent to translation (open WPML translation job: waiting for translator, in progress,
+  ready to download, needs review, ATE retry, pending at a translation service). *Missing* = none of the above, or the translation is in the trash.
+- *Outdated* = a translation exists, but WPML marks it as needing an update because the original changed. It still counts as translated
+  (or unpublished) in the coverage numbers, but the object is listed so it can be updated.
+- `translated + unpublished + in_progress + missing = total_objects` per language; `coverage_pct` = translated / total.
 - Terms have no status: a term translation either exists or is missing.
 - Taxonomies WPML does not translate are skipped when auditing all attributes. Requesting one explicitly (or non-translatable
   categories/tags) returns `mlstore_invalid_input`.

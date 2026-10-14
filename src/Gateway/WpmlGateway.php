@@ -353,30 +353,35 @@ final class WpmlGateway implements MultilingualGateway {
 	 * One grouped query instead; the status rule is TranslationState::from_post_status().
 	 */
 	public function coverage( CatalogScope $scope, array $languages ): array {
-		$counts = array_fill_keys( $languages, array_fill_keys( array( 'translated', 'unpublished', 'missing' ), 0 ) );
 		if ( array() === $languages ) {
 			return array();
 		}
 
-		$wpdb  = $this->wpdb;
-		$total = $this->count_scope( $scope );
+		$wpdb   = $this->wpdb;
+		$table  = $this->translations_table();
+		$status = $wpdb->prefix . 'icl_translation_status';
+		$total  = $this->count_scope( $scope );
+		$codes  = implode( ',', $languages );
 
+		// One row per combination of the classify() inputs, with a count.
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Read-only report query, see method doc.
 		if ( $scope->is_terms() ) {
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					'SELECT t.language_code, NULL AS post_status, COUNT(*) AS n
+					'SELECT t.language_code, NULL AS post_status, ( tt.term_taxonomy_id IS NOT NULL ) AS element_exists, s.status AS job_status, s.needs_update, COUNT(*) AS n
 					FROM %i o
 					INNER JOIN %i ot ON ot.term_taxonomy_id = o.element_id
 					INNER JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
-					INNER JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+					LEFT JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+					LEFT JOIN %i s ON s.translation_id = t.translation_id
 					WHERE FIND_IN_SET( o.element_type, %s ) AND o.source_language_code IS NULL
-					GROUP BY t.language_code',
-					$this->translations_table(),
+					GROUP BY t.language_code, element_exists, s.status, s.needs_update',
+					$table,
 					$wpdb->term_taxonomy,
-					$this->translations_table(),
-					implode( ',', $languages ),
+					$table,
+					$codes,
 					$wpdb->term_taxonomy,
+					$status,
 					self::type_list( $scope )
 				),
 				ARRAY_A
@@ -384,18 +389,20 @@ final class WpmlGateway implements MultilingualGateway {
 		} else {
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					'SELECT t.language_code, tp.post_status, COUNT(*) AS n
+					'SELECT t.language_code, tp.post_status, ( tp.ID IS NOT NULL ) AS element_exists, s.status AS job_status, s.needs_update, COUNT(*) AS n
 					FROM %i o
 					INNER JOIN %i op ON op.ID = o.element_id
 					INNER JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
-					INNER JOIN %i tp ON tp.ID = t.element_id
+					LEFT JOIN %i tp ON tp.ID = t.element_id
+					LEFT JOIN %i s ON s.translation_id = t.translation_id
 					WHERE o.element_type = %s AND o.source_language_code IS NULL AND FIND_IN_SET( op.post_status, %s )
-					GROUP BY t.language_code, tp.post_status',
-					$this->translations_table(),
+					GROUP BY t.language_code, tp.post_status, element_exists, s.status, s.needs_update',
+					$table,
 					$wpdb->posts,
-					$this->translations_table(),
-					implode( ',', $languages ),
+					$table,
+					$codes,
 					$wpdb->posts,
+					$status,
 					$scope->types[0]->value,
 					implode( ',', $scope->post_statuses )
 				),
@@ -405,22 +412,26 @@ final class WpmlGateway implements MultilingualGateway {
 		// phpcs:enable
 		$this->assert_query_succeeded();
 
-		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+		$counts = array_fill_keys( $languages, array_fill_keys( array( 'translated', 'unpublished', 'in_progress', 'outdated' ), 0 ) );
+		foreach ( $rows ?? array() as $row ) {
 			$language = (string) $row['language_code'];
 			if ( ! isset( $counts[ $language ] ) ) {
 				continue;
 			}
 
-			$state = $scope->is_terms() ? TranslationState::Translated : TranslationState::from_post_status( (string) $row['post_status'] );
+			$state = self::classify_row( $scope->is_terms(), $row );
 			if ( TranslationState::Missing !== $state ) {
 				$counts[ $language ][ $state->value ] += (int) $row['n'];
+			}
+			if ( self::is_outdated( $state, $row ) ) {
+				$counts[ $language ]['outdated'] += (int) $row['n'];
 			}
 		}
 
 		$coverage = array();
 		foreach ( $counts as $language => $count ) {
-			$missing    = max( 0, $total - $count['translated'] - $count['unpublished'] );
-			$coverage[] = new LanguageCoverage( (string) $language, $count['translated'], $count['unpublished'], $missing );
+			$missing    = max( 0, $total - $count['translated'] - $count['unpublished'] - $count['in_progress'] );
+			$coverage[] = new LanguageCoverage( (string) $language, $count['translated'], $count['unpublished'], $missing, $count['in_progress'], $count['outdated'] );
 		}
 
 		return $coverage;
@@ -429,7 +440,7 @@ final class WpmlGateway implements MultilingualGateway {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Direct SQL for the same reason as coverage(): filtering "incomplete" before paginating
+	 * Direct SQL for the same reason as coverage(): filtering gaps before paginating
 	 * needs every original's translations.
 	 */
 	public function incomplete_originals( CatalogScope $scope, array $languages, int $limit, int $offset ): CoveragePage {
@@ -441,12 +452,13 @@ final class WpmlGateway implements MultilingualGateway {
 		$offset   = max( 0, $offset );
 		$wpdb     = $this->wpdb;
 		$table    = $this->translations_table();
+		$status   = $wpdb->prefix . 'icl_translation_status';
 		$codes    = implode( ',', $languages );
 		$required = count( $languages );
 		$types    = self::type_list( $scope );
-		$statuses = implode( ',', $scope->post_statuses );
 
-		// An original is incomplete when fewer than all requested languages have a published (posts) or existing (terms) member.
+		// A gap: fewer than all requested languages have a published (posts) or existing (terms) member,
+		// or such a member is marked as needing an update (CoverageRow::has_gap()).
 		// $grouped is a literal SQL string; the placeholder sniffs cannot follow it through the variable.
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Read-only report query, see method doc.
 		if ( $scope->is_terms() ) {
@@ -455,43 +467,47 @@ final class WpmlGateway implements MultilingualGateway {
 				INNER JOIN %i ot ON ot.term_taxonomy_id = o.element_id
 				LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
 				LEFT JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+				LEFT JOIN %i s ON s.translation_id = t.translation_id
 				WHERE FIND_IN_SET( o.element_type, %s ) AND o.source_language_code IS NULL
 				GROUP BY o.element_id, o.element_type, o.trid
-				HAVING COUNT( tt.term_taxonomy_id ) < %d';
-			$args    = array( $table, $wpdb->term_taxonomy, $table, $codes, $wpdb->term_taxonomy, $types, $required );
-			$total   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM ( {$grouped} ) incomplete", ...$args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
-			$page    = $wpdb->get_results( $wpdb->prepare( "{$grouped} ORDER BY o.element_id ASC LIMIT %d OFFSET %d", ...array_merge( $args, array( $limit, $offset ) ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
+				HAVING COUNT( tt.term_taxonomy_id ) < %d OR SUM( CASE WHEN tt.term_taxonomy_id IS NOT NULL AND s.needs_update = 1 THEN 1 ELSE 0 END ) > 0';
+			$args    = array( $table, $wpdb->term_taxonomy, $table, $codes, $wpdb->term_taxonomy, $status, $types, $required );
 		} else {
 			$grouped = "SELECT o.element_id, o.element_type, o.trid
 				FROM %i o
 				INNER JOIN %i op ON op.ID = o.element_id
 				LEFT JOIN %i t ON t.trid = o.trid AND t.element_type = o.element_type AND FIND_IN_SET( t.language_code, %s )
 				LEFT JOIN %i tp ON tp.ID = t.element_id AND tp.post_status = 'publish'
+				LEFT JOIN %i s ON s.translation_id = t.translation_id
 				WHERE o.element_type = %s AND o.source_language_code IS NULL AND FIND_IN_SET( op.post_status, %s )
 				GROUP BY o.element_id, o.element_type, o.trid
-				HAVING COUNT( tp.ID ) < %d";
-			$args    = array( $table, $wpdb->posts, $table, $codes, $wpdb->posts, $scope->types[0]->value, $statuses, $required );
-			$total   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM ( {$grouped} ) incomplete", ...$args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
-			$page    = $wpdb->get_results( $wpdb->prepare( "{$grouped} ORDER BY o.element_id ASC LIMIT %d OFFSET %d", ...array_merge( $args, array( $limit, $offset ) ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
+				HAVING COUNT( tp.ID ) < %d OR SUM( CASE WHEN tp.ID IS NOT NULL AND s.needs_update = 1 THEN 1 ELSE 0 END ) > 0";
+			$args    = array( $table, $wpdb->posts, $table, $codes, $wpdb->posts, $status, $scope->types[0]->value, implode( ',', $scope->post_statuses ), $required );
 		}
 
+		$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM ( {$grouped} ) incomplete", ...$args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
+		$this->assert_query_succeeded();
+		$page = $wpdb->get_results( $wpdb->prepare( "{$grouped} ORDER BY o.element_id ASC LIMIT %d OFFSET %d", ...array_merge( $args, array( $limit, $offset ) ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $grouped is a literal above.
 		$this->assert_query_succeeded();
 
-		$page = is_array( $page ) ? $page : array();
+		$page = $page ?? array();
 		if ( array() === $page ) {
 			return new CoveragePage( array(), $total );
 		}
 
-		// Translation members of this page's groups, in one query.
+		// Members of this page's translation groups (including job-only rows without an element), in one query.
 		$trids   = implode( ',', array_map( static fn ( array $row ): int => (int) $row['trid'], $page ) );
 		$members = $scope->is_terms()
 			? $wpdb->get_results(
 				$wpdb->prepare(
-					'SELECT t.trid, t.language_code, NULL AS post_status
-					FROM %i t INNER JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+					'SELECT t.trid, t.language_code, NULL AS post_status, ( tt.term_taxonomy_id IS NOT NULL ) AS element_exists, s.status AS job_status, s.needs_update
+					FROM %i t
+					LEFT JOIN %i tt ON tt.term_taxonomy_id = t.element_id
+					LEFT JOIN %i s ON s.translation_id = t.translation_id
 					WHERE FIND_IN_SET( t.trid, %s ) AND FIND_IN_SET( t.language_code, %s ) AND FIND_IN_SET( t.element_type, %s )',
 					$table,
 					$wpdb->term_taxonomy,
+					$status,
 					$trids,
 					$codes,
 					$types
@@ -500,11 +516,14 @@ final class WpmlGateway implements MultilingualGateway {
 			)
 			: $wpdb->get_results(
 				$wpdb->prepare(
-					'SELECT t.trid, t.language_code, tp.post_status
-					FROM %i t INNER JOIN %i tp ON tp.ID = t.element_id
+					'SELECT t.trid, t.language_code, tp.post_status, ( tp.ID IS NOT NULL ) AS element_exists, s.status AS job_status, s.needs_update
+					FROM %i t
+					LEFT JOIN %i tp ON tp.ID = t.element_id
+					LEFT JOIN %i s ON s.translation_id = t.translation_id
 					WHERE FIND_IN_SET( t.trid, %s ) AND FIND_IN_SET( t.language_code, %s ) AND t.element_type = %s',
 					$table,
 					$wpdb->posts,
+					$status,
 					$trids,
 					$codes,
 					$scope->types[0]->value
@@ -514,31 +533,57 @@ final class WpmlGateway implements MultilingualGateway {
 		// phpcs:enable
 		$this->assert_query_succeeded();
 
-		$status_by_trid = array();
-		foreach ( is_array( $members ) ? $members : array() as $member ) {
-			$status_by_trid[ (int) $member['trid'] ][ (string) $member['language_code'] ] = null === $member['post_status'] ? '' : (string) $member['post_status'];
+		$by_trid = array();
+		foreach ( $members ?? array() as $member ) {
+			$by_trid[ (int) $member['trid'] ][ (string) $member['language_code'] ] = $member;
 		}
 
 		$rows = array();
 		foreach ( $page as $original ) {
-			$type   = $this->scope_type( $scope, (string) $original['element_type'] );
-			$found  = $status_by_trid[ (int) $original['trid'] ] ?? array();
-			$states = array();
+			$type     = $this->scope_type( $scope, (string) $original['element_type'] );
+			$found    = $by_trid[ (int) $original['trid'] ] ?? array();
+			$states   = array();
+			$outdated = array();
 			foreach ( $languages as $language ) {
-				if ( ! array_key_exists( $language, $found ) ) {
-					$states[ $language ] = TranslationState::Missing;
-				} else {
-					$states[ $language ] = $scope->is_terms() ? TranslationState::Translated : TranslationState::from_post_status( $found[ $language ] );
+				$member              = $found[ $language ] ?? null;
+				$states[ $language ] = null === $member ? TranslationState::Missing : self::classify_row( $scope->is_terms(), $member );
+				if ( null !== $member && self::is_outdated( $states[ $language ], $member ) ) {
+					$outdated[] = $language;
 				}
 			}
 
 			$object_id = $this->to_object_id( (int) $original['element_id'], $type );
 			if ( null !== $object_id ) {
-				$rows[] = new CoverageRow( $object_id, $type, $states );
+				$rows[] = new CoverageRow( $object_id, $type, $states, $outdated );
 			}
 		}
 
 		return new CoveragePage( $rows, $total );
+	}
+
+	/**
+	 * State of one SQL row via TranslationState::classify().
+	 *
+	 * @param bool                 $is_term Whether the scope is terms.
+	 * @param array<string, mixed> $row     Row with element_exists, post_status, job_status.
+	 */
+	private static function classify_row( bool $is_term, array $row ): TranslationState {
+		return TranslationState::classify(
+			$is_term,
+			(bool) (int) $row['element_exists'],
+			null === $row['post_status'] ? null : (string) $row['post_status'],
+			null === $row['job_status'] ? null : (int) $row['job_status']
+		);
+	}
+
+	/**
+	 * Whether an existing translation is marked as needing an update.
+	 *
+	 * @param TranslationState     $state State of the row.
+	 * @param array<string, mixed> $row   Row with needs_update.
+	 */
+	private static function is_outdated( TranslationState $state, array $row ): bool {
+		return in_array( $state, array( TranslationState::Translated, TranslationState::Unpublished ), true ) && 1 === (int) ( $row['needs_update'] ?? 0 );
 	}
 
 	/**

@@ -41,9 +41,9 @@ final class TranslationAudit {
 	 * @param list<string> $languages  Target languages (validated by the caller).
 	 * @param Pagination   $pagination Page of incomplete originals to return.
 	 * @return array{
-	 *     objects: list<array{id: int, type: string, title: string, sku: string|null, missing_languages: list<string>, unpublished_languages: list<string>, edit_url: string}>,
+	 *     objects: list<array{id: int, type: string, title: string, sku: string|null, missing_languages: list<string>, unpublished_languages: list<string>, in_progress_languages: list<string>, outdated_languages: list<string>, edit_url: string}>,
 	 *     total_items: int,
-	 *     summary: array{total_objects: int, languages: list<array{language: string, translated: int, unpublished: int, missing: int, coverage_pct: float}>}
+	 *     summary: array{total_objects: int, languages: list<array{language: string, translated: int, unpublished: int, in_progress: int, missing: int, outdated: int, coverage_pct: float}>}
 	 * }
 	 */
 	public function completeness( CatalogScope $scope, array $languages, Pagination $pagination ): array {
@@ -74,6 +74,8 @@ final class TranslationAudit {
 					'sku'                   => $item->sku,
 					'missing_languages'     => $row->languages_in( TranslationState::Missing ),
 					'unpublished_languages' => $row->languages_in( TranslationState::Unpublished ),
+					'in_progress_languages' => $row->languages_in( TranslationState::InProgress ),
+					'outdated_languages'    => $row->outdated,
 					'edit_url'              => $item->edit_url,
 				);
 			}
@@ -89,7 +91,9 @@ final class TranslationAudit {
 						'language'     => $language->language,
 						'translated'   => $language->translated,
 						'unpublished'  => $language->unpublished,
+						'in_progress'  => $language->in_progress,
 						'missing'      => $language->missing,
+						'outdated'     => $language->outdated,
 						'coverage_pct' => $language->coverage_pct(),
 					),
 					$coverage

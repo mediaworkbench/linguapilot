@@ -445,6 +445,12 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   `1` waiting for translator, `2` in progress, `3` needs update, `4` ready to download, `9` duplicate, `10` complete, `30` needs review,
   `40` ATE needs retry, `42` ATE cancelled, `102` pending (translation service). Column `needs_update` = 1 when the original changed after translation.
 - DDEV data: the 28 NULL rows → status `1`; the 8 real translations → status `10`.
-- ❓ Proposal to Patrick (not implemented): in translation-completeness, report `in_progress_languages` (no element yet, open job:
-  1/2/4/30/40/102) separately from `missing_languages`, and `outdated_languages` (`needs_update = 1`).
+- ✅ Implemented (Patrick, 2026-10-14): translation-completeness reports `in_progress_languages` (no element yet, open job:
+  1/2/4/30/40/102; `TranslationState::InProgress`) separately from `missing_languages`, and `outdated_languages` (existing translation
+  with `needs_update = 1`; still counted as translated/unpublished, but the object is listed). The summary per language gains
+  `in_progress` and `outdated`.
+- Public hook `apply_filters( 'wpml_tm_translation_status', null, ['trid' => …, 'language_code' => …] )` returns the job status,
+  **but WPML registers it lazily** (`wpml_tm_load_element_translations()`): in a front-end/REST request it is not registered and
+  returns null. Another reason the gateway reads `icl_translation_status` in its SQL. The store reference test loads it explicitly.
+  `needs_update` has no public hook.
 - Seed data for consistency `sync_error`/`deviation` examples: in the milestone 6 seed script (Patrick, 2026-10-14).

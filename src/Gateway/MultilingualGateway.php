@@ -98,8 +98,8 @@ interface MultilingualGateway {
 	/**
 	 * Translation coverage per language across every original in the scope.
 	 *
-	 * States follow {@see \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState::from_post_status()};
-	 * a term translation is translated when it exists. An original in one of the languages counts for itself.
+	 * States follow {@see \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState::classify()},
+	 * including open WPML translation jobs. An original in one of the languages counts for itself.
 	 *
 	 * @param CatalogScope $scope     Originals to look at.
 	 * @param list<string> $languages Language codes.
@@ -108,7 +108,8 @@ interface MultilingualGateway {
 	public function coverage( CatalogScope $scope, array $languages ): array;
 
 	/**
-	 * One page of originals that are not translated (published) in at least one of the languages.
+	 * One page of originals with a gap: not translated (published) in at least one of the languages,
+	 * or with an outdated translation ({@see \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow::has_gap()}).
 	 *
 	 * @param CatalogScope $scope     Originals to look at.
 	 * @param list<string> $languages Language codes.
