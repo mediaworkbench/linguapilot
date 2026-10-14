@@ -10,6 +10,8 @@ declare( strict_types = 1 );
 namespace MediaWorkbench\MultilingualStoreAbilities;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
+use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbstractAbility;
+use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\RuntimeEnvironment;
@@ -35,6 +37,13 @@ final class Plugin {
 	 * @var DependencyStatus|null
 	 */
 	private ?DependencyStatus $status = null;
+
+	/**
+	 * Ability registrar, created on boot when dependencies allow it.
+	 *
+	 * @var Registrar|null
+	 */
+	private ?Registrar $registrar = null;
 
 	/**
 	 * Creates the plugin.
@@ -98,7 +107,29 @@ final class Plugin {
 		if ( array() !== $this->status->problems() ) {
 			add_action( 'admin_notices', array( $this, 'render_dependency_notice' ) );
 		}
+
+		if ( $this->status->can_register_abilities() ) {
+			$this->registrar = new Registrar( $this->create_abilities() );
+			$this->registrar->register_hooks();
+		}
 	}
+
+	/**
+	 * Ability registrar, or null when dependencies block registration.
+	 */
+	public function registrar(): ?Registrar {
+		return $this->registrar;
+	}
+
+	/**
+	 * Creates every ability the plugin provides.
+	 *
+	 * @return list<AbstractAbility>
+	 */
+	private function create_abilities(): array {
+		return array();
+	}
+
 
 	/**
 	 * Dependency status, or null before `plugins_loaded`.

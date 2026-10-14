@@ -29,6 +29,8 @@ abstract class TestCase extends PolyfillTestCase {
 	 * Tears down Brain Monkey.
 	 */
 	protected function tear_down(): void {
+		// Count Brain Monkey/Mockery expectations as assertions, so expectation-only tests are not "risky".
+		$this->addToAssertionCount( \Mockery::getContainer()->mockery_getExpectationCount() );
 		Monkey\tearDown();
 		parent::tear_down();
 	}

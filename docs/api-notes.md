@@ -291,7 +291,10 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
    loading `wp-load.php` without the WP test framework. CI runs only the no-WPML suite.
 
 ### 5.10 Still open
-- **Untranslated local attribute (§6.3):** detection rule? (Identical values are often legitimate, e.g. "S | M | L".) Needed for milestone 5 / ability 4.
+- **Untranslated local attribute (§6.3), decided 2026-10-14 (Patrick: "go ahead"):** replace the single `local_attribute_untranslated` issue with
+  `local_attribute_missing` (error), `local_attribute_options_mismatch` (error), `variation_attribute_value_invalid` (error),
+  `local_attribute_identical` (review), `local_attribute_label_untranslated` (review). Before implementing `variation_attribute_value_invalid`,
+  verify in WooCommerce how variations match local attribute values (exact text vs sanitized slug).
 - **Store setup vs. §13.4:** the DDEV store currently has default `en-us` + `de` (no FR), only EUR (no CHF/USD), and no translated products.
   The store-suite tests and the seeded test cases need the final setup and the `wpml-baseline` snapshot.
 
@@ -322,3 +325,19 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   `multilingual-store-abilities/multilingual-store-abilities.php` is listed as HPOS-compatible.
 - ℹ️ WPCS's `Squiz.Commenting.FunctionComment.IncorrectTypeHint` cannot parse PHPStan generics, so it is disabled; PHPStan level 8 covers types.
 - ℹ️ Stubs: `php-stubs/wordpress-stubs` 7.1.2 (includes the Abilities API), `woocommerce-stubs` 10.9.4, `wordpress-tests-stubs` 7.1.0.
+
+## 8. Ability plumbing (milestone 4)
+
+- ✅ Verified against WP 7.1.3 core through the public boundary (`tests/Integration/AbilityContractTest.php`, test-only `ProbeAbility`):
+  registration into the `woocommerce` category, a zero-argument `execute()` (top-level `'default' => array()`), core's output validation
+  against our envelope schemas, `ability_invalid_permissions` for anonymous and customer, shop_manager and administrator allowed,
+  REST `GET .../run?input[...]` returning 200, and POST refused for a read-only ability.
+- Core rejects `per_page` > 100 and unknown keys with `ability_invalid_input` before our code runs. `AbstractAbility` still clamps,
+  because direct PHP callers skip validation.
+- Error codes (public contract; never rename) and HTTP statuses: `mlstore_invalid_language` 400, `mlstore_invalid_input` 400,
+  `mlstore_not_found` 404, `mlstore_currency_disabled` 409, `mlstore_dependency_missing` 424, `mlstore_internal_error` 500
+  (generic message; details only in the WooCommerce log, exception message only with WP_DEBUG).
+- `languages` input: empty = all active non-default languages. Unknown codes **and the default language** → `mlstore_invalid_language`.
+  The result keeps the site's language order.
+- Audit log: `wc_get_logger()->log()`; WooCommerce turns the `source` into the log file name (`wc-logs/mlstore-abilities-*.log`).
+  Context: ability, user_id, 16-char input hash, result_count, duration_ms, error_code. No raw input, no output.
