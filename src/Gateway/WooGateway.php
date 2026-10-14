@@ -11,6 +11,7 @@ namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
 
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SalesRow;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
 
 /**
@@ -36,6 +37,48 @@ interface WooGateway {
 	 * @return array<int, array<string, string|null>>
 	 */
 	public function product_fields( array $ids ): array;
+
+	/**
+	 * Order statuses WooCommerce Analytics excludes, as stored (`wc-` prefix), mirroring
+	 * `Automattic\WooCommerce\Admin\API\Reports\DataStore::get_excluded_report_order_statuses()` (WC 11.2).
+	 *
+	 * @return list<string>
+	 */
+	public function excluded_report_statuses(): array;
+
+	/**
+	 * Orders (not refunds) created since a time, in the authoritative order table.
+	 *
+	 * @param string       $from_gmt          Period start, `Y-m-d H:i:s` UTC.
+	 * @param list<string> $excluded_statuses Statuses to exclude (`wc-` prefixed).
+	 */
+	public function order_count( string $from_gmt, array $excluded_statuses ): int;
+
+	/**
+	 * Orders (not refunds) since a time in WooCommerce Analytics, or null when its tables are unavailable.
+	 *
+	 * @param string       $from_gmt          Period start, `Y-m-d H:i:s` UTC.
+	 * @param list<string> $excluded_statuses Statuses to exclude.
+	 */
+	public function analytics_order_count( string $from_gmt, array $excluded_statuses ): ?int;
+
+	/**
+	 * Units and net revenue per product (parent product for variations) from the Analytics lookup table, refunds included.
+	 *
+	 * @param string       $from_gmt          Period start, `Y-m-d H:i:s` UTC.
+	 * @param list<string> $excluded_statuses Statuses to exclude.
+	 * @return list<SalesRow>
+	 */
+	public function sales_from_analytics( string $from_gmt, array $excluded_statuses ): array;
+
+	/**
+	 * Units and line totals per product from order line items (fallback when Analytics is unavailable; refunds not subtracted).
+	 *
+	 * @param string       $from_gmt          Period start, `Y-m-d H:i:s` UTC.
+	 * @param list<string> $excluded_statuses Statuses to exclude.
+	 * @return list<SalesRow>
+	 */
+	public function sales_from_orders( string $from_gmt, array $excluded_statuses ): array;
 
 	/**
 	 * Which of the given products are variable products.

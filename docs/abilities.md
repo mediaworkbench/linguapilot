@@ -349,3 +349,34 @@ currencies. Customers paying in such a currency silently get an exchange-rate co
 - A currency is missing when the original's `_regular_price_{CUR}` is empty or absent. Translations inherit manual prices from the original.
 - Originals in any status except trash. Variable parent products are skipped, because their prices live on the variations.
 - Prices are read raw from the database (WCML converts price reads into the visitor's currency).
+
+---
+
+## `mlstore/translation-work-queue`
+
+What to translate first: products that are not yet translated (published) into every requested language, ranked by sales.
+
+**Example question:** *"Which untranslated products sell best, so I know what to translate first?"*
+
+**Input:**
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `languages` | string[] | all non-default | A product qualifies when any of these is not published |
+| `period_days` | int 7–365 | 90 | Counted back from now |
+| `rank_by` | `revenue` \| `units` | `revenue` | Ties: the other metric, then product ID |
+| `limit` | int 1–50 | 20 | |
+
+**Output:** `products[]`: `{ rank, product_id, title, sku, revenue, units_sold, missing_languages[], unpublished_languages[],
+in_progress_languages[], edit_url }`. `summary`: `products_with_sales`, `untranslated_with_sales`, `revenue_untranslated`, `revenue_total`.
+`meta` adds `data_source`, `currency`, `period_days`, `period_start`, `analytics_missing_orders`.
+
+**How it works:**
+- **Sales from all language versions are summed under the original.** An order placed in the French shop references the French product
+  ID; without this normalization a product's sales would be split across its language versions and it would rank too low. This is
+  the typical multilingual reporting pitfall.
+- **Source:** WooCommerce Analytics (`wc_order_product_lookup` + `wc_order_stats`): net revenue in the store base currency (`meta.currency`),
+  refunds subtracted, and the same excluded order statuses as Analytics (WooCommerce → Settings → Analytics; default pending, cancelled, failed).
+- **Freshness:** WooCommerce imports orders into Analytics in batches, so recent orders can be missing. `meta.analytics_missing_orders` says
+  how many orders in the period are not imported yet. Only when Analytics is unavailable, or empty while orders exist, is the ranking
+  computed from order line items instead (`meta.data_source: "orders"`; refunds are not subtracted there).

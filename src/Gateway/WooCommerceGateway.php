@@ -10,7 +10,9 @@ declare( strict_types = 1 );
 namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
 
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SalesRow;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
 use wpdb;
 
@@ -106,6 +108,164 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Mirrors WooCommerce 11.2: option `woocommerce_excluded_report_order_statuses` (default from the
+	 * `woocommerce_analytics_settings_default_excluded_order_statuses` filter: pending, cancelled, failed),
+	 * plus auto-draft and trash, then the public `woocommerce_analytics_excluded_order_statuses` filter.
+	 */
+	public function excluded_report_statuses(): array {
+		/** This filter is documented in woocommerce/src/Internal/Admin/Settings.php */
+		$defaults = apply_filters( 'woocommerce_analytics_settings_default_excluded_order_statuses', array( 'pending', 'cancelled', 'failed' ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce hook, mirrored.
+		$option   = get_option( 'woocommerce_excluded_report_order_statuses', $defaults );
+		$statuses = array_merge( array( 'auto-draft', 'trash' ), is_array( $option ) ? $option : ( is_array( $defaults ) ? $defaults : array() ) );
+
+		/** This filter is documented in woocommerce/src/Admin/API/Reports/DataStore.php */
+		$filtered = apply_filters( 'woocommerce_analytics_excluded_order_statuses', $statuses ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce hook, mirrored.
+		$filtered = is_array( $filtered ) ? $filtered : $statuses;
+
+		$result = array();
+		foreach ( $filtered as $status ) {
+			if ( is_string( $status ) ) {
+				$normalized = mb_substr( 'wc-' . trim( $status ), 0, 20 );
+				if ( 1 === preg_match( '/^[a-z0-9_-]+$/', $normalized ) ) {
+					$result[] = $normalized;
+				}
+			}
+		}
+
+		return array_values( array_unique( $result ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Uses the table WooCommerce reports as authoritative (`OrderUtil::get_table_for_orders()`), so it
+	 * works with HPOS and with legacy post storage.
+	 */
+	public function order_count( string $from_gmt, array $excluded_statuses ): int {
+		$wpdb     = $this->wpdb;
+		$excluded = implode( ',', $excluded_statuses );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Read-only report query.
+		$count = OrderUtil::custom_orders_table_usage_is_enabled()
+			? $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE type = 'shop_order' AND date_created_gmt >= %s AND NOT FIND_IN_SET( status, %s )", OrderUtil::get_table_for_orders(), $from_gmt, $excluded ) )
+			: $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE post_type = 'shop_order' AND post_date_gmt >= %s AND NOT FIND_IN_SET( post_status, %s )", $wpdb->posts, $from_gmt, $excluded ) );
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		return (int) $count;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function analytics_order_count( string $from_gmt, array $excluded_statuses ): ?int {
+		if ( ! $this->analytics_available() ) {
+			return null;
+		}
+
+		$wpdb = $this->wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Read-only report query.
+		$count = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE parent_id = 0 AND date_created_gmt >= %s AND NOT FIND_IN_SET( status, %s )', $wpdb->prefix . 'wc_order_stats', $from_gmt, implode( ',', $excluded_statuses ) ) );
+		$this->assert_query_succeeded();
+
+		return (int) $count;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Net revenue = `product_net_revenue` (WooCommerce Analytics' products report). Refund orders have
+	 * their own rows with negative values and are included, as in Analytics.
+	 */
+	public function sales_from_analytics( string $from_gmt, array $excluded_statuses ): array {
+		if ( ! $this->analytics_available() ) {
+			return array();
+		}
+
+		$wpdb = $this->wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Read-only report query.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT l.product_id, SUM( l.product_qty ) AS units, SUM( l.product_net_revenue ) AS revenue
+				FROM %i l INNER JOIN %i s ON s.order_id = l.order_id
+				WHERE s.date_created_gmt >= %s AND NOT FIND_IN_SET( s.status, %s )
+				GROUP BY l.product_id',
+				$wpdb->prefix . 'wc_order_product_lookup',
+				$wpdb->prefix . 'wc_order_stats',
+				$from_gmt,
+				implode( ',', $excluded_statuses )
+			),
+			ARRAY_A
+		);
+		$this->assert_query_succeeded();
+
+		return self::sales_rows( $rows ?? array() );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Raw SQL over the order item tables (`_product_id`, `_qty`, `_line_total`), not wc_get_orders():
+	 * loading orders lets WCML swap item product IDs to translations in memory (WCML\OrderItems\Hooks),
+	 * and it is far heavier. Uses the order table WooCommerce reports as authoritative (HPOS or posts).
+	 */
+	public function sales_from_orders( string $from_gmt, array $excluded_statuses ): array {
+		$wpdb     = $this->wpdb;
+		$items    = $wpdb->prefix . 'woocommerce_order_items';
+		$meta     = $wpdb->prefix . 'woocommerce_order_itemmeta';
+		$excluded = implode( ',', $excluded_statuses );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Read-only report query.
+		$rows = OrderUtil::custom_orders_table_usage_is_enabled()
+			? $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT CAST( pid.meta_value AS UNSIGNED ) AS product_id, SUM( qty.meta_value ) AS units, SUM( total.meta_value ) AS revenue
+					FROM %i oi
+					INNER JOIN %i o ON o.id = oi.order_id AND o.type = 'shop_order' AND o.date_created_gmt >= %s AND NOT FIND_IN_SET( o.status, %s )
+					INNER JOIN %i pid ON pid.order_item_id = oi.order_item_id AND pid.meta_key = '_product_id'
+					INNER JOIN %i qty ON qty.order_item_id = oi.order_item_id AND qty.meta_key = '_qty'
+					INNER JOIN %i total ON total.order_item_id = oi.order_item_id AND total.meta_key = '_line_total'
+					WHERE oi.order_item_type = 'line_item'
+					GROUP BY product_id",
+					$items,
+					OrderUtil::get_table_for_orders(),
+					$from_gmt,
+					$excluded,
+					$meta,
+					$meta,
+					$meta
+				),
+				ARRAY_A
+			)
+			: $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT CAST( pid.meta_value AS UNSIGNED ) AS product_id, SUM( qty.meta_value ) AS units, SUM( total.meta_value ) AS revenue
+					FROM %i oi
+					INNER JOIN %i o ON o.ID = oi.order_id AND o.post_type = 'shop_order' AND o.post_date_gmt >= %s AND NOT FIND_IN_SET( o.post_status, %s )
+					INNER JOIN %i pid ON pid.order_item_id = oi.order_item_id AND pid.meta_key = '_product_id'
+					INNER JOIN %i qty ON qty.order_item_id = oi.order_item_id AND qty.meta_key = '_qty'
+					INNER JOIN %i total ON total.order_item_id = oi.order_item_id AND total.meta_key = '_line_total'
+					WHERE oi.order_item_type = 'line_item'
+					GROUP BY product_id",
+					$items,
+					$wpdb->posts,
+					$from_gmt,
+					$excluded,
+					$meta,
+					$meta,
+					$meta
+				),
+				ARRAY_A
+			);
+		// phpcs:enable
+		$this->assert_query_succeeded();
+
+		return self::sales_rows( $rows ?? array() );
 	}
 
 	/**
@@ -333,6 +493,35 @@ final class WooCommerceGateway implements WooGateway {
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Whether the Analytics lookup tables exist.
+	 */
+	private function analytics_available(): bool {
+		$wpdb  = $this->wpdb;
+		$table = $wpdb->prefix . 'wc_order_product_lookup';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Schema check.
+		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+
+		return $found === $table;
+	}
+
+	/**
+	 * Converts aggregated rows to SalesRow objects.
+	 *
+	 * @param array<int, array<string, mixed>> $rows Rows with product_id, units, revenue.
+	 * @return list<SalesRow>
+	 */
+	private static function sales_rows( array $rows ): array {
+		$sales = array();
+		foreach ( $rows as $row ) {
+			if ( (int) $row['product_id'] > 0 ) {
+				$sales[] = new SalesRow( (int) $row['product_id'], (float) $row['units'], (float) $row['revenue'] );
+			}
+		}
+
+		return $sales;
 	}
 
 	/**

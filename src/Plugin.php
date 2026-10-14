@@ -16,6 +16,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Abilities\CurrencyPriceGaps;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\LanguagesOverview;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\TranslationCompleteness;
+use MediaWorkbench\MultilingualStoreAbilities\Abilities\TranslationWorkQueue;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\UntranslatedVariations;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
 use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
@@ -151,6 +152,7 @@ final class Plugin {
 			new CrossLanguageConsistency( $this->gateway, $this->woo, $audit, $status ),
 			new UntranslatedVariations( $this->gateway, $this->woo, $audit, $status ),
 			new CurrencyPriceGaps( $this->gateway, $this->woo, $audit, $status ),
+			new TranslationWorkQueue( $this->gateway, $this->woo, $audit, $status ),
 		);
 	}
 

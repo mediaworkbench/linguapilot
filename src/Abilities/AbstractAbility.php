@@ -322,7 +322,7 @@ abstract class AbstractAbility {
 	 * @return array<string, mixed>
 	 */
 	protected function meta( array $extra = array() ): array {
-		$now = null !== $this->clock ? ( $this->clock )() : new DateTimeImmutable( 'now', new DateTimeZone( 'UTC' ) );
+		$now = $this->now();
 
 		return array(
 			'generated_at'     => $now->setTimezone( new DateTimeZone( 'UTC' ) )->format( 'Y-m-d\TH:i:s\Z' ),
@@ -330,6 +330,13 @@ abstract class AbstractAbility {
 			'languages'        => array_map( static fn ( Language $language ): string => $language->code, $this->gateway->active_languages() ),
 			'plugin_version'   => Plugin::VERSION,
 		) + $extra;
+	}
+
+	/**
+	 * Current time (injectable clock for tests).
+	 */
+	protected function now(): DateTimeImmutable {
+		return null !== $this->clock ? ( $this->clock )() : new DateTimeImmutable( 'now', new DateTimeZone( 'UTC' ) );
 	}
 
 	/**

@@ -424,6 +424,35 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	/**
 	 * {@inheritDoc}
 	 */
+	public function originals_of( array $ids, ElementType $type ): array {
+		$result = array();
+		foreach ( $ids as $id ) {
+			$original = $this->original_id( $id, $type );
+			if ( null !== $original ) {
+				$result[ $id ] = $original;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function coverage_of( array $original_ids, ElementType $type, array $languages ): array {
+		$rows = array();
+		foreach ( $this->coverage_rows( new CatalogScope( array( $type ), CatalogScope::ANY_POST_STATUS ), $languages ) as $row ) {
+			if ( in_array( $row->original_id, $original_ids, true ) ) {
+				$rows[] = $row;
+			}
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public function manual_price_originals( CatalogScope $scope ): array {
 		$type = $scope->types[0];
 		$ids  = array();

@@ -11,6 +11,7 @@ namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
 
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoveragePage;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
@@ -137,6 +138,25 @@ interface MultilingualGateway {
 	 * @return array<string, array<string, string>> Language => attribute key => label.
 	 */
 	public function attribute_label_translations( int $translation_id ): array;
+
+	/**
+	 * Translation states of given originals (same rules as coverage()), in no particular order.
+	 *
+	 * @param list<int>    $original_ids Original post IDs.
+	 * @param ElementType  $type         Post element type.
+	 * @param list<string> $languages    Language codes.
+	 * @return list<CoverageRow>
+	 */
+	public function coverage_of( array $original_ids, ElementType $type, array $languages ): array;
+
+	/**
+	 * Original of each ID (posts). IDs without a language (e.g. deleted posts) are omitted.
+	 *
+	 * @param list<int>   $ids  Post IDs in any language.
+	 * @param ElementType $type Post element type.
+	 * @return array<int, int> ID => original ID.
+	 */
+	public function originals_of( array $ids, ElementType $type ): array;
 
 	/**
 	 * Which product fields are kept in sync across translations.

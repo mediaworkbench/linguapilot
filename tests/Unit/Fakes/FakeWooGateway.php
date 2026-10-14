@@ -11,6 +11,7 @@ namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
 
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
+use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SalesRow;
 use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
 use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
 
@@ -74,6 +75,41 @@ final class FakeWooGateway implements WooGateway {
 	 * @var array<int, array<string, list<TermRef>>>
 	 */
 	private array $terms_by_product = array();
+
+	/**
+	 * Analytics sales rows, or null when the lookup tables are unavailable.
+	 *
+	 * @var list<SalesRow>|null
+	 */
+	private ?array $analytics_sales = array();
+
+	/**
+	 * Orders counted by Analytics in the period (null = unavailable).
+	 *
+	 * @var int|null
+	 */
+	private ?int $analytics_orders = 0;
+
+	/**
+	 * Sales aggregated from order items (fallback).
+	 *
+	 * @var list<SalesRow>
+	 */
+	private array $order_sales = array();
+
+	/**
+	 * Orders in the period in the order table.
+	 *
+	 * @var int
+	 */
+	private int $orders = 0;
+
+	/**
+	 * Period start passed to the last sales call (assertion helper).
+	 *
+	 * @var string|null
+	 */
+	public ?string $last_from = null;
 
 	/**
 	 * Creates the fake.
@@ -209,6 +245,67 @@ final class FakeWooGateway implements WooGateway {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Sets the Analytics data.
+	 *
+	 * @param list<SalesRow>|null $rows   Rows, or null for "lookup tables unavailable".
+	 * @param int|null            $orders Orders counted by Analytics.
+	 */
+	public function set_analytics( ?array $rows, ?int $orders ): self {
+		$this->analytics_sales  = $rows;
+		$this->analytics_orders = $orders;
+		return $this;
+	}
+
+	/**
+	 * Sets the order-table data.
+	 *
+	 * @param int            $orders Orders in the period.
+	 * @param list<SalesRow> $rows   Sales from order items.
+	 */
+	public function set_orders( int $orders, array $rows = array() ): self {
+		$this->orders      = $orders;
+		$this->order_sales = $rows;
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function excluded_report_statuses(): array {
+		return array( 'wc-pending', 'wc-cancelled', 'wc-failed', 'wc-auto-draft', 'wc-trash' );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function order_count( string $from_gmt, array $excluded_statuses ): int {
+		return $this->orders;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function analytics_order_count( string $from_gmt, array $excluded_statuses ): ?int {
+		return $this->analytics_orders;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function sales_from_analytics( string $from_gmt, array $excluded_statuses ): array {
+		$this->last_from = $from_gmt;
+		return $this->analytics_sales ?? array();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function sales_from_orders( string $from_gmt, array $excluded_statuses ): array {
+		$this->last_from = $from_gmt;
+		return $this->order_sales;
 	}
 
 	/**

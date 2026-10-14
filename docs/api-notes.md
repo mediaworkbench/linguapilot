@@ -486,3 +486,24 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - New gateway methods (raw SQL): `manual_price_originals( CatalogScope )` (originals with the flag, one indexed query) and
   `manual_regular_prices( ids, currencies )` (batch meta read). Store test checks both against `get_post_meta()` over every original.
 - ⚠️ DDEV store: no product uses manual prices yet, so the ability returns an empty list (5.7 ms). Real cases: milestone 6 seed script.
+
+## 17. `mlstore/translation-work-queue` (milestone 5, ability 6), 2026-10-14
+
+- Decisions (Patrick, 2026-10-14): Analytics is the source; fall back to raw order items only when Analytics is unavailable or empty
+  while orders exist; otherwise report the lag as `meta.analytics_missing_orders`. Count the same orders as Analytics.
+- ✅ Excluded statuses mirror WC 11.2 `DataStore::get_excluded_report_order_statuses()`: option `woocommerce_excluded_report_order_statuses`
+  (default via `woocommerce_analytics_settings_default_excluded_order_statuses`: pending, cancelled, failed), plus auto-draft and trash,
+  then `woocommerce_analytics_excluded_order_statuses`, with a `wc-` prefix, truncated to 20 characters.
+- ⚠️ The fallback does **not** use `wc_get_orders()` (concept §6.6): `WCML\OrderItems\Hooks::getOrderItems` (filter
+  `woocommerce_order_get_items`) swaps line-item product IDs to translations in memory, and loading orders is heavy. Instead: one raw SQL
+  aggregation over `woocommerce_order_items` / `_itemmeta`, joined with the table `OrderUtil::get_table_for_orders()` reports
+  (HPOS-aware; the legacy posts table only when WooCommerce itself uses it).
+- Normalization: `MultilingualGateway::originals_of()` (one SQL), translation states via `coverage_of()`, which shares
+  `rows_for_originals()` with incomplete_originals(). The state rule stays in one place.
+- ✅ Store tests: Analytics units per product equal order-item units minus the line items of orders Analytics has not imported;
+  `originals_of()` equals `original_id()` per ID.
+- Real data: order 17954 (completed, 2026-04-21) is missing from `wc_order_stats`: a genuine import gap. The ability reports it
+  (`analytics_missing_orders`) whenever the period includes it.
+- ⚠️ Timing on the generated store: 90 days = 2,573 sold products, **~780 ms** (7 days: 94 ms). Within §8's 2 s, but the slowest ability.
+  The cost is translation states for every sold product in batches of 100. Optimisation candidate: one coverage query for all sold
+  originals, or a larger batch size.

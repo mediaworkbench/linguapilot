@@ -495,8 +495,33 @@ final class WpmlGateway implements MultilingualGateway {
 			return new CoveragePage( array(), $total );
 		}
 
-		// Members of this page's translation groups (including job-only rows without an element), in one query.
-		$trids   = implode( ',', array_map( static fn ( array $row ): int => (int) $row['trid'], $page ) );
+		// phpcs:enable
+
+		return new CoveragePage( $this->rows_for_originals( $scope, $page, $languages ), $total );
+	}
+
+	/**
+	 * Coverage rows for given originals, from one query over their translation groups (including
+	 * job-only rows without an element). States via classify_row(), outdated via is_outdated().
+	 *
+	 * @param CatalogScope       $scope     Scope (types and kind).
+	 * @param list<array<mixed>> $originals Original rows from icl_translations (element_id, element_type, trid).
+	 * @param list<string>       $languages Languages.
+	 * @return list<CoverageRow>
+	 */
+	private function rows_for_originals( CatalogScope $scope, array $originals, array $languages ): array {
+		if ( array() === $originals || array() === $languages ) {
+			return array();
+		}
+
+		$wpdb   = $this->wpdb;
+		$table  = $this->translations_table();
+		$status = $wpdb->prefix . 'icl_translation_status';
+		$codes  = implode( ',', $languages );
+		$types  = self::type_list( $scope );
+		$trids  = implode( ',', array_map( static fn ( array $row ): int => (int) $row['trid'], $originals ) );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Read-only report query, see incomplete_originals().
 		$members = $scope->is_terms()
 			? $wpdb->get_results(
 				$wpdb->prepare(
@@ -539,7 +564,7 @@ final class WpmlGateway implements MultilingualGateway {
 		}
 
 		$rows = array();
-		foreach ( $page as $original ) {
+		foreach ( $originals as $original ) {
 			$type     = $this->scope_type( $scope, (string) $original['element_type'] );
 			$found    = $by_trid[ (int) $original['trid'] ] ?? array();
 			$states   = array();
@@ -558,7 +583,7 @@ final class WpmlGateway implements MultilingualGateway {
 			}
 		}
 
-		return new CoveragePage( $rows, $total );
+		return $rows;
 	}
 
 	/**
@@ -663,6 +688,65 @@ final class WpmlGateway implements MultilingualGateway {
 					$result[ $language ][ $key ] = $label;
 				}
 			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Direct SQL: one query per page instead of one translations() round-trip per original.
+	 *
+	 * @throws InvalidArgumentException For term types (IDs are post IDs here).
+	 */
+	public function coverage_of( array $original_ids, ElementType $type, array $languages ): array {
+		if ( $type->is_term() ) {
+			throw new InvalidArgumentException( 'coverage_of() supports post types only.' );
+		}
+		if ( array() === $original_ids || array() === $languages ) {
+			return array();
+		}
+
+		$wpdb  = $this->wpdb;
+		$list  = self::id_list( $original_ids );
+		$table = $this->translations_table();
+		$kind  = $type->value; // Validated slug (ElementType).
+		// No prepare(): IN ( ... ) keeps the element_id index usable; every interpolated value is validated (int IDs, prefixed table, slug).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- See comment above.
+		$originals = $wpdb->get_results( "SELECT element_id, element_type, trid FROM {$table} WHERE element_type = '{$kind}' AND source_language_code IS NULL AND element_id IN ( {$list} )", ARRAY_A );
+		$this->assert_query_succeeded();
+
+		return $this->rows_for_originals( new CatalogScope( array( $type ), CatalogScope::ANY_POST_STATUS ), $originals, $languages );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Direct SQL: sales data references thousands of IDs; one query instead of one hook call per ID.
+	 *
+	 * @throws InvalidArgumentException For term types.
+	 */
+	public function originals_of( array $ids, ElementType $type ): array {
+		if ( $type->is_term() ) {
+			throw new InvalidArgumentException( 'originals_of() supports post types only.' );
+		}
+		if ( array() === $ids ) {
+			return array();
+		}
+
+		$wpdb  = $this->wpdb;
+		$table = $this->translations_table();
+		$list  = self::id_list( $ids );
+		$kind  = $type->value; // Validated slug (ElementType).
+		// No prepare(): see coverage_of().
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- See coverage_of().
+		$rows = $wpdb->get_results( "SELECT t.element_id AS id, o.element_id AS original FROM {$table} t INNER JOIN {$table} o ON o.trid = t.trid AND o.element_type = t.element_type AND o.source_language_code IS NULL WHERE t.element_type = '{$kind}' AND t.element_id IN ( {$list} )", ARRAY_A );
+		$this->assert_query_succeeded();
+
+		$result = array();
+		foreach ( $rows as $row ) {
+			$result[ (int) $row['id'] ] = (int) $row['original'];
 		}
 
 		return $result;
