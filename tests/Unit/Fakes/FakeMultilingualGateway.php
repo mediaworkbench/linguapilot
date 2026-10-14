@@ -424,6 +424,37 @@ final class FakeMultilingualGateway implements MultilingualGateway {
 	/**
 	 * {@inheritDoc}
 	 */
+	public function manual_price_originals( CatalogScope $scope ): array {
+		$type = $scope->types[0];
+		$ids  = array();
+		foreach ( $this->elements[ $type->value ] ?? array() as $id => $element ) {
+			if ( $element['original'] && isset( $this->manual_prices[ $id ] ) && in_array( $element['status'], $scope->post_statuses, true ) ) {
+				$ids[] = $id;
+			}
+		}
+		sort( $ids );
+
+		return $ids;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function manual_regular_prices( array $ids, array $currencies ): array {
+		$result = array();
+		foreach ( $ids as $id ) {
+			foreach ( $currencies as $currency ) {
+				$price                      = $this->manual_prices[ $id ][ $currency ] ?? null;
+				$result[ $id ][ $currency ] = null === $price || '' === $price ? null : $price;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public function has_manual_prices( int $product_id ): bool {
 		return isset( $this->manual_prices[ $this->original_product_id( $product_id ) ] );
 	}

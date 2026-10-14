@@ -12,6 +12,7 @@ namespace MediaWorkbench\MultilingualStoreAbilities;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbstractAbility;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\CrossLanguageConsistency;
+use MediaWorkbench\MultilingualStoreAbilities\Abilities\CurrencyPriceGaps;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\LanguagesOverview;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
 use MediaWorkbench\MultilingualStoreAbilities\Abilities\TranslationCompleteness;
@@ -149,6 +150,7 @@ final class Plugin {
 			new TranslationCompleteness( $this->gateway, $this->woo, $audit, $status ),
 			new CrossLanguageConsistency( $this->gateway, $this->woo, $audit, $status ),
 			new UntranslatedVariations( $this->gateway, $this->woo, $audit, $status ),
+			new CurrencyPriceGaps( $this->gateway, $this->woo, $audit, $status ),
 		);
 	}
 

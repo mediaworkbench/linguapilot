@@ -475,3 +475,14 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   code: WP-Cron ran `wc_product_start_scheduled_sale` (Smooth Generator gave many products scheduled sales), which updates price meta.
   The store bootstrap itself had spawned cron via `wp-load.php`. Fix: `DISABLE_WP_CRON` in `tests/Store/bootstrap.php`, plus a guard
   message naming the changed tables and the likely external writers.
+
+## 16. `mlstore/currency-price-gaps` (milestone 5, ability 5), 2026-10-14
+
+- Gap rule per §5.9.1. Manual pricing = `_wcml_custom_prices_status` not in `('', '0')` on the **original** (WCML always reads it there).
+- Requires WCML (`requires_wcml()`) and multi-currency (`mlstore_currency_disabled`). `currencies` must be secondary currencies; the base
+  currency or unknown codes → `mlstore_invalid_input` with the valid list.
+- Variable parents are skipped (no own price); variations checked unless `include_variations: false`.
+- `summary.missing_by_currency` is a **list** of `{currency, missing}`, not a map: an empty PHP map would JSON-encode as `[]`.
+- New gateway methods (raw SQL): `manual_price_originals( CatalogScope )` (originals with the flag, one indexed query) and
+  `manual_regular_prices( ids, currencies )` (batch meta read). Store test checks both against `get_post_meta()` over every original.
+- ⚠️ DDEV store: no product uses manual prices yet, so the ability returns an empty list (5.7 ms). Real cases: milestone 6 seed script.

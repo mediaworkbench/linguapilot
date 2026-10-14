@@ -320,3 +320,32 @@ language with at least one issue. `summary`: `products_checked`, `translations_c
 **How values are matched** (WooCommerce 11.2, `find_matching_product_variation()`): a variation stores `attribute_{key}` and must match a
 selectable option **exactly** (case-sensitive). That means the option text for custom attributes (split at `|`, trimmed) and the term slug
 for global attributes. An empty value means "any" and is always valid.
+
+---
+
+## `mlstore/currency-price-gaps`
+
+Products and variations with WooCommerce Multilingual *"set prices manually"* enabled, but no regular price in one or more secondary
+currencies. Customers paying in such a currency silently get an exchange-rate conversion of the base price instead.
+
+**Example questions:** *"Which products have no manual price in CHF?"*, *"Are my USD prices complete?"*
+
+**Requires** WooCommerce Multilingual (`mlstore_dependency_missing`) with multi-currency enabled (`mlstore_currency_disabled`).
+
+**Input:**
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `currencies` | string[] | all secondary currencies | ISO codes from `languages-overview`. The base currency or unknown codes → `mlstore_invalid_input` (the message lists the valid ones) |
+| `include_variations` | bool | `true` | Manual prices are set per variation |
+| `page`, `per_page` | int | 1, 50 | `per_page` max 100 |
+
+**Output:** list envelope with `items[]`:
+`{ product_id, variation_id, title, sku, manual_pricing, missing_currencies[], base_regular_price, edit_url }`. `product_id` is the original
+(the parent for variations), `variation_id` is `null` for products. `summary`: `currencies_checked`, `objects_checked`, `objects_with_gaps`,
+`missing_by_currency[]` (`{ currency, missing }`).
+
+**Rules:**
+- A currency is missing when the original's `_regular_price_{CUR}` is empty or absent. Translations inherit manual prices from the original.
+- Originals in any status except trash. Variable parent products are skipped, because their prices live on the variations.
+- Prices are read raw from the database (WCML converts price reads into the visitor's currency).

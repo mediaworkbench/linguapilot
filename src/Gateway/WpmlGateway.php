@@ -700,6 +700,72 @@ final class WpmlGateway implements MultilingualGateway {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * Direct SQL: no WCML API lists manually priced products; one indexed query instead of a meta read per original.
+	 *
+	 * @throws InvalidArgumentException For term scopes.
+	 */
+	public function manual_price_originals( CatalogScope $scope ): array {
+		if ( $scope->is_terms() ) {
+			throw new InvalidArgumentException( 'manual_price_originals() supports post scopes only.' );
+		}
+
+		$wpdb = $this->wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Read-only report query, see method doc.
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT p.ID FROM %i o
+				INNER JOIN %i p ON p.ID = o.element_id AND FIND_IN_SET( p.post_status, %s )
+				INNER JOIN %i m ON m.post_id = p.ID AND m.meta_key = '_wcml_custom_prices_status' AND m.meta_value NOT IN ( '', '0' )
+				WHERE o.element_type = %s AND o.source_language_code IS NULL
+				ORDER BY p.ID ASC",
+				$this->translations_table(),
+				$wpdb->posts,
+				implode( ',', $scope->post_statuses ),
+				$wpdb->postmeta,
+				$scope->types[0]->value
+			)
+		);
+		$this->assert_query_succeeded();
+
+		return array_values( array_unique( array_map( 'intval', $ids ) ) );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Raw read: WCML may filter price meta reads (docs/api-notes.md §11).
+	 */
+	public function manual_regular_prices( array $ids, array $currencies ): array {
+		$currencies = array_values( array_filter( $currencies, static fn ( string $code ): bool => 1 === preg_match( '/^[A-Z]{3}$/', $code ) ) );
+		if ( array() === $ids || array() === $currencies ) {
+			return array();
+		}
+
+		$wpdb = $this->wpdb;
+		$list = self::id_list( $ids );
+		$keys = "'" . implode( "','", array_map( static fn ( string $code ): string => '_regular_price_' . $code, $currencies ) ) . "'";
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $list holds only integers; $keys only validated ISO codes.
+		$rows = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$list} ) AND meta_key IN ( {$keys} )", ARRAY_A );
+		$this->assert_query_succeeded();
+
+		$result = array();
+		foreach ( $ids as $id ) {
+			$result[ $id ] = array_fill_keys( $currencies, null );
+		}
+		foreach ( $rows as $row ) {
+			$currency = substr( (string) $row['meta_key'], strlen( '_regular_price_' ) );
+			$value    = null === $row['meta_value'] ? '' : (string) $row['meta_value'];
+			if ( isset( $result[ (int) $row['post_id'] ] ) && '' !== $value ) {
+				$result[ (int) $row['post_id'] ][ $currency ] = $value;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public function has_manual_prices( int $product_id ): bool {
 		$original = $this->original_product_id( $product_id );

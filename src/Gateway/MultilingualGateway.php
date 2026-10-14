@@ -149,6 +149,23 @@ interface MultilingualGateway {
 	public function currencies(): CurrencySettings;
 
 	/**
+	 * Originals of a post type with WCML manual prices enabled (`_wcml_custom_prices_status`), ordered by ID.
+	 *
+	 * @param CatalogScope $scope One post type (product or variation) plus original statuses.
+	 * @return list<int>
+	 */
+	public function manual_price_originals( CatalogScope $scope ): array;
+
+	/**
+	 * Manual regular prices of originals per currency; null when empty or absent.
+	 *
+	 * @param list<int>    $ids        Original product or variation IDs.
+	 * @param list<string> $currencies ISO 4217 codes.
+	 * @return array<int, array<string, string|null>>
+	 */
+	public function manual_regular_prices( array $ids, array $currencies ): array;
+
+	/**
 	 * Whether manual per-currency prices are enabled for a product or variation (read from its original).
 	 *
 	 * @param int $product_id Product or variation ID, any language.
