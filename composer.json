@@ -48,6 +48,7 @@
 		"lint": "phpcs",
 		"lint:fix": "phpcbf",
 		"analyse": "phpstan analyse --memory-limit=1G",
+		"check:readonly": "php bin/check-readonly.php",
 		"test:unit": "phpunit --testsuite unit",
 		"test:integration": "phpunit -c phpunit-integration.xml.dist",
 		"test:store": "phpunit -c phpunit-store.xml.dist",

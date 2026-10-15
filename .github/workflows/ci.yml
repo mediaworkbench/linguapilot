@@ -37,6 +37,20 @@ jobs:
       - uses: ramsey/composer-install@v3
       - run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
+  readonly:
+    # Static half of the read-only guarantee: no write API in plugin code except the marked audit log.
+    # The runtime half (every table checksummed around real calls) is tests/Store/ReadOnlyGuaranteeStoreTest, local only.
+    name: Read-only check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: php bin/check-readonly.php
+
   unit:
     name: Unit tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest

@@ -528,7 +528,8 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 ## 19. Milestone 7: verification, security, readme, translation (2026-10-14)
 
 - ✅ **Read-only, statically:** grep over `src/` for the write patterns from `wp-abilities-verify` (annotation-correctness.md):
-  the only write is `WooCommerceLogSink` (audit log). Its suppression is `verify-ignore: all`, because an append-only log fails both
+  the only write is `WooCommerceLogSink` (audit log). Automated as `bin/check-readonly.php` (CI job "Read-only check";
+  scanner in `tests/Tooling/ReadOnlyScanner.php`, token-based so comments never match; tests in `tests/Unit/Tooling`). Its suppression is `verify-ignore: all`, because an append-only log fails both
   `readonly` and `idempotent` in that skill's definition. The plugin calls `do_action()` nowhere; filters called: `mlstore_*`,
   WPML read filters, two WooCommerce Analytics status filters.
 - ✅ **Read-only, at runtime:** `tests/Store/ReadOnlyGuaranteeStoreTest` checksums **all 84 tables** (options included, which covers
