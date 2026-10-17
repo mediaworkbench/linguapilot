@@ -143,5 +143,3 @@ WPML is licensed software and is never part of this repository.
 
 GPL-2.0-or-later. WPML and WooCommerce are trademarks of their respective owners; this project is not affiliated with or endorsed
 by them.
-
-Built by [Media Workbench](https://profiles.wordpress.org/mediaworkbench/).

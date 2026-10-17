@@ -43,7 +43,10 @@ outdated translations (`needs_update`).
 | `before-cancel-scheduled-sales` | before cancelling the generated scheduled sales |
 | `wpml-baseline` | seeded store with scheduled sales cancelled: the reference state for the store suite and the demo |
 
-Restore with `ddev snapshot restore <name>`. Gzipped SQL exports of the first two are in the project root's `_backups/` (outside the repo).
+Restore with `ddev snapshot restore <name>`. Gzipped SQL exports of `before-smooth-generator`, `before-seed` and `wpml-baseline` are in the
+project root's `_backups/` (outside the repo). They survive a Docker reset and work with any MariaDB version:
+`ddev import-db --file=_backups/wpml-baseline-2026-10-14.sql.gz`. Snapshots live in `.ddev/db_snapshots/` and cover the whole database
+server, including the integration test DB `wordpress_test`; after `ddev import-db`, recreate it with `bin/install-wp-tests.sh` (without `true`).
 
 ## Environment notes
 
@@ -54,3 +57,11 @@ Restore with `ddev snapshot restore <name>`. Gzipped SQL exports of the first tw
   (`wp action-scheduler action cancel wc_product_{start,end}_scheduled_sale --all`; snapshot `before-cancel-scheduled-sales` before that).
   The store suite disables WP-Cron for its own process. Daily WooCommerce maintenance jobs can still run, so avoid browsing the DDEV site
   while the suite runs.
+- **WooCommerce's daily `woocommerce_scheduled_sales` job** (Action Scheduler, not the cancelled per-product actions) also starts and ends
+  sales: 2,312 generated products have sale date ranges until late December, so most daily runs save products (2026-10-17: 413 saves
+  after a sale started on 10-16). Any request to the site runs the job once it is due. Verified with MariaDB's general query log; it was
+  also the most likely cause of the earlier unexplained guard trip. Since 2026-10-17 the store suite's bootstrap refuses to start when a
+  scheduled-sale action is due within 5 minutes and prints the command to run it first; when the guard trips, its message lists the
+  Action Scheduler hooks that ran during the test class.
+- PHP errors are logged to `wp-content/debug.log` via `.ddev/php/debug-log.ini` (`log_errors`, `error_log`): the equivalent of
+  `WP_DEBUG_LOG`, which DDEV's generated `wp-config.php` does not read from the environment. `WP_DEBUG` is on by default in DDEV.

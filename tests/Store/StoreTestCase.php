@@ -39,11 +39,19 @@ abstract class StoreTestCase extends TestCase {
 	private static array $checksums = array();
 
 	/**
+	 * UTC time (MySQL format) when the class started, to name background jobs if the guard trips.
+	 *
+	 * @var string
+	 */
+	private static string $started_gmt = '';
+
+	/**
 	 * Records table checksums.
 	 */
 	public static function set_up_before_class(): void {
 		parent::set_up_before_class();
-		self::$checksums = self::checksums();
+		self::$checksums   = self::checksums();
+		self::$started_gmt = gmdate( 'Y-m-d H:i:s' );
 	}
 
 	/**
@@ -58,7 +66,7 @@ abstract class StoreTestCase extends TestCase {
 			array(),
 			$changed,
 			'Guarded tables changed during ' . static::class . ': ' . implode( ', ', $changed ) . '. Either a test wrote to the database, '
-			. 'or something outside the suite did (WP-Cron/Action Scheduler, a browser tab on the DDEV site). Check wp_actionscheduler_logs.'
+			. 'or something outside the suite did (WP-Cron/Action Scheduler, a browser tab on the DDEV site). ' . ( array() === $changed ? '' : self::background_jobs_since( self::$started_gmt ) )
 		);
 	}
 
@@ -79,6 +87,28 @@ abstract class StoreTestCase extends TestCase {
 	 */
 	protected static function wpdb(): \wpdb {
 		return $GLOBALS['wpdb'];
+	}
+
+	/**
+	 * Names the Action Scheduler actions that ran since a point in time; the usual cause of a tripped guard.
+	 *
+	 * @param string $since_gmt UTC time in MySQL format.
+	 */
+	private static function background_jobs_since( string $since_gmt ): string {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Diagnostics on Action Scheduler's table, read-only.
+		$rows = self::wpdb()->get_results(
+			self::wpdb()->prepare(
+				'SELECT hook, COUNT(*) AS runs FROM %i WHERE last_attempt_gmt >= %s GROUP BY hook ORDER BY runs DESC',
+				self::wpdb()->prefix . 'actionscheduler_actions',
+				$since_gmt
+			),
+			ARRAY_A
+		);
+		if ( empty( $rows ) ) {
+			return 'No Action Scheduler action ran meanwhile; suspect a plain WP-Cron event or the test itself.';
+		}
+
+		return 'Action Scheduler ran meanwhile: ' . implode( ', ', array_map( static fn( array $row ): string => $row['hook'] . ' (' . $row['runs'] . ')', $rows ) ) . '.';
 	}
 
 	/**
