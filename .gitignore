@@ -11,8 +11,8 @@
 /.phpunit.cache/
 /.phpcs-cache
 
-# Local Claude Code settings
-.claude/settings.local.json
+# Local AI-agent setup (Claude Code settings, instructions and agent skills; see README "Development")
+/.claude/
 CLAUDE.md
 
 # OS / editor

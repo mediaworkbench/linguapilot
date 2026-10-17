@@ -134,6 +134,11 @@ The store suite needs a local WordPress with WooCommerce, licensed WPML + WCML a
 Seed its test cases with `wp eval-file wp-content/plugins/linguapilot/tests/Fixtures/seed-demo.php` (refuses to run outside `local`);
 set `LINGUAPILOT_WP_LOAD` if `wp-load.php` is not in the WordPress install the plugin lives in. The suite is read-only and fails if
 anything in the database changes. The reference setup is DDEV.
+
+AI coding agents: the abilities were built with the agent skills `wp-abilities-api`, `wp-abilities-audit` and `wp-abilities-verify`
+from [WordPress/agent-skills](https://github.com/WordPress/agent-skills) (commit `55cd0f7`) and `abilities-api-implement` from
+[woocommerce/agent-skills](https://github.com/woocommerce/agent-skills) (commit `89cc969`, used for conventions only).
+They are not part of this repository; install them into your agent (for Claude Code: `.claude/skills/`).
 WPML is licensed software and is never part of this repository.
 
 ## Roadmap
