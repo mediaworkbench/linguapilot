@@ -130,9 +130,8 @@ composer test:store        # local DDEV store with WPML/WCML only
 bash bin/build-release.sh  # release folder + zip in build/
 ```
 
-The local DDEV store, seed data and snapshots are described in [docs/demo-store.md](docs/demo-store.md); the design and
-milestones in [docs/technical-concept.md](docs/technical-concept.md). WPML is licensed software and is never part of this
-repository.
+The local DDEV store, seed data and snapshots are described in [docs/demo-store.md](docs/demo-store.md).
+WPML is licensed software and is never part of this repository.
 
 ## Roadmap
 

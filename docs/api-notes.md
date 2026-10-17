@@ -1,5 +1,7 @@
 # API notes (verification results for §3 of the technical concept)
 
+Section references (§n) without a file name point to the technical concept, a planning document kept outside the repository.
+
 Research date: 2026-10-13. Every claim below was checked against source code, not docs from memory,
 unless marked otherwise. Update this file whenever an assumption turns out wrong (§14.8).
 
@@ -13,7 +15,7 @@ unless marked otherwise. Update this file whenever an assumption turns out wrong
 | WooCommerce agent-skills | `woocommerce/agent-skills@89cc969` | `skills/abilities-api-implement` |
 | WordPress agent-skills | `WordPress/agent-skills@55cd0f7` | `wp-abilities-api`, `-audit`, `-verify` |
 | wc-mcp-ability demo | `@1c37114` (Sep 2025) | **stale**: predates WC 10.9 conventions, do not copy from it |
-| WPML / WCML | 5.1.0 / 5.6.3 (zips present locally) | **not yet inspected**, see "Open questions" |
+| WPML / WCML | 5.1.0 / 5.6.3 | installed in the DDEV store (licensed, outside the repo), verified 2026-10-13/14: §5, §14 and the per-ability sections |
 
 Legend: ✅ verified · ⚠️ concept was wrong or outdated · ❓ open, needs Patrick or the installed code
 
