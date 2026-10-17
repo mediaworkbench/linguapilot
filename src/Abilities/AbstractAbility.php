@@ -27,7 +27,7 @@ use WP_Error;
  * owns the registration args, permission check, input normalization, error mapping and auditing.
  *
  * Core applies only the schema's top-level default, so property defaults and integer bounds
- * are re-applied here (docs/api-notes.md §1). No Throwable ever reaches core, which would
+ * are re-applied here. No Throwable ever reaches core, which would
  * echo its message to the caller.
  */
 abstract class AbstractAbility {

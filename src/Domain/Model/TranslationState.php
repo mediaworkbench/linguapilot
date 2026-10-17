@@ -23,7 +23,7 @@ enum TranslationState: string {
 	/**
 	 * WPML job statuses (ICL_TM_*) that mean "a translation is on its way": waiting for translator (1),
 	 * in progress (2), ready to download (4), needs review (30), ATE needs retry (40), pending at a
-	 * translation service (102). Verified against WPML 5.1.0 inc/constants.php (docs/api-notes.md §14).
+	 * translation service (102). Verified against WPML 5.1.0 inc/constants.php.
 	 */
 	public const OPEN_JOB_STATUSES = array( 1, 2, 4, 30, 40, 102 );
 

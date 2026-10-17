@@ -72,7 +72,7 @@ Local alternative without HTTP (STDIO through WP-CLI inside DDEV):
 
 ## 3. Demo script
 
-Questions that exercise every ability on the seeded demo store (see `docs/demo-store.md`):
+Questions that exercise every ability on the seeded demo store (`tests/Fixtures/seed-demo.php`):
 
 1. "Which languages and currencies does the store use, and which product fields stay in sync?" → `languages-overview`
 2. "Which products are missing a French translation?" → `translation-completeness`

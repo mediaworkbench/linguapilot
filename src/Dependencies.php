@@ -23,7 +23,7 @@ use MediaWorkbench\LinguaPilot\Environment\Environment;
 final class Dependencies {
 
 	/**
-	 * First WooCommerce version with the canonical abilities conventions (see docs/api-notes.md §3).
+	 * First WooCommerce version with the canonical abilities conventions.
 	 */
 	public const MIN_WOOCOMMERCE = '10.9.0';
 

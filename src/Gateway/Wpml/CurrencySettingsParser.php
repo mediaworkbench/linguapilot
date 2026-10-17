@@ -15,7 +15,7 @@ use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
 /**
  * Turns the raw `_wcml_settings` option into {@see CurrencySettings}. Malformed data degrades to "disabled".
  *
- * Structure verified against WCML 5.6.3 (docs/api-notes.md §5.5).
+ * Structure verified against WCML 5.6.3.
  */
 final class CurrencySettingsParser {
 

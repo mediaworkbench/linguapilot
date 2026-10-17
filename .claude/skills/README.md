@@ -8,4 +8,4 @@ Copied verbatim (GPL) so every session uses the same version. Update by re-copyi
 | abilities-api-implement | https://github.com/woocommerce/agent-skills | 89cc969 (2026-08-25) |
 
 `abilities-api-implement` is a PR playbook built around an audit of an existing REST surface. This plugin is greenfield,
-so we use it as a reference for conventions only (see docs/api-notes.md §4).
+so we use it as a reference for conventions only.

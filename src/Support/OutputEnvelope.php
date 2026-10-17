@@ -12,7 +12,6 @@ namespace MediaWorkbench\LinguaPilot\Support;
 /**
  * Lists use WooCommerce's flat collection shape (`{ <key>: [...], page, per_page, total_pages }`) plus
  * `total_items`, an optional `summary` and `meta`. Non-list abilities return their fields plus `meta`.
- * See docs/api-notes.md §3.
  */
 final class OutputEnvelope {
 

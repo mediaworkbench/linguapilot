@@ -22,7 +22,7 @@ use MediaWorkbench\LinguaPilot\Support\Pagination;
  * Finds translated variable products whose variations or variation attributes are not (properly) translated:
  * the classic cause of broken variation selectors in translated shops.
  *
- * Only attributes used for variations are checked. Issue types and severities: docs/api-notes.md §5.10.
+ * Only attributes used for variations are checked. Issue types and severities are documented in docs/abilities.md (`linguapilot/untranslated-variations`).
  */
 final class VariationAudit {
 

@@ -87,8 +87,8 @@ MCP client ──▶ MCP Adapter ──▶ Abilities API ──▶ Abilities/*  
   third-party read hook can change the answer or the store.
 - **No silent wrong answers.** `$wpdb` returns empty results on SQL errors, which an audit would report as "0 % translated".
   Every query is checked and turns a failure into an error.
-- WPML and WCML behaviour was verified against a licensed install, not assumed; findings are in
-  [docs/api-notes.md](docs/api-notes.md).
+- WPML and WCML behaviour (meta keys, option structures, sync rules, how hooks behave outside wp-admin) was verified against
+  a licensed install of WPML 5.1 / WCML 5.6, not assumed.
 
 ## Tests
 
@@ -96,7 +96,7 @@ MCP client ──▶ MCP Adapter ──▶ Abilities API ──▶ Abilities/*  
 |---|---|---|
 | Unit | CI, PHP 8.1–8.4 | Domain logic against fake gateways: translation states, sync-aware severities, currency rules, sales ranking, pagination clamping. |
 | Integration | CI (WP + WooCommerce, no WPML) | Registration, schemas, permissions for anonymous / customer / shop manager / administrator; safe degradation without WPML. |
-| Store | Local (DDEV, licensed WPML + WCML) | Every ability against a seeded store with known problem cases, and against a 5,000-product catalog. |
+| Store | Local (licensed WPML + WCML) | Every ability against a seeded store with known problem cases, and against a 5,000-product catalog. |
 | Read-only, runtime | Local | Checksums **every database table** before and after running all abilities twice; results must be identical. |
 | Read-only, static | CI | `bin/check-readonly.php` fails on any write API in plugin code except the marked audit log. |
 
@@ -126,11 +126,14 @@ composer analyse           # PHPStan
 composer check:readonly    # static read-only check
 composer test:unit
 composer test:integration  # needs the WP test suite: bin/install-wp-tests.sh
-composer test:store        # local DDEV store with WPML/WCML only
+composer test:store        # local store with licensed WPML/WCML only (see below)
 bash bin/build-release.sh  # release folder + zip in build/
 ```
 
-The local DDEV store, seed data and snapshots are described in [docs/demo-store.md](docs/demo-store.md).
+The store suite needs a local WordPress with WooCommerce, licensed WPML + WCML and `WP_ENVIRONMENT_TYPE=local`.
+Seed its test cases with `wp eval-file wp-content/plugins/linguapilot/tests/Fixtures/seed-demo.php` (refuses to run outside `local`);
+set `LINGUAPILOT_WP_LOAD` if `wp-load.php` is not in the WordPress install the plugin lives in. The suite is read-only and fails if
+anything in the database changes. The reference setup is DDEV.
 WPML is licensed software and is never part of this repository.
 
 ## Roadmap

@@ -16,7 +16,7 @@ use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
  * Derives which product fields are synced, from WPML's custom-field translation preferences.
  *
  * A field is synced when its meta key's preference is "copy", or when WCML keeps it in sync in
- * code regardless of preferences. See docs/api-notes.md §5.4 (verified against WCML 5.6.3).
+ * code regardless of preferences. Verified against WCML 5.6.3.
  */
 final class SyncRules {
 

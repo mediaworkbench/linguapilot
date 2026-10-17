@@ -151,7 +151,7 @@ final class TranslationCoverageStoreTest extends StoreTestCase {
 	 * @return list<CoverageRow>
 	 */
 	private function reference_rows( CatalogScope $scope, array $languages ): array {
-		// WPML registers `wpml_tm_translation_status` lazily; outside wp-admin nothing loads it (docs/api-notes.md §14).
+		// WPML registers `wpml_tm_translation_status` lazily; outside wp-admin nothing loads it.
 		if ( function_exists( 'wpml_tm_load_element_translations' ) ) {
 			wpml_tm_load_element_translations();
 		}

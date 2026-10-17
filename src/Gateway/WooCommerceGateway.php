@@ -294,7 +294,7 @@ final class WooCommerceGateway implements WooGateway {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Raw read: WCML filters product meta reads (docs/api-notes.md §11).
+	 * Raw read: WCML filters product meta reads.
 	 */
 	public function product_attributes( array $ids ): array {
 		if ( array() === $ids ) {

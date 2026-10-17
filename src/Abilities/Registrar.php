@@ -13,7 +13,7 @@ namespace MediaWorkbench\LinguaPilot\Abilities;
  * Loader only: registers each ability on `wp_abilities_api_init`.
  *
  * Abilities go into WooCommerce's shared `woocommerce` category, which WooCommerce 10.9+ registers;
- * this plugin never registers or re-registers a category (docs/api-notes.md §3).
+ * this plugin never registers or re-registers a category.
  */
 final class Registrar {
 

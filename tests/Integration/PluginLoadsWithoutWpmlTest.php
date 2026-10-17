@@ -70,7 +70,7 @@ final class PluginLoadsWithoutWpmlTest extends WP_UnitTestCase {
 	/**
 	 * WooCommerce only lists *activated* plugins in its compatibility registry, and the test
 	 * bootstrap loads plugins without activating them. So this asserts the wiring; the
-	 * registry itself is checked on the DDEV site (see docs/api-notes.md §6).
+	 * registry itself is checked manually on a store with the plugin activated.
 	 */
 	public function test_hpos_compatibility_declaration_is_hooked(): void {
 		$plugin = Plugin::instance();

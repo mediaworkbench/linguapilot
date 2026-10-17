@@ -31,7 +31,7 @@ use wpdb;
  * Uses WPML's public hooks wherever one exists. Direct SQL is used only where no hook exists or
  * hooks would mean one call per original, each explained where it happens: listing originals,
  * translation coverage, and term ID <-> term_taxonomy_id mapping.
- * Behavior verified against WPML 5.1.0 / WCML 5.6.3 (docs/api-notes.md §5).
+ * Behavior verified against WPML 5.1.0 / WCML 5.6.3.
  *
  * Never calls WCML's custom-price API: `WCML_Custom_Prices::get_product_custom_prices()` writes
  * post meta while reading. Prices are read from raw meta instead.
@@ -700,7 +700,7 @@ final class WpmlGateway implements MultilingualGateway {
 	 */
 	public function attribute_label_translations( int $translation_id ): array {
 		$wpdb = $this->wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Raw read, see docs/api-notes.md §11; indexed by post_id + meta_key.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Raw read (WCML filters meta reads); indexed by post_id + meta_key.
 		$value = $wpdb->get_var( $wpdb->prepare( 'SELECT meta_value FROM %i WHERE post_id = %d AND meta_key = %s LIMIT 1', $wpdb->postmeta, $translation_id, 'attr_label_translations' ) );
 		$this->assert_query_succeeded();
 
@@ -841,7 +841,7 @@ final class WpmlGateway implements MultilingualGateway {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Raw read: WCML may filter price meta reads (docs/api-notes.md §11).
+	 * Raw read: WCML may filter price meta reads.
 	 */
 	public function manual_regular_prices( array $ids, array $currencies ): array {
 		$currencies = array_values( array_filter( $currencies, static fn ( string $code ): bool => 1 === preg_match( '/^[A-Z]{3}$/', $code ) ) );
@@ -890,7 +890,7 @@ final class WpmlGateway implements MultilingualGateway {
 			return null;
 		}
 
-		// Raw read: WCML may filter price meta reads into the visitor's currency (docs/api-notes.md §11).
+		// Raw read: WCML may filter price meta reads into the visitor's currency.
 		$wpdb = $this->wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- See comment above; read-only, indexed by post_id + meta_key.
 		$value = $wpdb->get_var( $wpdb->prepare( 'SELECT meta_value FROM %i WHERE post_id = %d AND meta_key = %s LIMIT 1', $wpdb->postmeta, $original, '_regular_price_' . $currency ) );

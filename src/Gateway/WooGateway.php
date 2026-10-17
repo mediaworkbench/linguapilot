@@ -31,7 +31,7 @@ interface WooGateway {
 	 * plus `parent_id` (the parent product's ID for variations, otherwise "0").
 	 *
 	 * Read from the database directly: WCML filters price meta reads into the visitor's currency
-	 * and may write while doing so (docs/api-notes.md §11). Unknown IDs are omitted.
+	 * and may write while doing so. Unknown IDs are omitted.
 	 *
 	 * @param list<int> $ids Product or variation IDs.
 	 * @return array<int, array<string, string|null>>

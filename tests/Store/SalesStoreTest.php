@@ -50,7 +50,7 @@ final class SalesStoreTest extends StoreTestCase {
 
 		$from_orders = $units( $woo->sales_from_orders( self::FROM, $excluded ) );
 
-		// Line items of orders Analytics has not imported (it lags; see docs/api-notes.md §13).
+		// Line items of orders Analytics has not imported (it lags behind new orders).
 		$wpdb = self::wpdb();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Reference query.
 		$missing = $wpdb->get_results(
