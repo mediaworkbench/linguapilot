@@ -2,18 +2,18 @@
 /**
  * Store overview service.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain;
+namespace MediaWorkbench\LinguaPilot\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\Currency;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
 
 /**
  * Languages, currencies, sync settings and catalog size: what an agent needs before asking anything else.

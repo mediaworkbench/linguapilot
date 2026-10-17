@@ -2,27 +2,27 @@
 /**
  * Tests for ability registration.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Abilities;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Abilities;
 
 use Brain\Monkey\Actions;
 use Brain\Monkey\Functions;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Support\ProbeAbility;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\MemoryLogSink;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Abilities\Registrar;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Tests\Support\ProbeAbility;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\MemoryLogSink;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Registers on the core hook, into WooCommerce's category, and never registers a category itself.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar
+ * @covers \MediaWorkbench\LinguaPilot\Abilities\Registrar
  */
 final class RegistrarTest extends TestCase {
 
@@ -44,7 +44,7 @@ final class RegistrarTest extends TestCase {
 	public function test_registers_every_ability_with_its_args(): void {
 		$probe = $this->probe();
 		Functions\when( 'wp_has_ability_category' )->justReturn( true );
-		Functions\expect( 'wp_register_ability' )->once()->with( 'mlstore/probe', $probe->registration_args() );
+		Functions\expect( 'wp_register_ability' )->once()->with( 'linguapilot/probe', $probe->registration_args() );
 		Functions\expect( 'wp_register_ability_category' )->never();
 
 		( new Registrar( array( $probe ) ) )->register();

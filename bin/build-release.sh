@@ -5,14 +5,13 @@
 # plus a production-only vendor/ (Composer autoloader, no dev packages).
 #
 # Usage (inside the DDEV web container, from the plugin directory):
-#   ddev exec -d /var/www/html/wp-content/plugins/multilingual-store-abilities bash bin/build-release.sh
-# Output: build/multilingual-store-abilities-for-woocommerce/ and build/multilingual-store-abilities-for-woocommerce-<version>.zip
-# The wordpress.org slug (= text domain) differs from the repo folder and main file name (multilingual-store-abilities).
+#   ddev exec -d /var/www/html/wp-content/plugins/linguapilot bash bin/build-release.sh
+# Output: build/linguapilot/ and build/linguapilot-<version>.zip
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-SLUG="multilingual-store-abilities-for-woocommerce"
-MAIN_FILE="multilingual-store-abilities.php"
+SLUG="linguapilot"
+MAIN_FILE="linguapilot.php"
 VERSION="$(sed -n 's/^ \* Version: *//p' "${MAIN_FILE}" | tr -d '[:space:]')"
 OUT="build/${SLUG}"
 

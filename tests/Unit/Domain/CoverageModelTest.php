@@ -2,26 +2,26 @@
 /**
  * Tests for translation state and coverage models.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
 use InvalidArgumentException;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\LanguageCoverage;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationState;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * The status rule every coverage number depends on.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\TranslationState
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\LanguageCoverage
  */
 final class CoverageModelTest extends TestCase {
 

@@ -1,32 +1,32 @@
-# Copyright (C) 2026 Media Workbench
+# Copyright (C) 2026 MEDIAWORKBENCH
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilingual Store Abilities for WooCommerce 0.1.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multilingual-store-abilities-for-woocommerce\n"
+"Project-Id-Version: LinguaPilot – Multilingual Store Abilities for WooCommerce 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/linguapilot\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T22:03:39+02:00\n"
+"POT-Creation-Date: 2026-10-17T14:57:25+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: multilingual-store-abilities-for-woocommerce\n"
+"X-Domain: linguapilot\n"
 
 #. Plugin Name of the plugin
-#: multilingual-store-abilities.php
-msgid "Multilingual Store Abilities for WooCommerce"
+#: linguapilot.php
+msgid "LinguaPilot – Multilingual Store Abilities for WooCommerce"
 msgstr ""
 
 #. Description of the plugin
-#: multilingual-store-abilities.php
+#: linguapilot.php
 msgid "Read-only abilities (WordPress Abilities API) that let AI agents audit translations, cross-language consistency and multi-currency prices in WooCommerce stores running WPML."
 msgstr ""
 
 #. Author of the plugin
-#: multilingual-store-abilities.php
-msgid "Media Workbench"
+#: linguapilot.php
+msgid "MEDIAWORKBENCH"
 msgstr ""
 
 #. translators: %s: Plugin name.
@@ -38,7 +38,7 @@ msgstr ""
 #. translators: %s: Comma-separated language codes.
 #: src/Abilities/AbilityError.php:67
 #, php-format
-msgid "Unknown or not allowed language codes: %s. Use mlstore/languages-overview to list the active languages."
+msgid "Unknown or not allowed language codes: %s. Use linguapilot/languages-overview to list the active languages."
 msgstr ""
 
 #: src/Abilities/AbilityError.php:95
@@ -46,11 +46,11 @@ msgid "WooCommerce Multilingual multi-currency is not enabled."
 msgstr ""
 
 #: src/Abilities/AbstractAbility.php:222
-msgid "The ability failed unexpectedly. Details were written to the WooCommerce log (source: mlstore-abilities)."
+msgid "The ability failed unexpectedly. Details were written to the WooCommerce log (source: linguapilot)."
 msgstr ""
 
 #: src/Abilities/AbstractAbility.php:286
-msgid "Translation languages to check, as language codes from mlstore/languages-overview. Default: all active languages except the default language."
+msgid "Translation languages to check, as language codes from linguapilot/languages-overview. Default: all active languages except the default language."
 msgstr ""
 
 #: src/Abilities/AbstractAbility.php:353
@@ -62,7 +62,7 @@ msgid "Cross-language consistency"
 msgstr ""
 
 #: src/Abilities/CrossLanguageConsistency.php:65
-msgid "Finds product and variation translations whose SKU, stock, tax class, catalog visibility, post status or prices differ from the original. Each difference has a severity: sync_error when the field is supposed to be kept in sync across translations (see sync_settings in mlstore/languages-overview), so the data is out of sync; deviation when the field may legitimately differ per language. Prices are not compared for a language whose currency has manual prices on the product (use mlstore/currency-price-gaps for those). Only translations with at least one difference are listed."
+msgid "Finds product and variation translations whose SKU, stock, tax class, catalog visibility, post status or prices differ from the original. Each difference has a severity: sync_error when the field is supposed to be kept in sync across translations (see sync_settings in linguapilot/languages-overview), so the data is out of sync; deviation when the field may legitimately differ per language. Prices are not compared for a language whose currency has manual prices on the product (use linguapilot/currency-price-gaps for those). Only translations with at least one difference are listed."
 msgstr ""
 
 #: src/Abilities/CrossLanguageConsistency.php:82
@@ -98,11 +98,11 @@ msgid "Currency price gaps"
 msgstr ""
 
 #: src/Abilities/CurrencyPriceGaps.php:64
-msgid "Lists products and variations that have WooCommerce Multilingual \"set prices manually\" enabled but no regular price in one or more secondary currencies. Customers paying in such a currency silently get an exchange-rate conversion of the base price instead. Requires WCML multi-currency; otherwise returns mlstore_currency_disabled."
+msgid "Lists products and variations that have WooCommerce Multilingual \"set prices manually\" enabled but no regular price in one or more secondary currencies. Customers paying in such a currency silently get an exchange-rate conversion of the base price instead. Requires WCML multi-currency; otherwise returns linguapilot_currency_disabled."
 msgstr ""
 
 #: src/Abilities/CurrencyPriceGaps.php:88
-msgid "Secondary currency codes to check, e.g. CHF. Default: all secondary currencies (see mlstore/languages-overview)."
+msgid "Secondary currency codes to check, e.g. CHF. Default: all secondary currencies (see linguapilot/languages-overview)."
 msgstr ""
 
 #: src/Abilities/CurrencyPriceGaps.php:93
@@ -132,7 +132,7 @@ msgid "Multilingual store overview"
 msgstr ""
 
 #: src/Abilities/LanguagesOverview.php:39
-msgid "Call this first. Returns the store's languages (the default language is the source of translations), whether WooCommerce Multilingual and multi-currency are active, the currencies per language, which product fields are kept in sync across translations, and how many original-language products, variations, categories and tags exist. Other mlstore abilities take the language and currency codes listed here."
+msgid "Call this first. Returns the store's languages (the default language is the source of translations), whether WooCommerce Multilingual and multi-currency are active, the currencies per language, which product fields are kept in sync across translations, and how many original-language products, variations, categories and tags exist. Other LinguaPilot abilities take the language and currency codes listed here."
 msgstr ""
 
 #: src/Abilities/LanguagesOverview.php:70
@@ -289,11 +289,11 @@ msgid "Product %d is not a variable product."
 msgstr ""
 
 #: src/Plugin.php:177
-msgid "Multilingual Store Abilities is inactive: no abilities are registered until the following requirements are met."
+msgid "LinguaPilot is inactive: no abilities are registered until the following requirements are met."
 msgstr ""
 
 #: src/Plugin.php:178
-msgid "Multilingual Store Abilities runs with reduced functionality: abilities that need WooCommerce Multilingual are unavailable."
+msgid "LinguaPilot runs with reduced functionality: abilities that need WooCommerce Multilingual are unavailable."
 msgstr ""
 
 #: src/Plugin.php:200

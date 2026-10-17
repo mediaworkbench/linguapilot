@@ -2,15 +2,15 @@
 /**
  * WPML/WCML sync rules for product fields.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml;
+namespace MediaWorkbench\LinguaPilot\Gateway\Wpml;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
 
 /**
  * Derives which product fields are synced, from WPML's custom-field translation preferences.

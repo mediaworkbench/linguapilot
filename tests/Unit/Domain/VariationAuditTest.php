@@ -2,21 +2,21 @@
 /**
  * Tests for the variation audit.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\VariationAudit;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductAttribute;
+use MediaWorkbench\LinguaPilot\Domain\Model\TermRef;
+use MediaWorkbench\LinguaPilot\Domain\VariationAudit;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Store (DE default, EN, FR):
@@ -26,8 +26,8 @@ use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
  * - FR 3: Grösse "P | M" (mismatch, error); no FR label (review); variation 30 has Grösse "X" (value invalid, error).
  * Product 4 is simple (ignored). Product 5 is variable and clean in EN (not listed).
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\VariationAudit
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute
+ * @covers \MediaWorkbench\LinguaPilot\Domain\VariationAudit
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\ProductAttribute
  */
 final class VariationAuditTest extends TestCase {
 

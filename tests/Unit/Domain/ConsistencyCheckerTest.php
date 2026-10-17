@@ -2,23 +2,23 @@
 /**
  * Tests for cross-language consistency.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\ConsistencyChecker;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\ConsistencyChecker;
+use MediaWorkbench\LinguaPilot\Domain\Model\Currency;
+use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Store (DE default, EN, FR), SKU and stock synced, prices not:
@@ -28,7 +28,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
  * - 4 Scarf:  FR trashed → not compared; EN identical
  * - 6 Hoodie variation (parent 1): EN stock quantity differs (sync_error), FR disabled (post_status deviation)
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\ConsistencyChecker
+ * @covers \MediaWorkbench\LinguaPilot\Domain\ConsistencyChecker
  */
 final class ConsistencyCheckerTest extends TestCase {
 

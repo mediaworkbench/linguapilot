@@ -2,23 +2,23 @@
 /**
  * Contract tests for WpmlGateway against a real WPML/WCML store.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
 
 /**
  * Each test checks a gateway invariant and cross-checks it against WPML's tables, so the
  * suite does not depend on particular seed data.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WpmlGateway
  */
 final class WpmlGatewayTest extends StoreTestCase {
 

@@ -2,15 +2,15 @@
 /**
  * Product fields compared across languages.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain\Model;
+namespace MediaWorkbench\LinguaPilot\Domain\Model;
 
 /**
- * The fields `mlstore/cross-language-consistency` can compare. Values are the public input names.
+ * The fields `linguapilot/cross-language-consistency` can compare. Values are the public input names.
  */
 enum ProductField: string {
 	case Sku               = 'sku';

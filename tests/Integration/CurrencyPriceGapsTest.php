@@ -1,25 +1,25 @@
 <?php
 /**
- * Integration tests for mlstore/currency-price-gaps.
+ * Integration tests for linguapilot/currency-price-gaps.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Integration;
+namespace MediaWorkbench\LinguaPilot\Tests\Integration;
 
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbilityError;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\CurrencyPriceGaps;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\MemoryLogSink;
+use MediaWorkbench\LinguaPilot\Abilities\AbilityError;
+use MediaWorkbench\LinguaPilot\Abilities\CurrencyPriceGaps;
+use MediaWorkbench\LinguaPilot\Domain\Model\Currency;
+use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Environment\DependencyProblem;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\MemoryLogSink;
 use WP_Error;
 use WP_UnitTestCase;
 
@@ -33,7 +33,7 @@ final class CurrencyPriceGapsTest extends WP_UnitTestCase {
 
 	use RegistersAbilities;
 
-	private const NAME = 'mlstore/currency-price-gaps';
+	private const NAME = 'linguapilot/currency-price-gaps';
 
 	/**
 	 * Removes the ability.

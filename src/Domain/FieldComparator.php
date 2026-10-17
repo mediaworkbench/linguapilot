@@ -2,14 +2,14 @@
 /**
  * Equality rules for product fields across languages.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain;
+namespace MediaWorkbench\LinguaPilot\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
 
 /**
  * Decides whether two raw field values mean the same thing.

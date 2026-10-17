@@ -2,7 +2,7 @@
 /**
  * Minimal WP_Error for unit tests (Brain Monkey does not provide WordPress classes).
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 // phpcs:disable -- Mirrors the WordPress core class name and API surface used by the plugin.

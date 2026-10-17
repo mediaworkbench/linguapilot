@@ -2,21 +2,21 @@
 /**
  * Tests for comparing product field values across languages.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\FieldComparator;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\FieldComparator;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Raw meta values differ in form more often than in meaning; only real differences count.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\FieldComparator
+ * @covers \MediaWorkbench\LinguaPilot\Domain\FieldComparator
  */
 final class FieldComparatorTest extends TestCase {
 

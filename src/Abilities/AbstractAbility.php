@@ -2,26 +2,26 @@
 /**
  * Shared behaviour of all abilities.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Plugin;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Plugin;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
 use Throwable;
 use WP_Error;
 
 /**
- * Base class for every `mlstore/*` ability.
+ * Base class for every `linguapilot/*` ability.
  *
  * Subclasses only declare their schema and map input to a domain service (`run()`); this class
  * owns the registration args, permission check, input normalization, error mapping and auditing.
@@ -32,7 +32,7 @@ use WP_Error;
  */
 abstract class AbstractAbility {
 
-	public const NAMESPACE          = 'mlstore';
+	public const NAMESPACE          = 'linguapilot';
 	public const CATEGORY           = 'woocommerce';
 	public const DEFAULT_CAPABILITY = 'manage_woocommerce';
 
@@ -52,7 +52,7 @@ abstract class AbstractAbility {
 	) {}
 
 	/**
-	 * Full ability name, e.g. `mlstore/languages-overview`.
+	 * Full ability name, e.g. `linguapilot/languages-overview`.
 	 *
 	 * @return lowercase-string&non-falsy-string
 	 */
@@ -180,7 +180,7 @@ abstract class AbstractAbility {
 		 * @param string $capability Capability. Default `manage_woocommerce`.
 		 * @param string $ability    Ability name.
 		 */
-		$capability = apply_filters( 'mlstore_ability_capability', self::DEFAULT_CAPABILITY, $this->name() );
+		$capability = apply_filters( 'linguapilot_ability_capability', self::DEFAULT_CAPABILITY, $this->name() );
 		/**
 		 * A filter may return anything, whatever the default's type.
 		 *
@@ -219,7 +219,7 @@ abstract class AbstractAbility {
 
 			return new WP_Error(
 				AbilityError::INTERNAL,
-				__( 'The ability failed unexpectedly. Details were written to the WooCommerce log (source: mlstore-abilities).', 'multilingual-store-abilities-for-woocommerce' ),
+				__( 'The ability failed unexpectedly. Details were written to the WooCommerce log (source: linguapilot).', 'linguapilot' ),
 				array( 'status' => 500 )
 			);
 		} finally {
@@ -283,7 +283,7 @@ abstract class AbstractAbility {
 			'items'       => array( 'type' => 'string' ),
 			'uniqueItems' => true,
 			'default'     => array(),
-			'description' => __( 'Translation languages to check, as language codes from mlstore/languages-overview. Default: all active languages except the default language.', 'multilingual-store-abilities-for-woocommerce' ),
+			'description' => __( 'Translation languages to check, as language codes from linguapilot/languages-overview. Default: all active languages except the default language.', 'linguapilot' ),
 		);
 	}
 
@@ -350,7 +350,7 @@ abstract class AbstractAbility {
 			'generated_at'     => array(
 				'type'        => 'string',
 				'format'      => 'date-time',
-				'description' => __( 'When the response was generated (UTC).', 'multilingual-store-abilities-for-woocommerce' ),
+				'description' => __( 'When the response was generated (UTC).', 'linguapilot' ),
 			),
 			'default_language' => array( 'type' => 'string' ),
 			'languages'        => array(

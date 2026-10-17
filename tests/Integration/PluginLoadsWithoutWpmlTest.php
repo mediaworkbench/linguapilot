@@ -2,15 +2,15 @@
 /**
  * Smoke tests for a store without WPML (the CI setup).
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Integration;
+namespace MediaWorkbench\LinguaPilot\Tests\Integration;
 
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
-use MediaWorkbench\MultilingualStoreAbilities\Plugin;
+use MediaWorkbench\LinguaPilot\Environment\DependencyProblem;
+use MediaWorkbench\LinguaPilot\Plugin;
 use WP_UnitTestCase;
 
 /**
@@ -45,11 +45,11 @@ final class PluginLoadsWithoutWpmlTest extends WP_UnitTestCase {
 		$this->assertSame( DependencyProblem::WPML, $blocking[0]->dependency );
 	}
 
-	public function test_no_mlstore_abilities_are_registered(): void {
+	public function test_no_linguapilot_abilities_are_registered(): void {
 		$names = array_keys( wp_get_abilities() );
 
 		$this->assertNotEmpty( $names, 'Sanity check: WooCommerce registers its own abilities.' );
-		$this->assertSame( array(), array_values( array_filter( $names, static fn ( string $name ): bool => str_starts_with( $name, 'mlstore/' ) ) ) );
+		$this->assertSame( array(), array_values( array_filter( $names, static fn ( string $name ): bool => str_starts_with( $name, 'linguapilot/' ) ) ) );
 	}
 
 	public function test_admin_notice_is_shown_to_administrators(): void {

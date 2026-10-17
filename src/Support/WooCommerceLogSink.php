@@ -2,15 +2,15 @@
 /**
  * Log sink writing to WooCommerce's logger.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Support;
+namespace MediaWorkbench\LinguaPilot\Support;
 
 /**
- * Writes to `wc_get_logger()`; entries appear under WooCommerce → Status → Logs (source `mlstore-abilities`).
+ * Writes to `wc_get_logger()`; entries appear under WooCommerce → Status → Logs (source `linguapilot`).
  */
 final class WooCommerceLogSink implements LogSink {
 

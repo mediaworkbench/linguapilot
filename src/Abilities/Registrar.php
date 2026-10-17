@@ -2,12 +2,12 @@
 /**
  * Registers the plugin's abilities.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
 /**
  * Loader only: registers each ability on `wp_abilities_api_init`.

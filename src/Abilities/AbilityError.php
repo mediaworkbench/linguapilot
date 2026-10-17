@@ -2,12 +2,12 @@
 /**
  * Expected ability failure with a stable error code.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
 use RuntimeException;
 
@@ -19,12 +19,12 @@ use RuntimeException;
  */
 final class AbilityError extends RuntimeException {
 
-	public const DEPENDENCY_MISSING = 'mlstore_dependency_missing';
-	public const INVALID_LANGUAGE   = 'mlstore_invalid_language';
-	public const CURRENCY_DISABLED  = 'mlstore_currency_disabled';
-	public const INVALID_INPUT      = 'mlstore_invalid_input';
-	public const NOT_FOUND          = 'mlstore_not_found';
-	public const INTERNAL           = 'mlstore_internal_error';
+	public const DEPENDENCY_MISSING = 'linguapilot_dependency_missing';
+	public const INVALID_LANGUAGE   = 'linguapilot_invalid_language';
+	public const CURRENCY_DISABLED  = 'linguapilot_currency_disabled';
+	public const INVALID_INPUT      = 'linguapilot_invalid_input';
+	public const NOT_FOUND          = 'linguapilot_not_found';
+	public const INTERNAL           = 'linguapilot_internal_error';
 
 	/**
 	 * Creates an error.
@@ -50,7 +50,7 @@ final class AbilityError extends RuntimeException {
 		return new self(
 			self::DEPENDENCY_MISSING,
 			/* translators: %s: Plugin name. */
-			esc_html( sprintf( __( 'This ability requires %s, which is not active.', 'multilingual-store-abilities-for-woocommerce' ), $dependency ) ),
+			esc_html( sprintf( __( 'This ability requires %s, which is not active.', 'linguapilot' ), $dependency ) ),
 			424
 		);
 	}
@@ -64,7 +64,7 @@ final class AbilityError extends RuntimeException {
 		return new self(
 			self::INVALID_LANGUAGE,
 			/* translators: %s: Comma-separated language codes. */
-			sprintf( esc_html__( 'Unknown or not allowed language codes: %s. Use mlstore/languages-overview to list the active languages.', 'multilingual-store-abilities-for-woocommerce' ), implode( ', ', $codes ) )
+			sprintf( esc_html__( 'Unknown or not allowed language codes: %s. Use linguapilot/languages-overview to list the active languages.', 'linguapilot' ), implode( ', ', $codes ) )
 		);
 	}
 
@@ -92,7 +92,7 @@ final class AbilityError extends RuntimeException {
 	public static function currency_disabled(): self {
 		return new self(
 			self::CURRENCY_DISABLED,
-			esc_html__( 'WooCommerce Multilingual multi-currency is not enabled.', 'multilingual-store-abilities-for-woocommerce' ),
+			esc_html__( 'WooCommerce Multilingual multi-currency is not enabled.', 'linguapilot' ),
 			409
 		);
 	}

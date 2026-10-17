@@ -2,12 +2,12 @@
 /**
  * Sales of one product in a period.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain\Model;
+namespace MediaWorkbench\LinguaPilot\Domain\Model;
 
 /**
  * Units and net revenue (store base currency) for a product ID as recorded on orders.

@@ -2,14 +2,14 @@
 /**
  * In-memory log sink for tests.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Fakes;
 
-use MediaWorkbench\MultilingualStoreAbilities\Support\LogSink;
+use MediaWorkbench\LinguaPilot\Support\LogSink;
 
 /**
  * Collects log entries so tests can assert on them.

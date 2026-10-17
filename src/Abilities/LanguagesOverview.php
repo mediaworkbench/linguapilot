@@ -1,17 +1,17 @@
 <?php
 /**
- * Ability: mlstore/languages-overview.
+ * Ability: linguapilot/languages-overview.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\StoreOverview;
-use MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Domain\StoreOverview;
+use MediaWorkbench\LinguaPilot\Support\OutputEnvelope;
 
 /**
  * Orientation for agents: languages, currencies, synced fields and catalog size. Meant as the first call.
@@ -22,21 +22,21 @@ final class LanguagesOverview extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	public function name(): string {
-		return 'mlstore/languages-overview';
+		return 'linguapilot/languages-overview';
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function label(): string {
-		return __( 'Multilingual store overview', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Multilingual store overview', 'linguapilot' );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Call this first. Returns the store\'s languages (the default language is the source of translations), whether WooCommerce Multilingual and multi-currency are active, the currencies per language, which product fields are kept in sync across translations, and how many original-language products, variations, categories and tags exist. Other mlstore abilities take the language and currency codes listed here.', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Call this first. Returns the store\'s languages (the default language is the source of translations), whether WooCommerce Multilingual and multi-currency are active, the currencies per language, which product fields are kept in sync across translations, and how many original-language products, variations, categories and tags exist. Other LinguaPilot abilities take the language and currency codes listed here.', 'linguapilot' );
 	}
 
 	/**
@@ -67,7 +67,7 @@ final class LanguagesOverview extends AbstractAbility {
 			array(
 				'default_language'       => array(
 					'type'        => 'string',
-					'description' => __( 'Code of the default (source) language.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Code of the default (source) language.', 'linguapilot' ),
 				),
 				'languages'              => array(
 					'type'  => 'array',
@@ -84,7 +84,7 @@ final class LanguagesOverview extends AbstractAbility {
 				'multi_currency_enabled' => array( 'type' => 'boolean' ),
 				'default_currency'       => array(
 					'type'        => 'string',
-					'description' => __( 'Store base currency; analytics revenue is reported in it.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Store base currency; analytics revenue is reported in it.', 'linguapilot' ),
 				),
 				'currencies'             => array(
 					'type'  => 'array',
@@ -98,8 +98,8 @@ final class LanguagesOverview extends AbstractAbility {
 				),
 				'sync_settings'          => self::strict_object(
 					array(
-						'synced_fields'   => $fields + array( 'description' => __( 'A difference between translations in these fields is a sync error.', 'multilingual-store-abilities-for-woocommerce' ) ),
-						'unsynced_fields' => $fields + array( 'description' => __( 'These fields may legitimately differ per language.', 'multilingual-store-abilities-for-woocommerce' ) ),
+						'synced_fields'   => $fields + array( 'description' => __( 'A difference between translations in these fields is a sync error.', 'linguapilot' ) ),
+						'unsynced_fields' => $fields + array( 'description' => __( 'These fields may legitimately differ per language.', 'linguapilot' ) ),
 					)
 				),
 				'catalog_size'           => self::strict_object(
@@ -109,7 +109,7 @@ final class LanguagesOverview extends AbstractAbility {
 						'product_categories' => array( 'type' => 'integer' ),
 						'product_tags'       => array( 'type' => 'integer' ),
 					),
-					__( 'Original-language objects only (translations not counted), any status except trash.', 'multilingual-store-abilities-for-woocommerce' )
+					__( 'Original-language objects only (translations not counted), any status except trash.', 'linguapilot' )
 				),
 			),
 			$this->meta_schema()

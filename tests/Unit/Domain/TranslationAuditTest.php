@@ -2,20 +2,20 @@
 /**
  * Tests for translation completeness.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\TranslationAudit;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\TranslationAudit;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Which originals lack translations, and coverage per language.
@@ -27,7 +27,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
  * - 4 "Draft":    draft original, EN published   → only with status "any": FR missing
  * - 5 "Scarf":    EN published, FR in the trash  → FR missing
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\TranslationAudit
+ * @covers \MediaWorkbench\LinguaPilot\Domain\TranslationAudit
  */
 final class TranslationAuditTest extends TestCase {
 

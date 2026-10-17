@@ -2,18 +2,18 @@
 /**
  * In-memory WooCommerce gateway for unit tests.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Fakes;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SalesRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogItem;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductAttribute;
+use MediaWorkbench\LinguaPilot\Domain\Model\SalesRow;
+use MediaWorkbench\LinguaPilot\Domain\Model\TermRef;
+use MediaWorkbench\LinguaPilot\Gateway\WooGateway;
 
 /**
  * Catalog display data and attribute taxonomies set by the test.

@@ -4,31 +4,31 @@
  *
  * Usage (from the plugin directory): php bin/check-readonly.php
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Tooling\ReadOnlyScanner;
+use MediaWorkbench\LinguaPilot\Tests\Tooling\ReadOnlyScanner;
 
 // phpcs:disable WordPress.WP.AlternativeFunctions, WordPress.Security.EscapeOutput.OutputNotEscaped -- CLI tool, not WordPress output.
 
 require dirname( __DIR__ ) . '/vendor/autoload.php';
 
-$mlstore_hits       = ReadOnlyScanner::scan_paths( array( 'multilingual-store-abilities.php', 'uninstall.php', 'src' ), dirname( __DIR__ ) );
-$mlstore_violations = 0;
+$linguapilot_hits       = ReadOnlyScanner::scan_paths( array( 'linguapilot.php', 'uninstall.php', 'src' ), dirname( __DIR__ ) );
+$linguapilot_violations = 0;
 
-foreach ( $mlstore_hits as $mlstore_hit ) {
-	$mlstore_label = $mlstore_hit['suppressed'] ? 'allowed  ' : 'VIOLATION';
-	fwrite( STDOUT, sprintf( "%s %s:%d [%s] %s\n", $mlstore_label, $mlstore_hit['file'], $mlstore_hit['line'], $mlstore_hit['rule'], $mlstore_hit['code'] ) );
-	if ( ! $mlstore_hit['suppressed'] ) {
-		++$mlstore_violations;
+foreach ( $linguapilot_hits as $linguapilot_hit ) {
+	$linguapilot_label = $linguapilot_hit['suppressed'] ? 'allowed  ' : 'VIOLATION';
+	fwrite( STDOUT, sprintf( "%s %s:%d [%s] %s\n", $linguapilot_label, $linguapilot_hit['file'], $linguapilot_hit['line'], $linguapilot_hit['rule'], $linguapilot_hit['code'] ) );
+	if ( ! $linguapilot_hit['suppressed'] ) {
+		++$linguapilot_violations;
 	}
 }
 
-if ( $mlstore_violations > 0 ) {
-	fwrite( STDERR, sprintf( "\n%d write(s) in read-only code. Remove them, or mark a legitimate one with\n// verify-ignore: readonly -- <reason>\n", $mlstore_violations ) );
+if ( $linguapilot_violations > 0 ) {
+	fwrite( STDERR, sprintf( "\n%d write(s) in read-only code. Remove them, or mark a legitimate one with\n// verify-ignore: readonly -- <reason>\n", $linguapilot_violations ) );
 	exit( 1 );
 }
 
-fwrite( STDOUT, sprintf( "Read-only check passed (%d allowed, marked with verify-ignore).\n", count( $mlstore_hits ) ) );
+fwrite( STDOUT, sprintf( "Read-only check passed (%d allowed, marked with verify-ignore).\n", count( $linguapilot_hits ) ) );

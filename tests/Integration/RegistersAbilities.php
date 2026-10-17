@@ -2,15 +2,15 @@
 /**
  * Test helper to register abilities through the real Abilities API.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Integration;
+namespace MediaWorkbench\LinguaPilot\Tests\Integration;
 
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbstractAbility;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\Registrar;
+use MediaWorkbench\LinguaPilot\Abilities\AbstractAbility;
+use MediaWorkbench\LinguaPilot\Abilities\Registrar;
 
 /**
  * Registers abilities inside a simulated `wp_abilities_api_init` window and removes them again.

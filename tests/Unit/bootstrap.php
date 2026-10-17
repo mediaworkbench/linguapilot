@@ -2,7 +2,7 @@
 /**
  * Bootstrap for unit tests: no WordPress, no database.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );

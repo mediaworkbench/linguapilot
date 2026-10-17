@@ -2,12 +2,12 @@
 /**
  * Audit logging for ability calls.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Support;
+namespace MediaWorkbench\LinguaPilot\Support;
 
 use Throwable;
 
@@ -19,7 +19,7 @@ use Throwable;
  */
 final class AuditLogger {
 
-	public const SOURCE = 'mlstore-abilities';
+	public const SOURCE = 'linguapilot';
 
 	/**
 	 * Creates the logger.
@@ -114,7 +114,7 @@ final class AuditLogger {
 		 * @param bool   $enabled Whether to log. Default true.
 		 * @param string $ability Ability name.
 		 */
-		return (bool) apply_filters( 'mlstore_audit_enabled', true, $ability );
+		return (bool) apply_filters( 'linguapilot_audit_enabled', true, $ability );
 	}
 
 	/**

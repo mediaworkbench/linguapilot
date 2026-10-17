@@ -2,12 +2,12 @@
 /**
  * Display data of a catalog object.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain\Model;
+namespace MediaWorkbench\LinguaPilot\Domain\Model;
 
 /**
  * What an agent needs to name and locate a product or term.

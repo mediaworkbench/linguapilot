@@ -2,12 +2,12 @@
 /**
  * Multi-currency configuration.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain\Model;
+namespace MediaWorkbench\LinguaPilot\Domain\Model;
 
 /**
  * Store currencies. The default (store base) currency is always listed first.

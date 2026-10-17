@@ -1,24 +1,24 @@
 <?php
 /**
- * Integration tests for mlstore/cross-language-consistency.
+ * Integration tests for linguapilot/cross-language-consistency.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Integration;
+namespace MediaWorkbench\LinguaPilot\Tests\Integration;
 
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbilityError;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\CrossLanguageConsistency;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\MemoryLogSink;
+use MediaWorkbench\LinguaPilot\Abilities\AbilityError;
+use MediaWorkbench\LinguaPilot\Abilities\CrossLanguageConsistency;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\MemoryLogSink;
 use WP_Error;
 use WP_UnitTestCase;
 
@@ -31,7 +31,7 @@ final class CrossLanguageConsistencyTest extends WP_UnitTestCase {
 
 	use RegistersAbilities;
 
-	private const NAME = 'mlstore/cross-language-consistency';
+	private const NAME = 'linguapilot/cross-language-consistency';
 
 	/**
 	 * Registers the ability: product 1 has an EN SKU sync error and an FR price deviation.

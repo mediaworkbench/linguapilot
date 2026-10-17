@@ -2,12 +2,12 @@
 /**
  * One page of object IDs.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain\Model;
+namespace MediaWorkbench\LinguaPilot\Domain\Model;
 
 /**
  * A page of IDs plus the total number of matching objects.

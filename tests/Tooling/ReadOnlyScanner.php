@@ -2,12 +2,12 @@
 /**
  * Static read-only check: finds write APIs in plugin source.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Tooling;
+namespace MediaWorkbench\LinguaPilot\Tests\Tooling;
 
 use PhpToken;
 use RecursiveDirectoryIterator;

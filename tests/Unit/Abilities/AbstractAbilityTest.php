@@ -2,33 +2,33 @@
 /**
  * Tests for the shared ability behaviour.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Abilities;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Abilities;
 
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
 use DateTimeImmutable;
 use DateTimeZone;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbilityError;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Plugin;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Support\ProbeAbility;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\MemoryLogSink;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Abilities\AbilityError;
+use MediaWorkbench\LinguaPilot\Environment\DependencyProblem;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Plugin;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Tests\Support\ProbeAbility;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\MemoryLogSink;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 use WP_Error;
 
 /**
  * Registration args, permissions, input normalization, error mapping and auditing.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Abilities\AbstractAbility
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Abilities\AbilityError
+ * @covers \MediaWorkbench\LinguaPilot\Abilities\AbstractAbility
+ * @covers \MediaWorkbench\LinguaPilot\Abilities\AbilityError
  */
 final class AbstractAbilityTest extends TestCase {
 
@@ -86,14 +86,14 @@ final class AbstractAbilityTest extends TestCase {
 	}
 
 	public function test_capability_is_filterable_per_ability(): void {
-		Filters\expectApplied( 'mlstore_ability_capability' )->once()->with( 'manage_woocommerce', 'mlstore/probe' )->andReturn( 'view_mlstore_reports' );
-		Functions\expect( 'current_user_can' )->once()->with( 'view_mlstore_reports' )->andReturn( true );
+		Filters\expectApplied( 'linguapilot_ability_capability' )->once()->with( 'manage_woocommerce', 'linguapilot/probe' )->andReturn( 'view_linguapilot_reports' );
+		Functions\expect( 'current_user_can' )->once()->with( 'view_linguapilot_reports' )->andReturn( true );
 
 		$this->assertTrue( $this->probe()->check_permission() );
 	}
 
 	public function test_non_string_capability_from_filter_denies(): void {
-		Filters\expectApplied( 'mlstore_ability_capability' )->andReturn( null );
+		Filters\expectApplied( 'linguapilot_ability_capability' )->andReturn( null );
 		Functions\expect( 'current_user_can' )->never();
 
 		$this->assertFalse( $this->probe()->check_permission() );

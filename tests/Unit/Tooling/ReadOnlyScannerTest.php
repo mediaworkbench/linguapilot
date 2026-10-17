@@ -2,15 +2,15 @@
 /**
  * Tests for the static read-only check.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Tooling;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Tooling;
 
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Tooling\ReadOnlyScanner;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Tests\Tooling\ReadOnlyScanner;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * The scanner must find writes, ignore comments and reads, and honour `verify-ignore` only with a reason.
@@ -42,7 +42,7 @@ final class ReadOnlyScannerTest extends TestCase {
 			'cron'                => array( 'wp_schedule_single_event( time(), "hook" );', 'scheduler' ),
 			'action scheduler'    => array( 'as_schedule_single_action( time(), "hook" );', 'scheduler' ),
 			'woo queue'           => array( 'WC()->queue()->schedule_single( time(), "hook" );', 'scheduler' ),
-			'do_action'           => array( 'do_action( "mlstore_ran" );', 'action' ),
+			'do_action'           => array( 'do_action( "linguapilot_ran" );', 'action' ),
 			'logger'              => array( 'wc_get_logger()->info( "x" );', 'logger' ),
 		);
 	}
@@ -136,7 +136,7 @@ final class ReadOnlyScannerTest extends TestCase {
 	 * The shipped plugin code passes: its only write is the audit log, and that is marked.
 	 */
 	public function test_plugin_source_passes(): void {
-		$hits = ReadOnlyScanner::scan_paths( array( 'multilingual-store-abilities.php', 'uninstall.php', 'src' ), dirname( __DIR__, 3 ) );
+		$hits = ReadOnlyScanner::scan_paths( array( 'linguapilot.php', 'uninstall.php', 'src' ), dirname( __DIR__, 3 ) );
 
 		$this->assertSame(
 			array( array( 'src/Support/WooCommerceLogSink.php', 'logger', true ) ),

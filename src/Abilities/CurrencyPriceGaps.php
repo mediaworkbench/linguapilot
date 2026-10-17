@@ -1,23 +1,23 @@
 <?php
 /**
- * Ability: mlstore/currency-price-gaps.
+ * Ability: linguapilot/currency-price-gaps.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
 use Closure;
 use DateTimeImmutable;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\CurrencyPriceAudit;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Domain\CurrencyPriceAudit;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WooGateway;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Support\OutputEnvelope;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
 
 /**
  * Manually priced products and variations without a price in a secondary currency.
@@ -47,21 +47,21 @@ final class CurrencyPriceGaps extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	public function name(): string {
-		return 'mlstore/currency-price-gaps';
+		return 'linguapilot/currency-price-gaps';
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function label(): string {
-		return __( 'Currency price gaps', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Currency price gaps', 'linguapilot' );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Lists products and variations that have WooCommerce Multilingual "set prices manually" enabled but no regular price in one or more secondary currencies. Customers paying in such a currency silently get an exchange-rate conversion of the base price instead. Requires WCML multi-currency; otherwise returns mlstore_currency_disabled.', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Lists products and variations that have WooCommerce Multilingual "set prices manually" enabled but no regular price in one or more secondary currencies. Customers paying in such a currency silently get an exchange-rate conversion of the base price instead. Requires WCML multi-currency; otherwise returns linguapilot_currency_disabled.', 'linguapilot' );
 	}
 
 	/**
@@ -85,12 +85,12 @@ final class CurrencyPriceGaps extends AbstractAbility {
 					),
 					'uniqueItems' => true,
 					'default'     => array(),
-					'description' => __( 'Secondary currency codes to check, e.g. CHF. Default: all secondary currencies (see mlstore/languages-overview).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Secondary currency codes to check, e.g. CHF. Default: all secondary currencies (see linguapilot/languages-overview).', 'linguapilot' ),
 				),
 				'include_variations' => array(
 					'type'        => 'boolean',
 					'default'     => true,
-					'description' => __( 'Also check variations (manual prices are set per variation).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Also check variations (manual prices are set per variation).', 'linguapilot' ),
 				),
 			),
 			Pagination::input_properties()
@@ -111,7 +111,7 @@ final class CurrencyPriceGaps extends AbstractAbility {
 			'properties'           => array(
 				'product_id'         => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language product ID (the parent product for variations).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language product ID (the parent product for variations).', 'linguapilot' ),
 				),
 				'variation_id'       => array( 'type' => array( 'integer', 'null' ) ),
 				'title'              => array( 'type' => 'string' ),
@@ -123,7 +123,7 @@ final class CurrencyPriceGaps extends AbstractAbility {
 				'missing_currencies' => $codes,
 				'base_regular_price' => array(
 					'type'        => array( 'string', 'null' ),
-					'description' => __( 'Regular price in the store base currency, as stored.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Regular price in the store base currency, as stored.', 'linguapilot' ),
 				),
 				'edit_url'           => array( 'type' => 'string' ),
 			),
@@ -137,7 +137,7 @@ final class CurrencyPriceGaps extends AbstractAbility {
 				'currencies_checked'  => $codes,
 				'objects_checked'     => array(
 					'type'        => 'integer',
-					'description' => __( 'Manually priced products and variations checked.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Manually priced products and variations checked.', 'linguapilot' ),
 				),
 				'objects_with_gaps'   => array( 'type' => 'integer' ),
 				'missing_by_currency' => array(
@@ -179,7 +179,7 @@ final class CurrencyPriceGaps extends AbstractAbility {
 				esc_html(
 					sprintf(
 					/* translators: 1: Requested currency codes, 2: Available secondary currency codes. */
-						__( 'Not a secondary currency: %1$s. Secondary currencies: %2$s.', 'multilingual-store-abilities-for-woocommerce' ),
+						__( 'Not a secondary currency: %1$s. Secondary currencies: %2$s.', 'linguapilot' ),
 						implode( ', ', $invalid ),
 						array() === $secondary ? '-' : implode( ', ', $secondary )
 					)

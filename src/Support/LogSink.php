@@ -2,12 +2,12 @@
 /**
  * Log output contract.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Support;
+namespace MediaWorkbench\LinguaPilot\Support;
 
 /**
  * Where audit entries are written.

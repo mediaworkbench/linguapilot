@@ -2,26 +2,26 @@
 /**
  * WPML + WooCommerce Multilingual implementation of the multilingual gateway.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
+namespace MediaWorkbench\LinguaPilot\Gateway;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoveragePage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\CurrencySettingsParser;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\SyncRules;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoveragePage;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoverageRow;
+use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\IdPage;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Domain\Model\LanguageCoverage;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationPair;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationState;
+use MediaWorkbench\LinguaPilot\Gateway\Wpml\CurrencySettingsParser;
+use MediaWorkbench\LinguaPilot\Gateway\Wpml\SyncRules;
 use InvalidArgumentException;
 use wpdb;
 

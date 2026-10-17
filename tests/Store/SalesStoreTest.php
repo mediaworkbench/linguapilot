@@ -2,23 +2,23 @@
 /**
  * Store tests for the sales data reads.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SalesRow;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\SalesRow;
+use MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
 
 /**
  * The two sales sources must agree on a fully imported store, and ID normalization must match WPML's hooks.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WpmlGateway
  */
 final class SalesStoreTest extends StoreTestCase {
 
@@ -117,7 +117,7 @@ final class SalesStoreTest extends StoreTestCase {
 		);
 		wp_set_current_user( (int) ( $admins[0] ?? 0 ) );
 
-		$result = wp_get_ability( 'mlstore/translation-work-queue' )?->execute( array( 'limit' => 5 ) );
+		$result = wp_get_ability( 'linguapilot/translation-work-queue' )?->execute( array( 'limit' => 5 ) );
 
 		$this->assertIsArray( $result, $result instanceof \WP_Error ? $result->get_error_message() : 'ability not registered' );
 		$this->assertLessThanOrEqual( 5, count( $result['products'] ) );

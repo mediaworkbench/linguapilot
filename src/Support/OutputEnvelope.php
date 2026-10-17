@@ -2,12 +2,12 @@
 /**
  * Output envelope and matching JSON schemas.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Support;
+namespace MediaWorkbench\LinguaPilot\Support;
 
 /**
  * Lists use WooCommerce's flat collection shape (`{ <key>: [...], page, per_page, total_pages }`) plus
@@ -73,19 +73,19 @@ final class OutputEnvelope {
 			),
 			'page'        => array(
 				'type'        => 'integer',
-				'description' => __( 'Current page.', 'multilingual-store-abilities-for-woocommerce' ),
+				'description' => __( 'Current page.', 'linguapilot' ),
 			),
 			'per_page'    => array(
 				'type'        => 'integer',
-				'description' => __( 'Maximum number of items per page.', 'multilingual-store-abilities-for-woocommerce' ),
+				'description' => __( 'Maximum number of items per page.', 'linguapilot' ),
 			),
 			'total_pages' => array(
 				'type'        => 'integer',
-				'description' => __( 'Total number of pages.', 'multilingual-store-abilities-for-woocommerce' ),
+				'description' => __( 'Total number of pages.', 'linguapilot' ),
 			),
 			'total_items' => array(
 				'type'        => 'integer',
-				'description' => __( 'Total number of matching items across all pages.', 'multilingual-store-abilities-for-woocommerce' ),
+				'description' => __( 'Total number of matching items across all pages.', 'linguapilot' ),
 			),
 		);
 		$required   = array( $key, 'page', 'per_page', 'total_pages', 'total_items', 'meta' );

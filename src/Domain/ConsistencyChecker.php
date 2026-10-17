@@ -2,21 +2,21 @@
 /**
  * Cross-language consistency service.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain;
+namespace MediaWorkbench\LinguaPilot\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationPair;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WooGateway;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
 
 /**
  * Compares product fields between each original and its translations.

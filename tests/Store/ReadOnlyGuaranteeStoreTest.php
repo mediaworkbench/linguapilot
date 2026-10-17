@@ -2,15 +2,15 @@
 /**
  * Runtime proof of the read-only and idempotent annotations.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
 /**
- * Runs every registered `mlstore/*` ability twice on the real store and asserts that
+ * Runs every registered `linguapilot/*` ability twice on the real store and asserts that
  *
  * - no table in the database changed (all tables, including options: this covers writing listeners
  *   of the WPML/WooCommerce filters the gateways call, which static analysis cannot see), and
@@ -26,12 +26,12 @@ final class ReadOnlyGuaranteeStoreTest extends StoreTestCase {
 	 * Representative input per ability (large pages, long periods).
 	 */
 	private const INPUTS = array(
-		'mlstore/languages-overview'         => null,
-		'mlstore/translation-completeness'   => array( 'per_page' => 100 ),
-		'mlstore/cross-language-consistency' => array( 'per_page' => 100 ),
-		'mlstore/untranslated-variations'    => array(),
-		'mlstore/currency-price-gaps'        => array(),
-		'mlstore/translation-work-queue'     => array( 'period_days' => 365 ),
+		'linguapilot/languages-overview'         => null,
+		'linguapilot/translation-completeness'   => array( 'per_page' => 100 ),
+		'linguapilot/cross-language-consistency' => array( 'per_page' => 100 ),
+		'linguapilot/untranslated-variations'    => array(),
+		'linguapilot/currency-price-gaps'        => array(),
+		'linguapilot/translation-work-queue'     => array( 'period_days' => 365 ),
 	);
 
 	public function test_abilities_write_nothing_and_are_idempotent(): void {
@@ -44,7 +44,7 @@ final class ReadOnlyGuaranteeStoreTest extends StoreTestCase {
 		);
 		wp_set_current_user( (int) ( $admins[0] ?? 0 ) );
 
-		$registered = array_values( array_filter( array_keys( wp_get_abilities() ), static fn ( string $name ): bool => str_starts_with( $name, 'mlstore/' ) ) );
+		$registered = array_values( array_filter( array_keys( wp_get_abilities() ), static fn ( string $name ): bool => str_starts_with( $name, 'linguapilot/' ) ) );
 		sort( $registered );
 		$expected = array_keys( self::INPUTS );
 		sort( $expected );

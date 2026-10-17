@@ -2,12 +2,12 @@
 /**
  * Bounded pagination.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Support;
+namespace MediaWorkbench\LinguaPilot\Support;
 
 /**
  * Page and page size, clamped so no ability can return unbounded data.
@@ -69,14 +69,14 @@ final class Pagination {
 				'type'        => 'integer',
 				'minimum'     => 1,
 				'default'     => 1,
-				'description' => __( 'Page number to return (1-indexed).', 'multilingual-store-abilities-for-woocommerce' ),
+				'description' => __( 'Page number to return (1-indexed).', 'linguapilot' ),
 			),
 			'per_page' => array(
 				'type'        => 'integer',
 				'minimum'     => 1,
 				'maximum'     => self::MAX_PER_PAGE,
 				'default'     => self::clamp_per_page( $default_per_page ),
-				'description' => __( 'Maximum number of items per page.', 'multilingual-store-abilities-for-woocommerce' ),
+				'description' => __( 'Maximum number of items per page.', 'linguapilot' ),
 			),
 		);
 	}

@@ -2,15 +2,15 @@
 /**
  * Parser for WCML's multi-currency settings.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml;
+namespace MediaWorkbench\LinguaPilot\Gateway\Wpml;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\Currency;
+use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
 
 /**
  * Turns the raw `_wcml_settings` option into {@see CurrencySettings}. Malformed data degrades to "disabled".

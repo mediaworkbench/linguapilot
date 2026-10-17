@@ -2,26 +2,26 @@
 /**
  * Tests for the store overview.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\StoreOverview;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\Currency;
+use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Domain\StoreOverview;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * The orientation data an agent reads first.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\StoreOverview
+ * @covers \MediaWorkbench\LinguaPilot\Domain\StoreOverview
  */
 final class StoreOverviewTest extends TestCase {
 

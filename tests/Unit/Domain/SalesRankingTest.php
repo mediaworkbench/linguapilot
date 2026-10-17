@@ -2,21 +2,21 @@
 /**
  * Tests for the sales-ranked translation queue.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SalesRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\SalesRanking;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\SalesRow;
+use MediaWorkbench\LinguaPilot\Domain\SalesRanking;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Store (DE default, EN, FR) and Analytics sales in the period:
@@ -27,7 +27,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
  * - 5 Sock:   EN translated, FR sent to translation — sold 7 / 7
  * - 99:       deleted product (no language)         — sold 3 / 300, ignored
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\SalesRanking
+ * @covers \MediaWorkbench\LinguaPilot\Domain\SalesRanking
  */
 final class SalesRankingTest extends TestCase {
 

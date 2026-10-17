@@ -2,21 +2,21 @@
 /**
  * Tests for pagination clamping.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Support;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Support;
 
 use Brain\Monkey\Functions;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Output is always bounded: per_page 1-100, page >= 1, whatever the input.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Support\Pagination
+ * @covers \MediaWorkbench\LinguaPilot\Support\Pagination
  */
 final class PaginationTest extends TestCase {
 

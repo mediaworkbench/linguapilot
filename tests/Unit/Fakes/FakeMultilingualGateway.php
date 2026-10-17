@@ -2,26 +2,26 @@
 /**
  * In-memory multilingual gateway for unit tests.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Fakes;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoveragePage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoveragePage;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoverageRow;
+use MediaWorkbench\LinguaPilot\Domain\Model\Currency;
+use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\IdPage;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Domain\Model\LanguageCoverage;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationPair;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationState;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
 
 /**
  * A configurable store: languages, translation groups, sync and currency settings, manual prices.

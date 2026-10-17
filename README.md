@@ -1,6 +1,6 @@
-# Multilingual Store Abilities for WooCommerce
+# LinguaPilot – Multilingual Store Abilities for WooCommerce
 
-[![CI](https://github.com/mediaworkbench/multilingual-store-abilities/actions/workflows/ci.yml/badge.svg)](https://github.com/mediaworkbench/multilingual-store-abilities/actions/workflows/ci.yml)
+[![CI](https://github.com/mediaworkbench/linguapilot/actions/workflows/ci.yml/badge.svg)](https://github.com/mediaworkbench/linguapilot/actions/workflows/ci.yml)
 
 Read-only [WordPress Abilities](https://developer.wordpress.org/apis/abilities-api/) that let AI agents audit a multilingual
 WooCommerce store running **WPML** and **WooCommerce Multilingual & Multicurrency**: missing translations, translations that
@@ -25,14 +25,14 @@ question:
 
 | Ability | Answers |
 |---|---|
-| `mlstore/languages-overview` | Languages, currency per language, which product fields WPML/WCML keep in sync, catalog size. An agent's first call. |
-| `mlstore/translation-completeness` | Products, categories, tags and attribute terms without a translation, with coverage per language. Separates *missing*, *unpublished*, *in progress* (sent to a translator) and *outdated*. |
-| `mlstore/cross-language-consistency` | Translations whose SKU, stock, tax class, visibility, status or prices differ from the original, each rated `sync_error` (the field should be synced) or `deviation` (may be intentional). |
-| `mlstore/untranslated-variations` | Why a translated variable product's variation selector breaks: missing variations, untranslated attribute terms, mismatched custom options. |
-| `mlstore/currency-price-gaps` | Products and variations with "set prices manually" that lack a price in a secondary currency. |
-| `mlstore/translation-work-queue` | Untranslated products ranked by sales from WooCommerce Analytics, with sales of all language versions credited to the original. |
+| `linguapilot/languages-overview` | Languages, currency per language, which product fields WPML/WCML keep in sync, catalog size. An agent's first call. |
+| `linguapilot/translation-completeness` | Products, categories, tags and attribute terms without a translation, with coverage per language. Separates *missing*, *unpublished*, *in progress* (sent to a translator) and *outdated*. |
+| `linguapilot/cross-language-consistency` | Translations whose SKU, stock, tax class, visibility, status or prices differ from the original, each rated `sync_error` (the field should be synced) or `deviation` (may be intentional). |
+| `linguapilot/untranslated-variations` | Why a translated variable product's variation selector breaks: missing variations, untranslated attribute terms, mismatched custom options. |
+| `linguapilot/currency-price-gaps` | Products and variations with "set prices manually" that lack a price in a secondary currency. |
+| `linguapilot/translation-work-queue` | Untranslated products ranked by sales from WooCommerce Analytics, with sales of all language versions credited to the original. |
 
-Example (`mlstore/cross-language-consistency`, demo store, shortened):
+Example (`linguapilot/cross-language-consistency`, demo store, shortened):
 
 ```json
 {
@@ -115,7 +115,7 @@ Also in CI: PHPCS (WordPress Coding Standards 3, PHPCompatibility) and PHPStan l
 1. Install and activate the plugin. If a requirement is missing, an admin notice says which.
 2. To connect an agent, follow [docs/mcp-setup.md](docs/mcp-setup.md): dedicated user, application password, MCP client config
    for `/wp-json/mcp/mcp-adapter-default-server`.
-3. Without MCP: `GET /wp-json/wp-abilities/v1/abilities/mlstore/languages-overview/run`.
+3. Without MCP: `GET /wp-json/wp-abilities/v1/abilities/linguapilot/languages-overview/run`.
 
 ## Development
 
@@ -136,7 +136,7 @@ WPML is licensed software and is never part of this repository.
 ## Roadmap
 
 - **v0.1** (this): six read-only abilities.
-- **v0.2**: first write ability, `mlstore/create-translation-drafts` (draft translations only, `dry_run` by default).
+- **v0.2**: first write ability, `linguapilot/create-translation-drafts` (draft translations only, `dry_run` by default).
 - **v0.3**: settings page to enable abilities individually; possibly a Polylang gateway.
 
 ## License

@@ -2,15 +2,15 @@
 /**
  * Result of the runtime dependency check.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Environment;
+namespace MediaWorkbench\LinguaPilot\Environment;
 
 /**
- * Immutable outcome of {@see \MediaWorkbench\MultilingualStoreAbilities\Dependencies::check()}.
+ * Immutable outcome of {@see \MediaWorkbench\LinguaPilot\Dependencies::check()}.
  */
 final class DependencyStatus {
 

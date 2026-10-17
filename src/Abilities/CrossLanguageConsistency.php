@@ -1,24 +1,24 @@
 <?php
 /**
- * Ability: mlstore/cross-language-consistency.
+ * Ability: linguapilot/cross-language-consistency.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
 use Closure;
 use DateTimeImmutable;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\ConsistencyChecker;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Domain\ConsistencyChecker;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WooGateway;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Support\OutputEnvelope;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
 
 /**
  * Translations whose SKU, stock, tax class, visibility, status or prices differ from the original.
@@ -48,21 +48,21 @@ final class CrossLanguageConsistency extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	public function name(): string {
-		return 'mlstore/cross-language-consistency';
+		return 'linguapilot/cross-language-consistency';
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function label(): string {
-		return __( 'Cross-language consistency', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Cross-language consistency', 'linguapilot' );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Finds product and variation translations whose SKU, stock, tax class, catalog visibility, post status or prices differ from the original. Each difference has a severity: sync_error when the field is supposed to be kept in sync across translations (see sync_settings in mlstore/languages-overview), so the data is out of sync; deviation when the field may legitimately differ per language. Prices are not compared for a language whose currency has manual prices on the product (use mlstore/currency-price-gaps for those). Only translations with at least one difference are listed.', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Finds product and variation translations whose SKU, stock, tax class, catalog visibility, post status or prices differ from the original. Each difference has a severity: sync_error when the field is supposed to be kept in sync across translations (see sync_settings in linguapilot/languages-overview), so the data is out of sync; deviation when the field may legitimately differ per language. Prices are not compared for a language whose currency has manual prices on the product (use linguapilot/currency-price-gaps for those). Only translations with at least one difference are listed.', 'linguapilot' );
 	}
 
 	/**
@@ -79,13 +79,13 @@ final class CrossLanguageConsistency extends AbstractAbility {
 					),
 					'uniqueItems' => true,
 					'default'     => array(),
-					'description' => __( 'Fields to compare. Default: all.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Fields to compare. Default: all.', 'linguapilot' ),
 				),
 				'languages'          => self::languages_input_property(),
 				'include_variations' => array(
 					'type'        => 'boolean',
 					'default'     => true,
-					'description' => __( 'Also compare translated variations (SKU, stock, prices, enabled/disabled per variation).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Also compare translated variations (SKU, stock, prices, enabled/disabled per variation).', 'linguapilot' ),
 				),
 			),
 			Pagination::input_properties()
@@ -98,7 +98,7 @@ final class CrossLanguageConsistency extends AbstractAbility {
 	protected function output_schema(): array {
 		$value = array(
 			'type'        => array( 'string', 'null' ),
-			'description' => __( 'Raw stored value; null when empty.', 'multilingual-store-abilities-for-woocommerce' ),
+			'description' => __( 'Raw stored value; null when empty.', 'linguapilot' ),
 		);
 
 		$difference = array(
@@ -124,11 +124,11 @@ final class CrossLanguageConsistency extends AbstractAbility {
 			'properties'           => array(
 				'product_id'     => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language product ID (the parent product for variation rows).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language product ID (the parent product for variation rows).', 'linguapilot' ),
 				),
 				'variation_id'   => array(
 					'type'        => array( 'integer', 'null' ),
-					'description' => __( 'Original-language variation ID; null for product-level rows.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language variation ID; null for product-level rows.', 'linguapilot' ),
 				),
 				'title'          => array( 'type' => 'string' ),
 				'sku'            => array( 'type' => array( 'string', 'null' ) ),
@@ -136,7 +136,7 @@ final class CrossLanguageConsistency extends AbstractAbility {
 				'translation_id' => array( 'type' => 'integer' ),
 				'edit_url'       => array(
 					'type'        => 'string',
-					'description' => __( 'Edit link of the translation (for variations: of the translated parent product).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Edit link of the translation (for variations: of the translated parent product).', 'linguapilot' ),
 				),
 				'differences'    => array(
 					'type'  => 'array',
@@ -157,7 +157,7 @@ final class CrossLanguageConsistency extends AbstractAbility {
 				'deviations'           => array( 'type' => 'integer' ),
 				'price_checks_skipped' => array(
 					'type'        => 'integer',
-					'description' => __( 'Translations whose prices were not compared because their currency has manual prices.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Translations whose prices were not compared because their currency has manual prices.', 'linguapilot' ),
 				),
 			),
 			'required'             => array( 'products_checked', 'variations_checked', 'translations_checked', 'sync_errors', 'deviations', 'price_checks_skipped' ),

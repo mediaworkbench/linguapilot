@@ -2,21 +2,21 @@
 /**
  * Tests that the fake gateway honours the gateway contract.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Fakes;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Domain tests rely on the fake, so its contract behaviour is pinned down here.
  * The real gateway is checked against the same invariants in the store suite.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway
+ * @covers \MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway
  */
 final class FakeMultilingualGatewayTest extends TestCase {
 

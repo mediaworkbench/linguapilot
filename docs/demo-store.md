@@ -13,9 +13,9 @@ Default language `en-us`, plus `de` and `fr`. Multi-currency EUR (base), CHF (de
 
 ## Seeded cases
 
-`ddev wp eval-file wp-content/plugins/multilingual-store-abilities/tests/Fixtures/seed-demo.php`
+`ddev wp eval-file wp-content/plugins/linguapilot/tests/Fixtures/seed-demo.php`
 
-Refuses to run unless `WP_ENVIRONMENT_TYPE=local`. Idempotent: everything is tagged `_mlstore_seed`, titled `[Seed] …`, and replaced on each run.
+Refuses to run unless `WP_ENVIRONMENT_TYPE=local`. Idempotent: everything is tagged `_linguapilot_seed`, titled `[Seed] …`, and replaced on each run.
 `tests/Store/SeedScenarioStoreTest.php` asserts the expected results.
 
 | Case | Setup | Reported by |

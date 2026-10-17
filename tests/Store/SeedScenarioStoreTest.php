@@ -2,18 +2,18 @@
 /**
  * Verifies every ability against the seeded demo cases (tests/Fixtures/seed-demo.php).
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\SalesRanking;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Domain\SalesRanking;
+use MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
 
 /**
  * End-to-end: real WPML/WCML data, registered abilities, expected issues. Skipped unless the store is seeded.
@@ -40,7 +40,7 @@ final class SeedScenarioStoreTest extends StoreTestCase {
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT p.ID, p.post_title, sku.meta_value AS sku FROM %i p
-				INNER JOIN %i seed ON seed.post_id = p.ID AND seed.meta_key = '_mlstore_seed'
+				INNER JOIN %i seed ON seed.post_id = p.ID AND seed.meta_key = '_linguapilot_seed'
 				LEFT JOIN %i sku ON sku.post_id = p.ID AND sku.meta_key = '_sku'
 				INNER JOIN %i t ON t.element_id = p.ID AND t.element_type = 'post_product' AND t.source_language_code IS NULL
 				WHERE p.post_type = 'product'",
@@ -71,7 +71,7 @@ final class SeedScenarioStoreTest extends StoreTestCase {
 	}
 
 	public function test_translation_completeness(): void {
-		$products = $this->all_pages( 'mlstore/translation-completeness', array(), 'objects' );
+		$products = $this->all_pages( 'linguapilot/translation-completeness', array(), 'objects' );
 
 		$this->assertArrayNotHasKey( $this->ids['SEED-TEE'], $products, 'complete product is not listed' );
 		$this->assertSame( array( 'fr' ), $products[ $this->ids['SEED-MUG'] ]['missing_languages'] );
@@ -79,7 +79,7 @@ final class SeedScenarioStoreTest extends StoreTestCase {
 		$this->assertSame( array(), $products[ $this->ids['SEED-CAP'] ]['missing_languages'] );
 
 		$terms = $this->all_pages(
-			'mlstore/translation-completeness',
+			'linguapilot/translation-completeness',
 			array(
 				'object_type' => 'attribute_term',
 				'taxonomy'    => 'pa_color',
@@ -90,12 +90,12 @@ final class SeedScenarioStoreTest extends StoreTestCase {
 		$this->assertSame( array( 'fr' ), $terms[ $blue ]['missing_languages'] );
 		$this->assertArrayNotHasKey( $this->term_id( '[Seed] Red' ), $terms, 'Red is translated into DE and FR' );
 
-		$categories = $this->all_pages( 'mlstore/translation-completeness', array( 'object_type' => 'product_cat' ), 'objects' );
+		$categories = $this->all_pages( 'linguapilot/translation-completeness', array( 'object_type' => 'product_cat' ), 'objects' );
 		$this->assertSame( array( 'fr' ), $categories[ $this->term_id( '[Seed] Category' ) ]['missing_languages'] );
 	}
 
 	public function test_cross_language_consistency(): void {
-		$result = wp_get_ability( 'mlstore/cross-language-consistency' )?->execute( array( 'per_page' => 100 ) );
+		$result = wp_get_ability( 'linguapilot/cross-language-consistency' )?->execute( array( 'per_page' => 100 ) );
 		$this->assertIsArray( $result );
 
 		$found = array();
@@ -114,7 +114,7 @@ final class SeedScenarioStoreTest extends StoreTestCase {
 	}
 
 	public function test_untranslated_variations(): void {
-		$result = wp_get_ability( 'mlstore/untranslated-variations' )?->execute( array( 'product_id' => $this->ids['[Seed] Variable Hoodie'] ) );
+		$result = wp_get_ability( 'linguapilot/untranslated-variations' )?->execute( array( 'product_id' => $this->ids['[Seed] Variable Hoodie'] ) );
 		$this->assertIsArray( $result );
 
 		$issues = array();
@@ -131,7 +131,7 @@ final class SeedScenarioStoreTest extends StoreTestCase {
 
 	public function test_currency_price_gaps(): void {
 		$items = array();
-		foreach ( $this->all_pages( 'mlstore/currency-price-gaps', array(), 'items', 'variation_id' ) as $key => $item ) {
+		foreach ( $this->all_pages( 'linguapilot/currency-price-gaps', array(), 'items', 'variation_id' ) as $key => $item ) {
 			$items[ $key ] = $item['missing_currencies'];
 		}
 

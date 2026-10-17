@@ -2,14 +2,14 @@
 /**
  * Base class for the read-only store suite.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
-use MediaWorkbench\MultilingualStoreAbilities\Plugin;
+use MediaWorkbench\LinguaPilot\Plugin;
 use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 
 /**

@@ -2,22 +2,22 @@
 /**
  * Tests for the output envelope.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Support;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Support;
 
 use Brain\Monkey\Functions;
-use MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Support\OutputEnvelope;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Lists follow WooCommerce's flat envelope; extras sit next to it.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope
+ * @covers \MediaWorkbench\LinguaPilot\Support\OutputEnvelope
  */
 final class OutputEnvelopeTest extends TestCase {
 

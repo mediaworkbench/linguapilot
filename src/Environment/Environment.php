@@ -2,12 +2,12 @@
 /**
  * Environment detection contract.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Environment;
+namespace MediaWorkbench\LinguaPilot\Environment;
 
 /**
  * Reports which runtime dependencies are present and in which version.

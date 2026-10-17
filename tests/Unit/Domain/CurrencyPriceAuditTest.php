@@ -2,19 +2,19 @@
 /**
  * Tests for the manual-price gap audit.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\CurrencyPriceAudit;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\CurrencyPriceAudit;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Secondary currencies CHF and USD. Manual prices:
@@ -26,7 +26,7 @@ use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
  *   - variation 41: no manual prices     → not checked
  * - 5 simple without manual prices       → not checked
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\CurrencyPriceAudit
+ * @covers \MediaWorkbench\LinguaPilot\Domain\CurrencyPriceAudit
  */
 final class CurrencyPriceAuditTest extends TestCase {
 

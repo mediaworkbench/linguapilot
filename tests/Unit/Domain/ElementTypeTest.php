@@ -2,21 +2,21 @@
 /**
  * Tests for WPML element type naming.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Domain;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Domain;
 
 use InvalidArgumentException;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Element types follow WPML's `post_{type}` / `tax_{taxonomy}` naming.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\ElementType
  */
 final class ElementTypeTest extends TestCase {
 

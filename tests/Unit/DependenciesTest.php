@@ -2,23 +2,23 @@
 /**
  * Tests for the runtime dependency check.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit;
 
-use MediaWorkbench\MultilingualStoreAbilities\Dependencies;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeEnvironment;
+use MediaWorkbench\LinguaPilot\Dependencies;
+use MediaWorkbench\LinguaPilot\Environment\DependencyProblem;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeEnvironment;
 
 /**
  * Dependency rules: what blocks registration, what only degrades it.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Dependencies
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem
+ * @covers \MediaWorkbench\LinguaPilot\Dependencies
+ * @covers \MediaWorkbench\LinguaPilot\Environment\DependencyStatus
+ * @covers \MediaWorkbench\LinguaPilot\Environment\DependencyProblem
  */
 final class DependenciesTest extends TestCase {
 

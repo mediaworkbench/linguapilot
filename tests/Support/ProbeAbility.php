@@ -2,17 +2,17 @@
 /**
  * Test-only ability exercising every AbstractAbility code path.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Support;
+namespace MediaWorkbench\LinguaPilot\Tests\Support;
 
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbilityError;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbstractAbility;
-use MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Abilities\AbilityError;
+use MediaWorkbench\LinguaPilot\Abilities\AbstractAbility;
+use MediaWorkbench\LinguaPilot\Support\OutputEnvelope;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
 use RuntimeException;
 
 /**
@@ -38,7 +38,7 @@ final class ProbeAbility extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	public function name(): string {
-		return 'mlstore/probe';
+		return 'linguapilot/probe';
 	}
 
 	/**

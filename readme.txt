@@ -1,4 +1,4 @@
-=== Multilingual Store Abilities for WooCommerce ===
+=== LinguaPilot – Multilingual Store Abilities for WooCommerce ===
 Contributors: mediaworkbench
 Tags: woocommerce, multilingual, translation, mcp, ai
 Requires at least: 6.9
@@ -18,12 +18,12 @@ This plugin answers those questions. It registers six **read-only** abilities wi
 
 **Abilities**
 
-* `mlstore/languages-overview`: languages, currencies per language, which product fields stay in sync across translations, and catalog size. Meant as an agent's first call.
-* `mlstore/translation-completeness`: products, categories, tags or attribute terms missing a translation, with coverage per language. Distinguishes missing, unpublished (draft), in progress (sent to translation) and outdated translations.
-* `mlstore/cross-language-consistency`: translations whose SKU, stock, tax class, visibility, status or prices differ from the original. Each difference is a `sync_error` (the field should be synced) or a `deviation` (may be intentional).
-* `mlstore/untranslated-variations`: why a translated variable product's variation selector breaks: missing variations, untranslated attribute terms, mismatched custom attribute options, values shoppers cannot select.
-* `mlstore/currency-price-gaps`: products and variations with "set prices manually" that lack a price in a secondary currency (WooCommerce Multilingual multi-currency).
-* `mlstore/translation-work-queue`: untranslated products ranked by sales from WooCommerce Analytics. Sales of all language versions count for the original.
+* `linguapilot/languages-overview`: languages, currencies per language, which product fields stay in sync across translations, and catalog size. Meant as an agent's first call.
+* `linguapilot/translation-completeness`: products, categories, tags or attribute terms missing a translation, with coverage per language. Distinguishes missing, unpublished (draft), in progress (sent to translation) and outdated translations.
+* `linguapilot/cross-language-consistency`: translations whose SKU, stock, tax class, visibility, status or prices differ from the original. Each difference is a `sync_error` (the field should be synced) or a `deviation` (may be intentional).
+* `linguapilot/untranslated-variations`: why a translated variable product's variation selector breaks: missing variations, untranslated attribute terms, mismatched custom attribute options, values shoppers cannot select.
+* `linguapilot/currency-price-gaps`: products and variations with "set prices manually" that lack a price in a secondary currency (WooCommerce Multilingual multi-currency).
+* `linguapilot/translation-work-queue`: untranslated products ranked by sales from WooCommerce Analytics. Sales of all language versions count for the original.
 
 **Example questions for an agent**
 
@@ -40,7 +40,7 @@ This plugin answers those questions. It registers six **read-only** abilities wi
 * No customer data in any output; sales appear only as per-product totals.
 * Bounded output: paginated, at most 100 items per call.
 * Store content (titles) is returned as plain text. Agents must treat it as data, never as instructions.
-* Every call is logged to WooCommerce → Status → Logs (source `mlstore-abilities`) without raw input.
+* Every call is logged to WooCommerce → Status → Logs (source `linguapilot`) without raw input.
 * The plugin sends no data anywhere and talks to no AI service itself.
 
 **Requirements**
@@ -62,11 +62,11 @@ WPML and WooCommerce are trademarks of their respective owners. This plugin is n
 
 = Does the plugin change my store? =
 
-No. Every ability is read-only. The only thing written is one line per call in the WooCommerce log, which you can turn off with the `mlstore_audit_enabled` filter.
+No. Every ability is read-only. The only thing written is one line per call in the WooCommerce log, which you can turn off with the `linguapilot_audit_enabled` filter.
 
 = Who can run the abilities? =
 
-Users with `manage_woocommerce`. Change it per ability with the `mlstore_ability_capability` filter, e.g. to a custom capability for a dedicated agent role.
+Users with `manage_woocommerce`. Change it per ability with the `linguapilot_ability_capability` filter, e.g. to a custom capability for a dedicated agent role.
 
 = Why is a translated product reported although it exists? =
 

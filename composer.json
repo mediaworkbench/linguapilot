@@ -1,5 +1,5 @@
 {
-	"name": "mediaworkbench/multilingual-store-abilities",
+	"name": "mediaworkbench/linguapilot",
 	"description": "Read-only WordPress Abilities for multilingual WooCommerce stores running WPML and WooCommerce Multilingual.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
@@ -26,12 +26,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"MediaWorkbench\\MultilingualStoreAbilities\\": "src/"
+			"MediaWorkbench\\LinguaPilot\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"MediaWorkbench\\MultilingualStoreAbilities\\Tests\\": "tests/"
+			"MediaWorkbench\\LinguaPilot\\Tests\\": "tests/"
 		}
 	},
 	"config": {

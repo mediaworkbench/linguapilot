@@ -1,22 +1,22 @@
 <?php
 /**
- * Integration tests for mlstore/translation-completeness.
+ * Integration tests for linguapilot/translation-completeness.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Integration;
+namespace MediaWorkbench\LinguaPilot\Tests\Integration;
 
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\AbilityError;
-use MediaWorkbench\MultilingualStoreAbilities\Abilities\TranslationCompleteness;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeMultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\FakeWooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\MemoryLogSink;
+use MediaWorkbench\LinguaPilot\Abilities\AbilityError;
+use MediaWorkbench\LinguaPilot\Abilities\TranslationCompleteness;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeMultilingualGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\FakeWooGateway;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\MemoryLogSink;
 use WP_Error;
 use WP_UnitTestCase;
 
@@ -29,7 +29,7 @@ final class TranslationCompletenessTest extends WP_UnitTestCase {
 
 	use RegistersAbilities;
 
-	private const NAME = 'mlstore/translation-completeness';
+	private const NAME = 'linguapilot/translation-completeness';
 
 	/**
 	 * Fake store.

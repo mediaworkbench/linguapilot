@@ -31,7 +31,7 @@ Registering outside these hooks → `_doing_it_wrong` + `null`. Both registries 
 `execute_callback` (req), `permission_callback` (req), `input_schema`, `output_schema`,
 `meta`, `ability_class` (must extend `WP_Ability`).
 
-✅ Name rule: `/^[a-z0-9-]+\/[a-z0-9-]+$/` → exactly **one** slash. `mlstore/translation-completeness` is valid.
+✅ Name rule: `/^[a-z0-9-]+\/[a-z0-9-]+$/` → exactly **one** slash. `linguapilot/translation-completeness` is valid.
 
 ✅ Category slug rule: `/^[a-z0-9]+(?:-[a-z0-9]+)*$/`. `mlstore-multilingual-catalog` is valid
 (but see §3 for the category decision).
@@ -51,7 +51,7 @@ Consequences for us:
 - ⚠️ Property-level `default`s are **not** applied. `AbstractAbility` must apply defaults itself (the concept already plans this; it is mandatory, not optional).
 - Every input schema gets a top-level `'default' => array()` so a zero-argument call validates. This matches what Woo core does (`ProductsQuery`). Our callback must treat input as an array (cast defensively).
 - The callback receives an argument **only if** `input_schema` is non-empty. `languages-overview` (no input) either declares an empty object schema with a default, or has a callback with no required params. Decision: declare `{type: object, properties: {}, additionalProperties: false, default: []}` for uniformity.
-- Never let exceptions escape to core (they would leak messages). `AbstractAbility` catches and maps them to stable `mlstore_*` codes.
+- Never let exceptions escape to core (they would leak messages). `AbstractAbility` catches and maps them to stable `linguapilot_*` codes.
 - Output validation runs on every production call, so the "output validates against its own schema" tests (§10) are load-bearing.
 
 ✅ Annotations: `meta.annotations.{readonly, destructive, idempotent}`, each `bool|null`, default `null`.
@@ -133,10 +133,10 @@ Summary-type abilities (`languages-overview`) return their natural object shape 
 and re-registering `woocommerce` triggers `_doing_it_wrong`.
 Concept §5.1 wants our own `mlstore-multilingual-catalog`.
 **Decided (Patrick, 2026-10-13):** use `woocommerce` and register no category of our own. This follows the ecosystem convention,
-and the `mlstore/` namespace already groups our abilities.
+and the `linguapilot/` namespace already groups our abilities.
 
-⚠️ **Namespace.** The playbook says the namespace = the plugin slug. `mlstore/` deviates from `multilingual-store-abilities/`.
-It is short and stable, and core does not enforce slug = namespace. **Proposal:** keep `mlstore/`, as the concept does. Flagged only for awareness.
+✅ **Namespace.** The playbook says the namespace = the plugin slug. Until the 2026-10-17 rename (§20) the namespace was `mlstore/`,
+which deviated from the old slug; `linguapilot/` now equals the slug `linguapilot`.
 
 ⚠️ **Loader.** The playbook registers through Woo's loader: a static `AbilityDefinition` per class, appended via the
 `woocommerce_ability_definition_classes` filter. That interface is all static methods, which fights our DI of gateways
@@ -150,7 +150,7 @@ and authenticates with WC REST API keys. Woo docs: "deprecated and should not be
 The playbook says do **not** opt into it. **Decided:** dropped from v0.1. The default MCP Adapter server is the only target.
 
 ℹ️ Woo's permission convention is a shared capability helper, not inline `current_user_can()` per ability.
-This matches our `AbstractAbility` + `mlstore_ability_capability` filter.
+This matches our `AbstractAbility` + `linguapilot_ability_capability` filter.
 
 ℹ️ Playbook budget: ~2,000 tokens for a plugin's ability surface in `tools/list`. It only matters on a custom server,
 but keep descriptions tight.
@@ -195,7 +195,7 @@ That conflicts with the hard rule "no writes anywhere".
 ### 5.0 ⚠️ WCML already registers ability *extensions*
 `WCML\Abilities\Hooks` (WCML 5.6.3) uses core's `wp_register_ability_args` filter to add `lang` and `currency` input params
 to `woocommerce/products-query` and `woocommerce/orders-query`. It also switches WPML language and WCML currency around execution
-(`wp_before_execute_ability` / `wp_after_execute_ability`). It only touches the `woocommerce/` namespace, so it does not affect `mlstore/*`.
+(`wp_before_execute_ability` / `wp_after_execute_ability`). It only touches the `woocommerce/` namespace, so it does not affect `linguapilot/*`.
 → The concept's "no multilingual abilities exist" (§1) is outdated. More precisely: WCML lets Woo's generic queries read *one* language/currency,
 but nothing audits *across* languages. That is still our gap, and a better pitch.
 
@@ -304,7 +304,7 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 
 - The DDEV project `mlstore-dev` lives at `~/www/multilingual-store-abilities` (Patrick's choice; it deviates from
   §13's `~/dev/mlstore-dev`). The project root holds WordPress core and is not a git repo. The git repo is
-  `wp-content/plugins/multilingual-store-abilities/`. Container paths match §13 exactly.
+  `wp-content/plugins/linguapilot/`. Container paths match §13 exactly.
 - The URL is `https://mlstore-dev.ddev.site:33000`, not the §13.8 URL without a port, because the DDEV router fell back
   from 443. The MCP endpoint is therefore `https://mlstore-dev.ddev.site:33000/wp-json/mcp/mcp-adapter-default-server`.
 - `_licensed/` sits in the project root, outside the repo, matching §13.1.
@@ -324,7 +324,7 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   It is modified to fetch `tests/phpunit/{includes,data}` from the `WordPress/wordpress-develop` GitHub mirror (sparse git clone).
 - ℹ️ `FeaturesUtil::get_compatible_plugins_for_feature()` only lists *activated* plugins. The WP test bootstrap loads plugins
   without activating them, so the integration test asserts the hook wiring. The registry was checked on the DDEV site:
-  `multilingual-store-abilities/multilingual-store-abilities.php` is listed as HPOS-compatible.
+  `multilingual-store-abilities/multilingual-store-abilities.php` (now `linguapilot/linguapilot.php`) was listed as HPOS-compatible.
 - ℹ️ WPCS's `Squiz.Commenting.FunctionComment.IncorrectTypeHint` cannot parse PHPStan generics, so it is disabled; PHPStan level 8 covers types.
 - ℹ️ Stubs: `php-stubs/wordpress-stubs` 7.1.2 (includes the Abilities API), `woocommerce-stubs` 10.9.4, `wordpress-tests-stubs` 7.1.0.
 
@@ -336,15 +336,15 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   REST `GET .../run?input[...]` returning 200, and POST refused for a read-only ability.
 - Core rejects `per_page` > 100 and unknown keys with `ability_invalid_input` before our code runs. `AbstractAbility` still clamps,
   because direct PHP callers skip validation.
-- Error codes (public contract; never rename) and HTTP statuses: `mlstore_invalid_language` 400, `mlstore_invalid_input` 400,
-  `mlstore_not_found` 404, `mlstore_currency_disabled` 409, `mlstore_dependency_missing` 424, `mlstore_internal_error` 500
+- Error codes (public contract; never rename) and HTTP statuses: `linguapilot_invalid_language` 400, `linguapilot_invalid_input` 400,
+  `linguapilot_not_found` 404, `linguapilot_currency_disabled` 409, `linguapilot_dependency_missing` 424, `linguapilot_internal_error` 500
   (generic message; details only in the WooCommerce log, exception message only with WP_DEBUG).
-- `languages` input: empty = all active non-default languages. Unknown codes **and the default language** → `mlstore_invalid_language`.
+- `languages` input: empty = all active non-default languages. Unknown codes **and the default language** → `linguapilot_invalid_language`.
   The result keeps the site's language order.
-- Audit log: `wc_get_logger()->log()`; WooCommerce turns the `source` into the log file name (`wc-logs/mlstore-abilities-*.log`).
+- Audit log: `wc_get_logger()->log()`; WooCommerce turns the `source` into the log file name (`wc-logs/linguapilot-*.log`).
   Context: ability, user_id, 16-char input hash, result_count, duration_ms, error_code. No raw input, no output.
 
-## 9. `mlstore/languages-overview` (milestone 5, ability 1)
+## 9. `linguapilot/languages-overview` (milestone 5, ability 1)
 
 - ⚠️ Concept §6.1 `languages[].active` replaced by **`is_default`**. Every language WPML returns is enabled, and WPML's own `active`
   key means "current language" (§5.7), so the field would be either redundant or misleading.
@@ -358,7 +358,7 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   annotations, execute succeeds. Before this milestone the input schema's top-level default was `array()`, which encodes as `[]`;
   it is now `(object) array()` → `{}`.
 
-## 10. `mlstore/translation-completeness` (milestone 5, ability 2)
+## 10. `linguapilot/translation-completeness` (milestone 5, ability 2)
 
 - Decisions (Patrick, 2026-10-14): `attribute_term` audits all translatable `pa_*` taxonomies, optionally one (`taxonomy`);
   **trashed translations count as missing**.
@@ -371,7 +371,7 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   `get_post_status()`) for published products, products in any status, categories and all attributes. All agree on the DDEV store.
 - ⚠️ **`$wpdb` swallows SQL errors** and returns empty results, which an audit would report as "0 % translated". It happened during
   development (placeholder order). WpmlGateway now checks `$wpdb->last_error` after every query and throws; AbstractAbility
-  returns `mlstore_internal_error`.
+  returns `linguapilot_internal_error`.
 - ⚠️ **Rows with `element_id = NULL` (corrected 2026-10-14):** 14 `de` and 14 `fr` `post_product` rows in `icl_translations` have
   **no element at all**, so they are not deleted posts (an earlier note here was wrong). Patrick did not delete anything. In WPML such
   rows are, to my understanding (unverified), placeholders for translations that were started (e.g. a translation job) but not completed.
@@ -384,7 +384,7 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - Timing on DDEV (18 products, 8 attribute terms): 2–6 ms per call. Not representative; the 5,000-product check (concept §8) needs the
   generated catalog (Smooth Generator, pending).
 
-## 11. Decision for `mlstore/cross-language-consistency` (Patrick, 2026-10-14)
+## 11. Decision for `linguapilot/cross-language-consistency` (Patrick, 2026-10-14)
 
 - Price fields (`regular_price`, `sale_price`) are skipped **per language**: only where the translation's language uses a secondary
   currency for which the original has manual prices set (`_wcml_custom_prices_status` on, and `_regular_price_{CUR}` non-empty).
@@ -396,13 +396,13 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   `get_post_meta()` / `WC_Product` getters. This also applies to the gateway's `_regular_price_{CUR}` read.
   (`WCML_Products::filter_product_data` additionally rewrites the whole-meta read `get_post_meta( $id )` without a key.)
 
-## 12. `mlstore/cross-language-consistency` (milestone 5, ability 3)
+## 12. `linguapilot/cross-language-consistency` (milestone 5, ability 3)
 
 - Scope: products **and variations** (Patrick, 2026-10-14), originals in any status except trash, vs. every existing translation
   (any status except trash/auto-draft). Missing translations are translation-completeness' job. Variations skip `catalog_visibility`;
   `post_status` there means enabled (`publish`) vs disabled (`private`).
 - ⚠️ Deviation from concept §5.6: the ability **works without WCML**. Severity then follows WPML's copy preferences only (SyncRules),
-  instead of returning `mlstore_dependency_missing`.
+  instead of returning `linguapilot_dependency_missing`.
 - Equality rules (`Domain\FieldComparator`): empty = missing; numeric fields compare by value; `standard` tax class = `''`;
   stock quantity only when one side manages stock. Catalog visibility from `product_visibility` terms, mapped like
   `WC_Product::get_catalog_visibility()`.
@@ -457,7 +457,7 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   `needs_update` has no public hook.
 - Seed data for consistency `sync_error`/`deviation` examples: in the milestone 6 seed script (Patrick, 2026-10-14).
 
-## 15. `mlstore/untranslated-variations` (milestone 5, ability 4), 2026-10-14
+## 15. `linguapilot/untranslated-variations` (milestone 5, ability 4), 2026-10-14
 
 - ✅ WooCommerce 11.2 matching (`WC_Product_Data_Store_CPT::find_matching_product_variation()`): variation meta `attribute_` +
   `sanitize_title( name )`, only parent attributes with `is_variation`, **exact `!==` comparison** with the selected value; empty =
@@ -478,18 +478,18 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
   The store bootstrap itself had spawned cron via `wp-load.php`. Fix: `DISABLE_WP_CRON` in `tests/Store/bootstrap.php`, plus a guard
   message naming the changed tables and the likely external writers.
 
-## 16. `mlstore/currency-price-gaps` (milestone 5, ability 5), 2026-10-14
+## 16. `linguapilot/currency-price-gaps` (milestone 5, ability 5), 2026-10-14
 
 - Gap rule per §5.9.1. Manual pricing = `_wcml_custom_prices_status` not in `('', '0')` on the **original** (WCML always reads it there).
-- Requires WCML (`requires_wcml()`) and multi-currency (`mlstore_currency_disabled`). `currencies` must be secondary currencies; the base
-  currency or unknown codes → `mlstore_invalid_input` with the valid list.
+- Requires WCML (`requires_wcml()`) and multi-currency (`linguapilot_currency_disabled`). `currencies` must be secondary currencies; the base
+  currency or unknown codes → `linguapilot_invalid_input` with the valid list.
 - Variable parents are skipped (no own price); variations checked unless `include_variations: false`.
 - `summary.missing_by_currency` is a **list** of `{currency, missing}`, not a map: an empty PHP map would JSON-encode as `[]`.
 - New gateway methods (raw SQL): `manual_price_originals( CatalogScope )` (originals with the flag, one indexed query) and
   `manual_regular_prices( ids, currencies )` (batch meta read). Store test checks both against `get_post_meta()` over every original.
 - ⚠️ DDEV store: no product uses manual prices yet, so the ability returns an empty list (5.7 ms). Real cases: milestone 6 seed script.
 
-## 17. `mlstore/translation-work-queue` (milestone 5, ability 6), 2026-10-14
+## 17. `linguapilot/translation-work-queue` (milestone 5, ability 6), 2026-10-14
 
 - Decisions (Patrick, 2026-10-14): Analytics is the source; fall back to raw order items only when Analytics is unavailable or empty
   while orders exist; otherwise report the lag as `meta.analytics_missing_orders`. Count the same orders as Analytics.
@@ -532,22 +532,36 @@ not catch a mix-up. The gateway exposes `term_id`s and converts in its SQL (join
 - ✅ **Read-only, statically:** grep over `src/` for the write patterns from `wp-abilities-verify` (annotation-correctness.md):
   the only write is `WooCommerceLogSink` (audit log). Automated as `bin/check-readonly.php` (CI job "Read-only check";
   scanner in `tests/Tooling/ReadOnlyScanner.php`, token-based so comments never match; tests in `tests/Unit/Tooling`). Its suppression is `verify-ignore: all`, because an append-only log fails both
-  `readonly` and `idempotent` in that skill's definition. The plugin calls `do_action()` nowhere; filters called: `mlstore_*`,
+  `readonly` and `idempotent` in that skill's definition. The plugin calls `do_action()` nowhere; filters called: `linguapilot_*`,
   WPML read filters, two WooCommerce Analytics status filters.
 - ✅ **Read-only, at runtime:** `tests/Store/ReadOnlyGuaranteeStoreTest` checksums **all 84 tables** (options included, which covers
   writing listeners of the filters we call) around two runs of every ability. Nothing changes, and results are identical
   (excluding `generated_at` / `period_start`).
 - `docs/SECURITY.md`: threat model as built and verified. `readme.txt` for wordpress.org (contributor `mediaworkbench`, confirmed: profiles.wordpress.org/mediaworkbench).
-- i18n: `languages/multilingual-store-abilities-for-woocommerce.pot` (75 strings; text domain = the wordpress.org slug `multilingual-store-abilities-for-woocommerce`, assigned at submission), `-de_DE.po/.mo` (standard de_DE spelling with ß).
+- i18n: `languages/linguapilot.pot` (75 strings; text domain = the wordpress.org slug `linguapilot`, requested after the 2026-10-17 rename, see §20), `-de_DE.po/.mo` (standard de_DE spelling with ß).
   Plugin Check discourages `load_plugin_textdomain()` for wordpress.org plugins, so (Patrick's decision) the plugin loads no bundled
   translations: since WP 4.6 language packs from translate.wordpress.org load automatically. The de_DE `.po` stays in the repo as the
   import source for translate.wordpress.org and is export-ignored; the release ships only the `.pot`. Locally, German shows only
   once a language pack exists (or the `.mo` is copied to `wp-content/languages/plugins/`).
   Labels and descriptions are translated when abilities register (on the request's locale); error messages when they occur.
-  Technical identifiers in descriptions (`sync_error`, `mlstore/…`, field names) stay untranslated on purpose.
-  Regenerate: `ddev wp i18n make-pot wp-content/plugins/multilingual-store-abilities wp-content/plugins/multilingual-store-abilities/languages/multilingual-store-abilities-for-woocommerce.pot --slug=multilingual-store-abilities-for-woocommerce --domain=multilingual-store-abilities-for-woocommerce --exclude=vendor,tests,.claude,docs,bin,build`,
-  update the .po, then `ddev wp i18n make-mo wp-content/plugins/multilingual-store-abilities/languages`.
+  Technical identifiers in descriptions (`sync_error`, `linguapilot/…`, field names) stay untranslated on purpose.
+  Regenerate: `ddev wp i18n make-pot wp-content/plugins/linguapilot wp-content/plugins/linguapilot/languages/linguapilot.pot --slug=linguapilot --domain=linguapilot --exclude=vendor,tests,.claude,docs,bin,build`,
+  update the .po, then `ddev wp i18n make-mo wp-content/plugins/linguapilot/languages`.
 - ⚠️ Store-suite guard tripped twice more: Action Scheduler's **async runner** (not WP-Cron) applied Smooth Generator's scheduled sales,
   triggered by other requests to the site. With Patrick's OK, all pending `wc_product_{start,end}_scheduled_sale` actions were cancelled
   (snapshot before) and `wpml-baseline` was retaken. Three consecutive full store-suite runs passed afterwards. One failure in between could not
   be attributed: no scheduler activity was logged and its details were not captured. The guard message names the changed tables for next time.
+
+## 20. Rename to LinguaPilot after wordpress.org review (2026-10-17)
+
+- ⚠️ **Review feedback:** "The name begins with a generic descriptive phrase and is too close in structure and subject to the existing
+  'WPML Multilingual & Multicurrency for WooCommerce' plugin. It needs a distinctive leading term." So a descriptive name plus
+  "for WooCommerce" is not enough; the name needs a brand word first.
+- **Decided (Patrick):** display name "LinguaPilot – Multilingual Store Abilities for WooCommerce", requested slug `linguapilot`
+  (reviewers can change the slug before approval). "Audit" was avoided (too narrow once v0.2 writes drafts), as were WPML
+  (restricted term, and Polylang may follow).
+- Full rebrand, no backwards-compatibility aliases (nothing was released): text domain `linguapilot`, namespace
+  `MediaWorkbench\LinguaPilot`, ability prefix `linguapilot/`, error codes and filters `linguapilot_*`, log source `linguapilot`,
+  test constants `LINGUAPILOT_*`, seed marker `_linguapilot_seed`, repo folder and main file `linguapilot/linguapilot.php`.
+  The DDEV project stays `mlstore-dev`. Earlier sections are updated to the new identifiers; `mlstore-multilingual-catalog` (§1, §3) is the old, rejected category idea.
+- If wordpress.org assigns a different slug, only the text domain, `SLUG` in `bin/build-release.sh` and the .pot/.po file names change.

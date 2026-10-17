@@ -2,23 +2,23 @@
 /**
  * Runtime dependency rules.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities;
+namespace MediaWorkbench\LinguaPilot;
 
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyProblem;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\Environment;
+use MediaWorkbench\LinguaPilot\Environment\DependencyProblem;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Environment\Environment;
 
 /**
  * Decides whether abilities can be registered in the current environment.
  *
  * WooCommerce, WPML (with its setup finished) and the Abilities API are required. Without WCML the plugin still
  * registers the abilities that don't need it; the WCML-dependent ones report
- * `mlstore_dependency_missing` at execution time.
+ * `linguapilot_dependency_missing` at execution time.
  */
 final class Dependencies {
 

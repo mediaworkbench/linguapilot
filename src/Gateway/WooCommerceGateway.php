@@ -2,18 +2,18 @@
 /**
  * WooCommerce implementation of the catalog gateway.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
+namespace MediaWorkbench\LinguaPilot\Gateway;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogItem;
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SalesRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductAttribute;
+use MediaWorkbench\LinguaPilot\Domain\Model\SalesRow;
+use MediaWorkbench\LinguaPilot\Domain\Model\TermRef;
 use wpdb;
 
 /**

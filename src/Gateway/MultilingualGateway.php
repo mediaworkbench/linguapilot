@@ -2,23 +2,23 @@
 /**
  * Multilingual plugin access contract.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Gateway;
+namespace MediaWorkbench\LinguaPilot\Gateway;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoveragePage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\IdPage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoveragePage;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoverageRow;
+use MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\IdPage;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Domain\Model\LanguageCoverage;
+use MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationPair;
 
 /**
  * Everything the plugin needs to know from the multilingual plugin, behind one interface.
@@ -99,7 +99,7 @@ interface MultilingualGateway {
 	/**
 	 * Translation coverage per language across every original in the scope.
 	 *
-	 * States follow {@see \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState::classify()},
+	 * States follow {@see \MediaWorkbench\LinguaPilot\Domain\Model\TranslationState::classify()},
 	 * including open WPML translation jobs. An original in one of the languages counts for itself.
 	 *
 	 * @param CatalogScope $scope     Originals to look at.
@@ -110,7 +110,7 @@ interface MultilingualGateway {
 
 	/**
 	 * One page of originals with a gap: not translated (published) in at least one of the languages,
-	 * or with an outdated translation ({@see \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow::has_gap()}).
+	 * or with an outdated translation ({@see \MediaWorkbench\LinguaPilot\Domain\Model\CoverageRow::has_gap()}).
 	 *
 	 * @param CatalogScope $scope     Originals to look at.
 	 * @param list<string> $languages Language codes.

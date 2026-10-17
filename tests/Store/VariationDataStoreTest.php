@@ -2,24 +2,24 @@
 /**
  * Store tests for the raw variation/attribute reads.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductAttribute;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TermRef;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductAttribute;
+use MediaWorkbench\LinguaPilot\Domain\Model\TermRef;
+use MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
 use WC_Product_Attribute;
 
 /**
  * WooCommerceGateway's raw SQL reads must agree with WooCommerce's own product API.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway
  */
 final class VariationDataStoreTest extends StoreTestCase {
 

@@ -2,23 +2,23 @@
 /**
  * Tests for parsing WCML multi-currency settings.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Gateway;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Gateway;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\CurrencySettingsParser;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\Currency;
+use MediaWorkbench\LinguaPilot\Gateway\Wpml\CurrencySettingsParser;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Turns the raw `_wcml_settings` option into a CurrencySettings model.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\CurrencySettingsParser
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CurrencySettings
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Currency
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\Wpml\CurrencySettingsParser
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\CurrencySettings
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\Currency
  */
 final class CurrencySettingsParserTest extends TestCase {
 

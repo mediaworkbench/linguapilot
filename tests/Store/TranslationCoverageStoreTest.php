@@ -2,27 +2,27 @@
 /**
  * Cross-checks WpmlGateway's coverage SQL against a hook-based reference.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoverageRow;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Domain\Model\LanguageCoverage;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationState;
+use MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
 
 /**
  * The SQL fast path (coverage(), incomplete_originals()) must agree with the slow, obvious
  * computation from WPML's public hooks and get_post_status() on the real store.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WpmlGateway
  */
 final class TranslationCoverageStoreTest extends StoreTestCase {
 

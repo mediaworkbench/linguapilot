@@ -2,21 +2,21 @@
 /**
  * Store tests for the manual-price reads.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
 
 /**
  * WpmlGateway's manual-price SQL must agree with a meta-by-meta reference over every original.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WpmlGateway
  */
 final class CurrencyPriceStoreTest extends StoreTestCase {
 
@@ -78,7 +78,7 @@ final class CurrencyPriceStoreTest extends StoreTestCase {
 		);
 		wp_set_current_user( (int) ( $admins[0] ?? 0 ) );
 
-		$result = wp_get_ability( 'mlstore/currency-price-gaps' )?->execute();
+		$result = wp_get_ability( 'linguapilot/currency-price-gaps' )?->execute();
 
 		$this->assertIsArray( $result, $result instanceof \WP_Error ? $result->get_error_message() : 'ability not registered' );
 		$this->assertSame( ( new WpmlGateway( self::wpdb() ) )->currencies()->secondary_codes(), $result['summary']['currencies_checked'] );

@@ -1,13 +1,13 @@
 <?php
 /**
- * Store tests for mlstore/languages-overview on the real WPML/WCML site.
+ * Store tests for linguapilot/languages-overview on the real WPML/WCML site.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
 /**
  * Runs the registered ability as an administrator and cross-checks it against WPML/WCML data.
@@ -33,7 +33,7 @@ final class LanguagesOverviewStoreTest extends StoreTestCase {
 	}
 
 	public function test_registered_ability_returns_valid_output_matching_the_store(): void {
-		$result = wp_get_ability( 'mlstore/languages-overview' )?->execute();
+		$result = wp_get_ability( 'linguapilot/languages-overview' )?->execute();
 
 		$this->assertIsArray( $result, $result instanceof \WP_Error ? $result->get_error_message() : 'ability not registered' );
 		$this->assertSame( apply_filters( 'wpml_default_language', null ), $result['default_language'] ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Cross-check against WPML.
@@ -55,7 +55,7 @@ final class LanguagesOverviewStoreTest extends StoreTestCase {
 	public function test_anonymous_visitor_is_refused(): void {
 		wp_set_current_user( 0 );
 
-		$result = wp_get_ability( 'mlstore/languages-overview' )?->execute();
+		$result = wp_get_ability( 'linguapilot/languages-overview' )?->execute();
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'ability_invalid_permissions', $result->get_error_code() );

@@ -2,18 +2,18 @@
 /**
  * Guards that every production implementation fulfils its contract.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Gateway;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Gateway;
 
-use MediaWorkbench\MultilingualStoreAbilities\Environment\RuntimeEnvironment;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Support\WooCommerceLogSink;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Environment\RuntimeEnvironment;
+use MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Support\WooCommerceLogSink;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 use ReflectionClass;
 
 /**

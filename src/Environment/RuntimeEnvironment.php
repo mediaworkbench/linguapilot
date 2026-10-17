@@ -2,14 +2,14 @@
 /**
  * Environment detection against the running WordPress install.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Environment;
+namespace MediaWorkbench\LinguaPilot\Environment;
 
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
 
 /**
  * Detects dependencies from constants and functions defined by the running plugins.

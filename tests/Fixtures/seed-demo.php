@@ -3,13 +3,13 @@
  * Seeds the DDEV demo store with deliberate multilingual test cases (concept §13.4.4).
  *
  * Run from the DDEV project root:
- *     ddev wp eval-file wp-content/plugins/multilingual-store-abilities/tests/Fixtures/seed-demo.php
+ *     ddev wp eval-file wp-content/plugins/linguapilot/tests/Fixtures/seed-demo.php
  *
  * Dev tooling only: never loaded by the plugin and excluded from release zips (.gitattributes).
  * This is the one place in the repository that writes and calls WPML/WCML APIs directly
  * (exception to the gateway-only rule, see CLAUDE.md). Take a DDEV snapshot before running.
  *
- * Idempotent: everything it creates is tagged with `_mlstore_seed`, titled "[Seed] …", and removed
+ * Idempotent: everything it creates is tagged with `_linguapilot_seed`, titled "[Seed] …", and removed
  * again at the start of the next run. Expected ability results are checked by
  * tests/Store/SeedScenarioStoreTest.php.
  *
@@ -17,7 +17,7 @@
  * built completely first, translations are created and linked next, and the deliberate mistakes are
  * applied last as direct meta writes on the translations.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML/WooCommerce hooks, dev tooling.
@@ -35,13 +35,13 @@ if ( ! defined( 'ICL_SITEPRESS_VERSION' ) || ! class_exists( 'WooCommerce' ) ) {
 	WP_CLI::error( 'WPML and WooCommerce must be active.' );
 }
 
-const MLSTORE_SEED_META   = '_mlstore_seed';
-const MLSTORE_SEED_PREFIX = '[Seed] ';
+const LINGUAPILOT_SEED_META   = '_linguapilot_seed';
+const LINGUAPILOT_SEED_PREFIX = '[Seed] ';
 
 /**
  * Removes everything a previous run created.
  */
-function mlstore_seed_cleanup(): void {
+function linguapilot_seed_cleanup(): void {
 	global $wpdb;
 
 	/**
@@ -52,7 +52,7 @@ function mlstore_seed_cleanup(): void {
 	$found     = wc_get_orders(
 		array(
 			'limit'    => -1,
-			'meta_key' => MLSTORE_SEED_META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Dev tooling.
+			'meta_key' => LINGUAPILOT_SEED_META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Dev tooling.
 			'return'   => 'ids',
 		)
 	);
@@ -65,13 +65,13 @@ function mlstore_seed_cleanup(): void {
 	}
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Dev tooling.
-	$posts = $wpdb->get_col( $wpdb->prepare( 'SELECT post_id FROM %i WHERE meta_key = %s', $wpdb->postmeta, MLSTORE_SEED_META ) );
+	$posts = $wpdb->get_col( $wpdb->prepare( 'SELECT post_id FROM %i WHERE meta_key = %s', $wpdb->postmeta, LINGUAPILOT_SEED_META ) );
 	foreach ( array_map( 'intval', $posts ) as $post_id ) {
 		wp_delete_post( $post_id, true );
 	}
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Dev tooling.
-	$terms = $wpdb->get_results( $wpdb->prepare( 'SELECT m.term_id, tt.taxonomy FROM %i m JOIN %i tt ON tt.term_id = m.term_id WHERE m.meta_key = %s', $wpdb->termmeta, $wpdb->term_taxonomy, MLSTORE_SEED_META ) );
+	$terms = $wpdb->get_results( $wpdb->prepare( 'SELECT m.term_id, tt.taxonomy FROM %i m JOIN %i tt ON tt.term_id = m.term_id WHERE m.meta_key = %s', $wpdb->termmeta, $wpdb->term_taxonomy, LINGUAPILOT_SEED_META ) );
 	$terms = $terms ?? array();
 	foreach ( $terms as $term ) {
 		$taxonomy = (string) $term->taxonomy;
@@ -90,7 +90,7 @@ function mlstore_seed_cleanup(): void {
  * @param callable $callback Callback.
  * @return mixed
  */
-function mlstore_seed_in_language( string $language, callable $callback ) {
+function linguapilot_seed_in_language( string $language, callable $callback ) {
 	$previous = apply_filters( 'wpml_current_language', null );
 	do_action( 'wpml_switch_language', $language );
 	try {
@@ -108,7 +108,7 @@ function mlstore_seed_in_language( string $language, callable $callback ) {
  * @param int    $original_id Original's element ID.
  * @param string $language    Translation language.
  */
-function mlstore_seed_link( int $element_id, string $type, int $original_id, string $language ): void {
+function linguapilot_seed_link( int $element_id, string $type, int $original_id, string $language ): void {
 	$trid = (int) apply_filters( 'wpml_element_trid', null, $original_id, $type );
 	do_action(
 		'wpml_set_element_language_details',
@@ -127,8 +127,8 @@ function mlstore_seed_link( int $element_id, string $type, int $original_id, str
  *
  * @param int $post_id Post ID.
  */
-function mlstore_seed_tag( int $post_id ): int {
-	update_post_meta( $post_id, MLSTORE_SEED_META, '1' );
+function linguapilot_seed_tag( int $post_id ): int {
+	update_post_meta( $post_id, LINGUAPILOT_SEED_META, '1' );
 	return $post_id;
 }
 
@@ -138,9 +138,9 @@ function mlstore_seed_tag( int $post_id ): int {
  * @param string               $title Title (prefixed with "[Seed] ").
  * @param array<string, mixed> $props status, price, manage_stock, stock.
  */
-function mlstore_seed_simple( string $title, array $props = array() ): int {
+function linguapilot_seed_simple( string $title, array $props = array() ): int {
 	$product = new WC_Product_Simple();
-	$product->set_name( MLSTORE_SEED_PREFIX . $title );
+	$product->set_name( LINGUAPILOT_SEED_PREFIX . $title );
 	$product->set_status( $props['status'] ?? 'publish' );
 	$product->set_regular_price( (string) ( $props['price'] ?? '10' ) );
 	$product->set_manage_stock( (bool) ( $props['manage_stock'] ?? false ) );
@@ -148,7 +148,7 @@ function mlstore_seed_simple( string $title, array $props = array() ): int {
 		$product->set_stock_quantity( (int) $props['stock'] );
 	}
 
-	return mlstore_seed_tag( $product->save() );
+	return linguapilot_seed_tag( $product->save() );
 }
 
 /**
@@ -160,11 +160,11 @@ function mlstore_seed_simple( string $title, array $props = array() ): int {
  * @param string               $title       Title.
  * @param array<string, mixed> $props       Overrides (status).
  */
-function mlstore_seed_translate_simple( int $original_id, string $language, string $title, array $props = array() ): int {
+function linguapilot_seed_translate_simple( int $original_id, string $language, string $title, array $props = array() ): int {
 	$original = wc_get_product( $original_id );
-	$id       = mlstore_seed_in_language(
+	$id       = linguapilot_seed_in_language(
 		$language,
-		static fn (): int => mlstore_seed_simple(
+		static fn (): int => linguapilot_seed_simple(
 			$title,
 			array(
 				'status'       => $props['status'] ?? 'publish',
@@ -174,7 +174,7 @@ function mlstore_seed_translate_simple( int $original_id, string $language, stri
 			)
 		)
 	);
-	mlstore_seed_link( $id, 'post_product', $original_id, $language );
+	linguapilot_seed_link( $id, 'post_product', $original_id, $language );
 	if ( $original && '' !== $original->get_sku( 'edit' ) ) {
 		update_post_meta( $id, '_sku', $original->get_sku( 'edit' ) );
 	}
@@ -188,12 +188,12 @@ function mlstore_seed_translate_simple( int $original_id, string $language, stri
  * @param string $name Name.
  * @return array{term_id: int, term_taxonomy_id: int, slug: string}
  */
-function mlstore_seed_color( string $name ): array {
-	$term = wp_insert_term( MLSTORE_SEED_PREFIX . $name, 'pa_color', array( 'slug' => sanitize_title( 'seed-' . $name ) ) );
+function linguapilot_seed_color( string $name ): array {
+	$term = wp_insert_term( LINGUAPILOT_SEED_PREFIX . $name, 'pa_color', array( 'slug' => sanitize_title( 'seed-' . $name ) ) );
 	if ( is_wp_error( $term ) ) {
 		WP_CLI::error( 'Could not create term ' . $name . ': ' . $term->get_error_message() );
 	}
-	update_term_meta( (int) $term['term_id'], MLSTORE_SEED_META, '1' );
+	update_term_meta( (int) $term['term_id'], LINGUAPILOT_SEED_META, '1' );
 	$slug = get_term_field( 'slug', (int) $term['term_id'], 'pa_color' );
 
 	return array(
@@ -211,9 +211,9 @@ function mlstore_seed_color( string $name ): array {
  * @param string                                                   $name     Translated name.
  * @return array{term_id: int, term_taxonomy_id: int, slug: string}
  */
-function mlstore_seed_translate_color( array $original, string $language, string $name ): array {
-	$term = mlstore_seed_in_language( $language, static fn (): array => mlstore_seed_color( $name ) );
-	mlstore_seed_link( $term['term_taxonomy_id'], 'tax_pa_color', $original['term_taxonomy_id'], $language );
+function linguapilot_seed_translate_color( array $original, string $language, string $name ): array {
+	$term = linguapilot_seed_in_language( $language, static fn (): array => linguapilot_seed_color( $name ) );
+	linguapilot_seed_link( $term['term_taxonomy_id'], 'tax_pa_color', $original['term_taxonomy_id'], $language );
 
 	return $term;
 }
@@ -227,7 +227,7 @@ function mlstore_seed_translate_color( array $original, string $language, string
  * @param list<array{color: string, size: string}> $variations Variation attribute values (term slug, size option).
  * @return array{product: int, variations: list<int>}
  */
-function mlstore_seed_variable( string $title, array $color_ids, array $sizes, array $variations ): array {
+function linguapilot_seed_variable( string $title, array $color_ids, array $sizes, array $variations ): array {
 	$color = new WC_Product_Attribute();
 	$color->set_id( wc_attribute_taxonomy_id_by_name( 'pa_color' ) );
 	$color->set_name( 'pa_color' );
@@ -242,10 +242,10 @@ function mlstore_seed_variable( string $title, array $color_ids, array $sizes, a
 	$size->set_variation( true );
 
 	$product = new WC_Product_Variable();
-	$product->set_name( MLSTORE_SEED_PREFIX . $title );
+	$product->set_name( LINGUAPILOT_SEED_PREFIX . $title );
 	$product->set_status( 'publish' );
 	$product->set_attributes( array( $color, $size ) );
-	$product_id = mlstore_seed_tag( $product->save() );
+	$product_id = linguapilot_seed_tag( $product->save() );
 	wp_set_object_terms( $product_id, $color_ids, 'pa_color' );
 
 	$variation_ids = array();
@@ -260,7 +260,7 @@ function mlstore_seed_variable( string $title, array $color_ids, array $sizes, a
 		);
 		$variation->set_regular_price( '30' );
 		$variation->set_status( 'publish' );
-		$variation_ids[] = mlstore_seed_tag( $variation->save() );
+		$variation_ids[] = linguapilot_seed_tag( $variation->save() );
 	}
 
 	return array(
@@ -275,7 +275,7 @@ function mlstore_seed_variable( string $title, array $color_ids, array $sizes, a
  * @param array<int, int> $lines    Product ID => quantity.
  * @param int             $days_ago Order age.
  */
-function mlstore_seed_order( array $lines, int $days_ago ): int {
+function linguapilot_seed_order( array $lines, int $days_ago ): int {
 	$order = wc_create_order();
 	if ( is_wp_error( $order ) ) {
 		WP_CLI::error( 'Could not create order: ' . $order->get_error_message() );
@@ -289,7 +289,7 @@ function mlstore_seed_order( array $lines, int $days_ago ): int {
 	$order->set_date_created( time() - $days_ago * DAY_IN_SECONDS );
 	$order->calculate_totals();
 	$order->set_status( 'completed' );
-	$order->update_meta_data( MLSTORE_SEED_META, '1' );
+	$order->update_meta_data( LINGUAPILOT_SEED_META, '1' );
 	$order_id = $order->save();
 
 	// Import into WooCommerce Analytics right away instead of waiting for the scheduled batch (internal API; dev tooling only).
@@ -314,12 +314,12 @@ function mlstore_seed_order( array $lines, int $days_ago ): int {
  *     category_ttid: int|null
  * }
  */
-function mlstore_seed_originals(): array {
+function linguapilot_seed_originals(): array {
 	$products = array(
-		'complete' => mlstore_seed_simple( 'Complete Tee', array( 'price' => '20' ) ),
-		'mug'      => mlstore_seed_simple( 'Missing FR Mug', array( 'price' => '8' ) ),
-		'cap'      => mlstore_seed_simple( 'Draft DE Cap', array( 'price' => '10' ) ),
-		'scarf'    => mlstore_seed_simple(
+		'complete' => linguapilot_seed_simple( 'Complete Tee', array( 'price' => '20' ) ),
+		'mug'      => linguapilot_seed_simple( 'Missing FR Mug', array( 'price' => '8' ) ),
+		'cap'      => linguapilot_seed_simple( 'Draft DE Cap', array( 'price' => '10' ) ),
+		'scarf'    => linguapilot_seed_simple(
 			'Sync Error Scarf',
 			array(
 				'price'        => '25',
@@ -327,16 +327,16 @@ function mlstore_seed_originals(): array {
 				'stock'        => 12,
 			)
 		),
-		'lamp'     => mlstore_seed_simple( 'Manual Price Lamp', array( 'price' => '40' ) ),
-		'chair'    => mlstore_seed_simple( 'Manual Price Chair', array( 'price' => '90' ) ),
+		'lamp'     => linguapilot_seed_simple( 'Manual Price Lamp', array( 'price' => '40' ) ),
+		'chair'    => linguapilot_seed_simple( 'Manual Price Chair', array( 'price' => '90' ) ),
 	);
 	foreach ( $products as $key => $id ) {
 		update_post_meta( $id, '_sku', 'SEED-' . strtoupper( 'complete' === $key ? 'tee' : $key ) );
 	}
 
-	$red    = mlstore_seed_color( 'Red' );
-	$blue   = mlstore_seed_color( 'Blue' );
-	$hoodie = mlstore_seed_variable(
+	$red    = linguapilot_seed_color( 'Red' );
+	$blue   = linguapilot_seed_color( 'Blue' );
+	$hoodie = linguapilot_seed_variable(
 		'Variable Hoodie',
 		array( $red['term_id'], $blue['term_id'] ),
 		array( 'S', 'M', 'L' ),
@@ -352,10 +352,10 @@ function mlstore_seed_originals(): array {
 		)
 	);
 
-	$category      = wp_insert_term( MLSTORE_SEED_PREFIX . 'Category', 'product_cat', array( 'slug' => 'seed-category' ) );
+	$category      = wp_insert_term( LINGUAPILOT_SEED_PREFIX . 'Category', 'product_cat', array( 'slug' => 'seed-category' ) );
 	$category_ttid = null;
 	if ( ! is_wp_error( $category ) ) {
-		update_term_meta( (int) $category['term_id'], MLSTORE_SEED_META, '1' );
+		update_term_meta( (int) $category['term_id'], LINGUAPILOT_SEED_META, '1' );
 		$category_ttid = (int) $category['term_taxonomy_id'];
 	}
 
@@ -388,7 +388,7 @@ function mlstore_seed_originals(): array {
 /**
  * Step 2: translations, linked to the originals.
  *
- * @param array<string, mixed> $o Originals (shape: mlstore_seed_originals()).
+ * @param array<string, mixed> $o Originals (shape: linguapilot_seed_originals()).
  * @phpstan-param array{
  *     complete: int, mug: int, cap: int, scarf: int, lamp: int, chair: int, hoodie: int, hoodie_variations: list<int>,
  *     red: array{term_id: int, term_taxonomy_id: int, slug: string}, blue: array{term_id: int, term_taxonomy_id: int, slug: string},
@@ -396,39 +396,39 @@ function mlstore_seed_originals(): array {
  * } $o
  * @return array<string, int> Translation IDs by key (e.g. `cap_fr`).
  */
-function mlstore_seed_translations( array $o ): array {
+function linguapilot_seed_translations( array $o ): array {
 	$t = array(
-		'complete_de' => mlstore_seed_translate_simple( $o['complete'], 'de', 'Komplettes T-Shirt' ),
-		'complete_fr' => mlstore_seed_translate_simple( $o['complete'], 'fr', 'T-shirt complet' ),
-		'mug_de'      => mlstore_seed_translate_simple( $o['mug'], 'de', 'Tasse ohne FR' ),
-		'cap_de'      => mlstore_seed_translate_simple( $o['cap'], 'de', 'Mütze (Entwurf)', array( 'status' => 'draft' ) ),
-		'cap_fr'      => mlstore_seed_translate_simple( $o['cap'], 'fr', 'Casquette' ),
-		'scarf_de'    => mlstore_seed_translate_simple( $o['scarf'], 'de', 'Schal' ),
-		'scarf_fr'    => mlstore_seed_translate_simple( $o['scarf'], 'fr', 'Écharpe' ),
-		'lamp_de'     => mlstore_seed_translate_simple( $o['lamp'], 'de', 'Lampe' ),
-		'lamp_fr'     => mlstore_seed_translate_simple( $o['lamp'], 'fr', 'Lampe' ),
-		'chair_de'    => mlstore_seed_translate_simple( $o['chair'], 'de', 'Stuhl' ),
-		'chair_fr'    => mlstore_seed_translate_simple( $o['chair'], 'fr', 'Chaise' ),
+		'complete_de' => linguapilot_seed_translate_simple( $o['complete'], 'de', 'Komplettes T-Shirt' ),
+		'complete_fr' => linguapilot_seed_translate_simple( $o['complete'], 'fr', 'T-shirt complet' ),
+		'mug_de'      => linguapilot_seed_translate_simple( $o['mug'], 'de', 'Tasse ohne FR' ),
+		'cap_de'      => linguapilot_seed_translate_simple( $o['cap'], 'de', 'Mütze (Entwurf)', array( 'status' => 'draft' ) ),
+		'cap_fr'      => linguapilot_seed_translate_simple( $o['cap'], 'fr', 'Casquette' ),
+		'scarf_de'    => linguapilot_seed_translate_simple( $o['scarf'], 'de', 'Schal' ),
+		'scarf_fr'    => linguapilot_seed_translate_simple( $o['scarf'], 'fr', 'Écharpe' ),
+		'lamp_de'     => linguapilot_seed_translate_simple( $o['lamp'], 'de', 'Lampe' ),
+		'lamp_fr'     => linguapilot_seed_translate_simple( $o['lamp'], 'fr', 'Lampe' ),
+		'chair_de'    => linguapilot_seed_translate_simple( $o['chair'], 'de', 'Stuhl' ),
+		'chair_fr'    => linguapilot_seed_translate_simple( $o['chair'], 'fr', 'Chaise' ),
 	);
 
 	// Terms: DE translates both colours, FR only Red.
-	$rot   = mlstore_seed_translate_color( $o['red'], 'de', 'Rot' );
-	$blau  = mlstore_seed_translate_color( $o['blue'], 'de', 'Blau' );
-	$rouge = mlstore_seed_translate_color( $o['red'], 'fr', 'Rouge' );
+	$rot   = linguapilot_seed_translate_color( $o['red'], 'de', 'Rot' );
+	$blau  = linguapilot_seed_translate_color( $o['blue'], 'de', 'Blau' );
+	$rouge = linguapilot_seed_translate_color( $o['red'], 'fr', 'Rouge' );
 
 	if ( null !== $o['category_ttid'] ) {
 		$category_ttid = $o['category_ttid'];
-		$category_de   = mlstore_seed_in_language( 'de', static fn () => wp_insert_term( MLSTORE_SEED_PREFIX . 'Kategorie', 'product_cat', array( 'slug' => 'seed-kategorie' ) ) );
+		$category_de   = linguapilot_seed_in_language( 'de', static fn () => wp_insert_term( LINGUAPILOT_SEED_PREFIX . 'Kategorie', 'product_cat', array( 'slug' => 'seed-kategorie' ) ) );
 		if ( is_array( $category_de ) ) {
-			update_term_meta( (int) $category_de['term_id'], MLSTORE_SEED_META, '1' );
-			mlstore_seed_link( (int) $category_de['term_taxonomy_id'], 'tax_product_cat', $category_ttid, 'de' );
+			update_term_meta( (int) $category_de['term_id'], LINGUAPILOT_SEED_META, '1' );
+			linguapilot_seed_link( (int) $category_de['term_taxonomy_id'], 'tax_product_cat', $category_ttid, 'de' );
 		}
 	}
 
 	// Variable Hoodie DE: correct (terms translated, both variations, label "Grösse"; Size options identical → review).
-	$hoodie_de = mlstore_seed_in_language(
+	$hoodie_de = linguapilot_seed_in_language(
 		'de',
-		static fn (): array => mlstore_seed_variable(
+		static fn (): array => linguapilot_seed_variable(
 			'Variabler Hoodie',
 			array( $rot['term_id'], $blau['term_id'] ),
 			array( 'S', 'M', 'L' ),
@@ -444,16 +444,16 @@ function mlstore_seed_translations( array $o ): array {
 			)
 		)
 	);
-	mlstore_seed_link( $hoodie_de['product'], 'post_product', $o['hoodie'], 'de' );
+	linguapilot_seed_link( $hoodie_de['product'], 'post_product', $o['hoodie'], 'de' );
 	foreach ( $hoodie_de['variations'] as $index => $variation_id ) {
-		mlstore_seed_link( $variation_id, 'post_product_variation', $o['hoodie_variations'][ $index ], 'de' );
+		linguapilot_seed_link( $variation_id, 'post_product_variation', $o['hoodie_variations'][ $index ], 'de' );
 	}
 	update_post_meta( $hoodie_de['product'], 'attr_label_translations', array( 'de' => array( 'size' => 'Grösse' ) ) );
 
 	// Variable Hoodie FR: broken (Blue untranslated, Blue variation missing, Size "P | M", Red variation keeps "S", no label).
-	$hoodie_fr = mlstore_seed_in_language(
+	$hoodie_fr = linguapilot_seed_in_language(
 		'fr',
-		static fn (): array => mlstore_seed_variable(
+		static fn (): array => linguapilot_seed_variable(
 			'Sweat à capuche',
 			array( $rouge['term_id'] ),
 			array( 'P', 'M' ),
@@ -465,8 +465,8 @@ function mlstore_seed_translations( array $o ): array {
 			)
 		)
 	);
-	mlstore_seed_link( $hoodie_fr['product'], 'post_product', $o['hoodie'], 'fr' );
-	mlstore_seed_link( $hoodie_fr['variations'][0], 'post_product_variation', $o['hoodie_variations'][0], 'fr' );
+	linguapilot_seed_link( $hoodie_fr['product'], 'post_product', $o['hoodie'], 'fr' );
+	linguapilot_seed_link( $hoodie_fr['variations'][0], 'post_product_variation', $o['hoodie_variations'][0], 'fr' );
 
 	return $t;
 }
@@ -474,19 +474,19 @@ function mlstore_seed_translations( array $o ): array {
 /**
  * Seeds all cases. See the file header for the order of operations.
  */
-function mlstore_seed_run(): void {
-	mlstore_seed_cleanup();
+function linguapilot_seed_run(): void {
+	linguapilot_seed_cleanup();
 
 	$default  = apply_filters( 'wpml_default_language', null );
 	$previous = apply_filters( 'wpml_current_language', null );
 	do_action( 'wpml_switch_language', $default );
 	try {
-		$originals = mlstore_seed_originals();
+		$originals = linguapilot_seed_originals();
 	} finally {
 		do_action( 'wpml_switch_language', $previous );
 	}
 
-	$t = mlstore_seed_translations( $originals );
+	$t = linguapilot_seed_translations( $originals );
 
 	// Step 3: deliberate mistakes, as direct meta writes on translations (no WooCommerce setters → no WCML sync).
 	update_post_meta( $t['scarf_de'], '_sku', 'SEED-SCARF-DE' ); // sync_error: sku.
@@ -495,14 +495,14 @@ function mlstore_seed_run(): void {
 
 	// Step 4: orders bought through translations (normalization demo): Cap 5× via FR + 1× original, Mug 3× via DE.
 	$orders = array(
-		mlstore_seed_order( array( $t['cap_fr'] => 5 ), 2 ),
-		mlstore_seed_order( array( $originals['cap'] => 1 ), 3 ),
-		mlstore_seed_order( array( $t['mug_de'] => 3 ), 4 ),
+		linguapilot_seed_order( array( $t['cap_fr'] => 5 ), 2 ),
+		linguapilot_seed_order( array( $originals['cap'] => 1 ), 3 ),
+		linguapilot_seed_order( array( $t['mug_de'] => 3 ), 4 ),
 	);
 
 	WP_CLI::success(
 		sprintf(
-			"Seeded %d originals, %d translations, %d orders (Cap %d, Mug %d, Hoodie %d).\nVerify: ddev exec -d /var/www/html/wp-content/plugins/multilingual-store-abilities vendor/bin/phpunit -c phpunit-store.xml.dist --filter SeedScenario",
+			"Seeded %d originals, %d translations, %d orders (Cap %d, Mug %d, Hoodie %d).\nVerify: ddev exec -d /var/www/html/wp-content/plugins/linguapilot vendor/bin/phpunit -c phpunit-store.xml.dist --filter SeedScenario",
 			7,
 			count( $t ) + 2,
 			count( $orders ),
@@ -513,4 +513,4 @@ function mlstore_seed_run(): void {
 	);
 }
 
-mlstore_seed_run();
+linguapilot_seed_run();

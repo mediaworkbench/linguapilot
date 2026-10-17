@@ -2,22 +2,22 @@
 /**
  * Tests for deriving synced product fields from WPML/WCML configuration.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Gateway;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Gateway;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ProductField;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\SyncRules;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Domain\Model\ProductField;
+use MediaWorkbench\LinguaPilot\Gateway\Wpml\SyncRules;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Synced = WPML "copy" preference, or synced by WCML code regardless of preferences.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\Wpml\SyncRules
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Domain\Model\SyncSettings
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\Wpml\SyncRules
+ * @covers \MediaWorkbench\LinguaPilot\Domain\Model\SyncSettings
  */
 final class SyncRulesTest extends TestCase {
 

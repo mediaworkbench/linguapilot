@@ -2,21 +2,21 @@
 /**
  * Translation audit service.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain;
+namespace MediaWorkbench\LinguaPilot\Domain;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogItem;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CoverageRow;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\LanguageCoverage;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogItem;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\CoverageRow;
+use MediaWorkbench\LinguaPilot\Domain\Model\LanguageCoverage;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationState;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WooGateway;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
 
 /**
  * Finds originals whose translations are missing or unpublished.

@@ -2,12 +2,12 @@
 /**
  * Which product fields are kept in sync across translations.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Domain\Model;
+namespace MediaWorkbench\LinguaPilot\Domain\Model;
 
 /**
  * A difference in a synced field is a sync error; in any other field it is a (possibly intentional) deviation.

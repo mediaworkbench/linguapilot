@@ -13,8 +13,8 @@ wp user create mcp-agent mcp-agent@example.test --role=shop_manager
 wp user application-password create mcp-agent "Claude MCP" --porcelain   # prints the password once
 ```
 
-`shop_manager` has `manage_woocommerce`, which every `mlstore/*` ability requires. For a narrower role, create one with only `read`
-plus `manage_woocommerce`, or map the abilities to a custom capability with the `mlstore_ability_capability` filter.
+`shop_manager` has `manage_woocommerce`, which every `linguapilot/*` ability requires. For a narrower role, create one with only `read`
+plus `manage_woocommerce`, or map the abilities to a custom capability with the `linguapilot_ability_capability` filter.
 
 ## 2. Claude Code / Claude Desktop
 
@@ -23,7 +23,7 @@ Remote (HTTP, via `@automattic/mcp-wordpress-remote`):
 ```json
 {
   "mcpServers": {
-    "mlstore": {
+    "linguapilot": {
       "command": "npx",
       "args": ["-y", "@automattic/mcp-wordpress-remote@latest"],
       "env": {
@@ -54,15 +54,15 @@ A JSON answer with `"MCP Adapter Default Server"` means the store side works; 40
 
 **Models:** use one with reliable tool calling. The default server works in three steps (discover → get info → execute), and small
 local models sometimes stop after discovering. Naming the steps in the prompt helps:
-*"Use the MCP tools: discover the abilities, get the info for mlstore/languages-overview, then execute it."*
-Each call appears in WooCommerce → Status → Logs (source `mlstore-abilities`) with the calling user's ID.
+*"Use the MCP tools: discover the abilities, get the info for linguapilot/languages-overview, then execute it."*
+Each call appears in WooCommerce → Status → Logs (source `linguapilot`) with the calling user's ID.
 
 Local alternative without HTTP (STDIO through WP-CLI inside DDEV):
 
 ```json
 {
   "mcpServers": {
-    "mlstore": {
+    "linguapilot": {
       "command": "bash",
       "args": ["-c", "cd /path/to/ddev/project && ddev wp mcp-adapter serve --user=mcp-agent --server=mcp-adapter-default-server"]
     }

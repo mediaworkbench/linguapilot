@@ -2,7 +2,7 @@
 parameters:
 	level: 8
 	paths:
-		- multilingual-store-abilities.php
+		- linguapilot.php
 		- uninstall.php
 		- bin/check-readonly.php
 		- src

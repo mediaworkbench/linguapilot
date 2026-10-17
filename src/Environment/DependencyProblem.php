@@ -2,12 +2,12 @@
 /**
  * A single unmet runtime dependency.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Environment;
+namespace MediaWorkbench\LinguaPilot\Environment;
 
 /**
  * Describes one dependency that is missing or too old.

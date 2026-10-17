@@ -1,22 +1,22 @@
 # Ability reference
 
-All abilities are **read-only**, live in the `mlstore/` namespace and WooCommerce's shared `woocommerce` category,
+All abilities are **read-only**, live in the `linguapilot/` namespace and WooCommerce's shared `woocommerce` category,
 and require the `manage_woocommerce` capability (Shop Manager or Administrator). The capability can be changed per ability
-with the `mlstore_ability_capability` filter.
+with the `linguapilot_ability_capability` filter.
 
 ## Calling abilities
 
 | Channel | How |
 |---|---|
-| PHP | `wp_get_ability( 'mlstore/languages-overview' )->execute( $input )` |
-| REST | `GET /wp-json/wp-abilities/v1/abilities/mlstore/<name>/run?input[per_page]=20` (read-only abilities only accept GET) |
-| MCP | MCP Adapter default server `/wp-json/mcp/mcp-adapter-default-server`: `mcp-adapter-discover-abilities` → `mcp-adapter-get-ability-info` → `mcp-adapter-execute-ability` with `{"ability_name": "mlstore/<name>", "parameters": {...}}` |
+| PHP | `wp_get_ability( 'linguapilot/languages-overview' )->execute( $input )` |
+| REST | `GET /wp-json/wp-abilities/v1/abilities/linguapilot/<name>/run?input[per_page]=20` (read-only abilities only accept GET) |
+| MCP | MCP Adapter default server `/wp-json/mcp/mcp-adapter-default-server`: `mcp-adapter-discover-abilities` → `mcp-adapter-get-ability-info` → `mcp-adapter-execute-ability` with `{"ability_name": "linguapilot/<name>", "parameters": {...}}` |
 
 ## Conventions
 
-- **Languages** are WPML language codes as listed by `mlstore/languages-overview`. They are not always two letters (e.g. `en-us`).
+- **Languages** are WPML language codes as listed by `linguapilot/languages-overview`. They are not always two letters (e.g. `en-us`).
   A `languages` input defaults to every active language except the default language. Unknown codes, or the default language,
-  return `mlstore_invalid_language`.
+  return `linguapilot_invalid_language`.
 - **Lists** use WooCommerce's flat envelope: `{ "<items>": [...], "page", "per_page", "total_pages", "total_items", "summary"?, "meta" }`.
   `per_page` is at most 100.
 - **Every response** has `meta`: `generated_at` (UTC), `default_language`, `languages`, `plugin_version`.
@@ -29,16 +29,16 @@ with the `mlstore_ability_capability` filter.
 |---|---|---|
 | `ability_invalid_permissions` | 401 / 403 | Not logged in (401), or logged in without `manage_woocommerce` (403) (WordPress core) |
 | `ability_invalid_input` | 400 | Input does not match the schema, e.g. `per_page` > 100 or an unknown key (WordPress core) |
-| `mlstore_invalid_language` | 400 | Unknown language code, or the default language where a translation language is expected |
-| `mlstore_invalid_input` | 400 | Input is valid per schema but not usable |
-| `mlstore_not_found` | 404 | A referenced product does not exist |
-| `mlstore_currency_disabled` | 409 | WooCommerce Multilingual multi-currency is off |
-| `mlstore_dependency_missing` | 424 | The ability needs WooCommerce Multilingual, which is not active |
-| `mlstore_internal_error` | 500 | Unexpected failure; details are in WooCommerce → Status → Logs (`mlstore-abilities`) |
+| `linguapilot_invalid_language` | 400 | Unknown language code, or the default language where a translation language is expected |
+| `linguapilot_invalid_input` | 400 | Input is valid per schema but not usable |
+| `linguapilot_not_found` | 404 | A referenced product does not exist |
+| `linguapilot_currency_disabled` | 409 | WooCommerce Multilingual multi-currency is off |
+| `linguapilot_dependency_missing` | 424 | The ability needs WooCommerce Multilingual, which is not active |
+| `linguapilot_internal_error` | 500 | Unexpected failure; details are in WooCommerce → Status → Logs (`linguapilot`) |
 
 ---
 
-## `mlstore/languages-overview`
+## `linguapilot/languages-overview`
 
 Orientation for the agent; meant as the first call in a session.
 
@@ -152,7 +152,7 @@ Without WCML only the WPML preferences count. `post_status` is never synced.
 
 ---
 
-## `mlstore/translation-completeness`
+## `linguapilot/translation-completeness`
 
 Which catalog objects lack translations, plus coverage per language across the whole catalog.
 
@@ -183,8 +183,8 @@ audited originals: `total_objects` and per language `translated`, `unpublished`,
 - `translated + unpublished + in_progress + missing = total_objects` per language; `coverage_pct` = translated / total.
 - Terms have no status: a term translation either exists or is missing.
 - Taxonomies WPML does not translate are skipped when auditing all attributes. Requesting one explicitly (or non-translatable
-  categories/tags) returns `mlstore_invalid_input`.
-- `taxonomy` together with any other `object_type` → `mlstore_invalid_input`.
+  categories/tags) returns `linguapilot_invalid_input`.
+- `taxonomy` together with any other `object_type` → `linguapilot_invalid_input`.
 
 **Example output** (DDEV demo store, `{"per_page": 2}`):
 
@@ -254,7 +254,7 @@ audited originals: `total_objects` and per language `translated`, `unpublished`,
 
 ---
 
-## `mlstore/cross-language-consistency`
+## `linguapilot/cross-language-consistency`
 
 Product and variation translations whose shop data differs from the original, with a severity that separates broken syncs from intentional differences.
 
@@ -343,7 +343,7 @@ Rows are ordered by product, then variation (product row first), then language.
 
 ---
 
-## `mlstore/untranslated-variations`
+## `linguapilot/untranslated-variations`
 
 Translated variable products whose variations or variation attributes are not properly translated, the classic cause of broken
 variation selectors ("This product is unavailable") in translated shops.
@@ -355,7 +355,7 @@ variation selectors ("This product is unavailable") in translated shops.
 | Field | Type | Default | Notes |
 |---|---|---|---|
 | `languages` | string[] | all non-default | Language codes from `languages-overview` |
-| `product_id` | int | all variable products | Any language version; reported under its original. Unknown → `mlstore_not_found`, not variable → `mlstore_invalid_input` |
+| `product_id` | int | all variable products | Any language version; reported under its original. Unknown → `linguapilot_not_found`, not variable → `linguapilot_invalid_input` |
 | `page`, `per_page` | int | 1, 50 | `per_page` max 100 |
 
 **Output:** list envelope with `products[]`: `{ product_id, title, language, translation_id, edit_url, issues[] }`, one row per product and
@@ -439,20 +439,20 @@ for global attributes. An empty value means "any" and is always valid.
 
 ---
 
-## `mlstore/currency-price-gaps`
+## `linguapilot/currency-price-gaps`
 
 Products and variations with WooCommerce Multilingual *"set prices manually"* enabled, but no regular price in one or more secondary
 currencies. Customers paying in such a currency silently get an exchange-rate conversion of the base price instead.
 
 **Example questions:** *"Which products have no manual price in CHF?"*, *"Are my USD prices complete?"*
 
-**Requires** WooCommerce Multilingual (`mlstore_dependency_missing`) with multi-currency enabled (`mlstore_currency_disabled`).
+**Requires** WooCommerce Multilingual (`linguapilot_dependency_missing`) with multi-currency enabled (`linguapilot_currency_disabled`).
 
 **Input:**
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
-| `currencies` | string[] | all secondary currencies | ISO codes from `languages-overview`. The base currency or unknown codes → `mlstore_invalid_input` (the message lists the valid ones) |
+| `currencies` | string[] | all secondary currencies | ISO codes from `languages-overview`. The base currency or unknown codes → `linguapilot_invalid_input` (the message lists the valid ones) |
 | `include_variations` | bool | `true` | Manual prices are set per variation |
 | `page`, `per_page` | int | 1, 50 | `per_page` max 100 |
 
@@ -524,7 +524,7 @@ currencies. Customers paying in such a currency silently get an exchange-rate co
 
 ---
 
-## `mlstore/translation-work-queue`
+## `linguapilot/translation-work-queue`
 
 What to translate first: products that are not yet translated (published) into every requested language, ranked by sales.
 

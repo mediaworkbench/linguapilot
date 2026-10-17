@@ -2,22 +2,22 @@
 /**
  * Tests for the audit logger.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Support;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Support;
 
 use Brain\Monkey\Filters;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes\MemoryLogSink;
-use MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\TestCase;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Tests\Unit\Fakes\MemoryLogSink;
+use MediaWorkbench\LinguaPilot\Tests\Unit\TestCase;
 
 /**
  * Logs who ran what and how it went, never the raw input or any output.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger
+ * @covers \MediaWorkbench\LinguaPilot\Support\AuditLogger
  */
 final class AuditLoggerTest extends TestCase {
 
@@ -45,13 +45,13 @@ final class AuditLoggerTest extends TestCase {
 	}
 
 	public function test_successful_call_is_logged_with_hash_but_without_raw_input(): void {
-		$this->logger->record( 'mlstore/probe', 7, array( 'search' => 'secret term' ), 12, 34.6, null );
+		$this->logger->record( 'linguapilot/probe', 7, array( 'search' => 'secret term' ), 12, 34.6, null );
 
 		$this->assertCount( 1, $this->sink->entries );
 		$entry = $this->sink->entries[0];
 		$this->assertSame( 'info', $entry['level'] );
 		$this->assertSame( AuditLogger::SOURCE, $entry['context']['source'] );
-		$this->assertSame( 'mlstore/probe', $entry['context']['ability'] );
+		$this->assertSame( 'linguapilot/probe', $entry['context']['ability'] );
 		$this->assertSame( 7, $entry['context']['user_id'] );
 		$this->assertSame( 12, $entry['context']['result_count'] );
 		$this->assertSame( 35, $entry['context']['duration_ms'] );
@@ -61,17 +61,17 @@ final class AuditLoggerTest extends TestCase {
 	}
 
 	public function test_failed_call_is_logged_as_warning_with_error_code(): void {
-		$this->logger->record( 'mlstore/probe', 0, array(), null, 1.0, 'mlstore_invalid_language' );
+		$this->logger->record( 'linguapilot/probe', 0, array(), null, 1.0, 'linguapilot_invalid_language' );
 
 		$this->assertSame( 'warning', $this->sink->entries[0]['level'] );
-		$this->assertSame( 'mlstore_invalid_language', $this->sink->entries[0]['context']['error_code'] );
-		$this->assertStringContainsString( 'mlstore_invalid_language', $this->sink->entries[0]['message'] );
+		$this->assertSame( 'linguapilot_invalid_language', $this->sink->entries[0]['context']['error_code'] );
+		$this->assertStringContainsString( 'linguapilot_invalid_language', $this->sink->entries[0]['message'] );
 	}
 
 	public function test_logging_can_be_disabled_per_ability(): void {
-		Filters\expectApplied( 'mlstore_audit_enabled' )->once()->with( true, 'mlstore/probe' )->andReturn( false );
+		Filters\expectApplied( 'linguapilot_audit_enabled' )->once()->with( true, 'linguapilot/probe' )->andReturn( false );
 
-		$this->logger->record( 'mlstore/probe', 1, array(), 1, 1.0, null );
+		$this->logger->record( 'linguapilot/probe', 1, array(), 1, 1.0, null );
 
 		$this->assertSame( array(), $this->sink->entries );
 	}
@@ -96,7 +96,7 @@ final class AuditLoggerTest extends TestCase {
 	}
 
 	public function test_exception_is_logged_without_its_message(): void {
-		$this->logger->record_exception( 'mlstore/probe', new \RuntimeException( 'secret internal detail' ) );
+		$this->logger->record_exception( 'linguapilot/probe', new \RuntimeException( 'secret internal detail' ) );
 
 		$this->assertSame( 'error', $this->sink->entries[0]['level'] );
 		$this->assertSame( \RuntimeException::class, $this->sink->entries[0]['context']['exception'] );

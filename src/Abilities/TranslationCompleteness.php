@@ -1,25 +1,25 @@
 <?php
 /**
- * Ability: mlstore/translation-completeness.
+ * Ability: linguapilot/translation-completeness.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
 use Closure;
 use DateTimeImmutable;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\TranslationAudit;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\TranslationAudit;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WooGateway;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Support\OutputEnvelope;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
 
 /**
  * Which catalog objects lack translations, plus coverage per language.
@@ -51,21 +51,21 @@ final class TranslationCompleteness extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	public function name(): string {
-		return 'mlstore/translation-completeness';
+		return 'linguapilot/translation-completeness';
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function label(): string {
-		return __( 'Translation completeness', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Translation completeness', 'linguapilot' );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Lists original-language products, product categories, product tags or global attribute terms that are not translated into one or more languages, with a coverage summary per language across the whole catalog. A translation that exists but is not published (draft, pending, private, scheduled) is reported in unpublished_languages; one that was sent to translation but is not done yet in in_progress_languages; a missing or trashed one in missing_languages; an existing translation whose original changed since in outdated_languages. Only objects with at least one gap are listed.', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Lists original-language products, product categories, product tags or global attribute terms that are not translated into one or more languages, with a coverage summary per language across the whole catalog. A translation that exists but is not published (draft, pending, private, scheduled) is reported in unpublished_languages; one that was sent to translation but is not done yet in in_progress_languages; a missing or trashed one in missing_languages; an existing translation whose original changed since in outdated_languages. Only objects with at least one gap are listed.', 'linguapilot' );
 	}
 
 	/**
@@ -78,19 +78,19 @@ final class TranslationCompleteness extends AbstractAbility {
 					'type'        => 'string',
 					'enum'        => self::OBJECT_TYPES,
 					'default'     => 'product',
-					'description' => __( 'What to audit. attribute_term = terms of global product attributes (pa_*).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'What to audit. attribute_term = terms of global product attributes (pa_*).', 'linguapilot' ),
 				),
 				'languages'   => self::languages_input_property(),
 				'status'      => array(
 					'type'        => 'string',
 					'enum'        => array( 'publish', 'any' ),
 					'default'     => 'publish',
-					'description' => __( 'Products only: audit published originals, or originals in any status except trash.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Products only: audit published originals, or originals in any status except trash.', 'linguapilot' ),
 				),
 				'taxonomy'    => array(
 					'type'        => 'string',
 					'pattern'     => '^pa_[a-z0-9_-]+$',
-					'description' => __( 'attribute_term only: limit to one attribute taxonomy, e.g. pa_color. Default: all translatable attributes.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'attribute_term only: limit to one attribute taxonomy, e.g. pa_color. Default: all translatable attributes.', 'linguapilot' ),
 				),
 			),
 			Pagination::input_properties()
@@ -111,18 +111,18 @@ final class TranslationCompleteness extends AbstractAbility {
 			'properties'           => array(
 				'id'                    => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language post or term ID.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language post or term ID.', 'linguapilot' ),
 				),
 				'type'                  => array(
 					'type'        => 'string',
-					'description' => __( 'Post type or taxonomy, e.g. product, product_cat, pa_color.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Post type or taxonomy, e.g. product, product_cat, pa_color.', 'linguapilot' ),
 				),
 				'title'                 => array( 'type' => 'string' ),
 				'sku'                   => array( 'type' => array( 'string', 'null' ) ),
 				'missing_languages'     => $codes,
 				'unpublished_languages' => $codes,
-				'in_progress_languages' => $codes + array( 'description' => __( 'Sent to translation (open WPML translation job), not translated yet.', 'multilingual-store-abilities-for-woocommerce' ) ),
-				'outdated_languages'    => $codes + array( 'description' => __( 'Translation exists, but the original changed since and it needs an update.', 'multilingual-store-abilities-for-woocommerce' ) ),
+				'in_progress_languages' => $codes + array( 'description' => __( 'Sent to translation (open WPML translation job), not translated yet.', 'linguapilot' ) ),
+				'outdated_languages'    => $codes + array( 'description' => __( 'Translation exists, but the original changed since and it needs an update.', 'linguapilot' ) ),
 				'edit_url'              => array(
 					'type'   => 'string',
 					'format' => 'uri',
@@ -142,11 +142,11 @@ final class TranslationCompleteness extends AbstractAbility {
 				'missing'      => array( 'type' => 'integer' ),
 				'outdated'     => array(
 					'type'        => 'integer',
-					'description' => __( 'Existing translations that need an update (already counted in translated or unpublished).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Existing translations that need an update (already counted in translated or unpublished).', 'linguapilot' ),
 				),
 				'coverage_pct' => array(
 					'type'        => 'number',
-					'description' => __( 'Share of originals with a published translation, in percent.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Share of originals with a published translation, in percent.', 'linguapilot' ),
 				),
 			),
 			'required'             => array( 'language', 'translated', 'unpublished', 'in_progress', 'missing', 'outdated', 'coverage_pct' ),
@@ -158,7 +158,7 @@ final class TranslationCompleteness extends AbstractAbility {
 			'properties'           => array(
 				'total_objects' => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language objects audited (all pages).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language objects audited (all pages).', 'linguapilot' ),
 				),
 				'languages'     => array(
 					'type'  => 'array',
@@ -205,7 +205,7 @@ final class TranslationCompleteness extends AbstractAbility {
 		$taxonomy    = isset( $input['taxonomy'] ) && is_string( $input['taxonomy'] ) ? $input['taxonomy'] : null;
 
 		if ( null !== $taxonomy && 'attribute_term' !== $object_type ) {
-			throw AbilityError::invalid_input( esc_html__( 'taxonomy can only be used with object_type attribute_term.', 'multilingual-store-abilities-for-woocommerce' ) );
+			throw AbilityError::invalid_input( esc_html__( 'taxonomy can only be used with object_type attribute_term.', 'linguapilot' ) );
 		}
 
 		if ( 'attribute_term' === $object_type ) {
@@ -236,7 +236,7 @@ final class TranslationCompleteness extends AbstractAbility {
 		if ( null !== $taxonomy ) {
 			if ( ! in_array( $taxonomy, $taxonomies, true ) ) {
 				/* translators: %s: Taxonomy slug. */
-				throw AbilityError::invalid_input( esc_html( sprintf( __( '%s is not a global product attribute.', 'multilingual-store-abilities-for-woocommerce' ), $taxonomy ) ) );
+				throw AbilityError::invalid_input( esc_html( sprintf( __( '%s is not a global product attribute.', 'linguapilot' ), $taxonomy ) ) );
 			}
 
 			$type = ElementType::taxonomy( $taxonomy );
@@ -264,7 +264,7 @@ final class TranslationCompleteness extends AbstractAbility {
 	private function assert_translatable( ElementType $type ): void {
 		if ( ! $this->gateway->is_translatable( $type ) ) {
 			/* translators: %s: Post type or taxonomy slug. */
-			throw AbilityError::invalid_input( esc_html( sprintf( __( '%s is not set to be translated in WPML.', 'multilingual-store-abilities-for-woocommerce' ), $type->name() ) ) );
+			throw AbilityError::invalid_input( esc_html( sprintf( __( '%s is not set to be translated in WPML.', 'linguapilot' ), $type->name() ) ) );
 		}
 	}
 }

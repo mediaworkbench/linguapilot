@@ -2,26 +2,26 @@
 /**
  * Store tests for cross-language consistency data access.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Store;
+namespace MediaWorkbench\LinguaPilot\Tests\Store;
 
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\CatalogScope;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\Language;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationPair;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\TranslationState;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway;
+use MediaWorkbench\LinguaPilot\Domain\Model\CatalogScope;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\Model\Language;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationPair;
+use MediaWorkbench\LinguaPilot\Domain\Model\TranslationState;
+use MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WpmlGateway;
 
 /**
  * Raw SQL reads must agree with WPML's hooks and WooCommerce's own getters.
  *
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WpmlGateway
- * @covers \MediaWorkbench\MultilingualStoreAbilities\Gateway\WooCommerceGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WpmlGateway
+ * @covers \MediaWorkbench\LinguaPilot\Gateway\WooCommerceGateway
  */
 final class ConsistencyStoreTest extends StoreTestCase {
 
@@ -111,7 +111,7 @@ final class ConsistencyStoreTest extends StoreTestCase {
 		);
 		wp_set_current_user( (int) ( $admins[0] ?? 0 ) );
 
-		$result = wp_get_ability( 'mlstore/cross-language-consistency' )?->execute();
+		$result = wp_get_ability( 'linguapilot/cross-language-consistency' )?->execute();
 
 		$this->assertIsArray( $result, $result instanceof \WP_Error ? $result->get_error_message() : 'ability not registered' );
 		$this->assertGreaterThanOrEqual( $result['total_items'], $result['summary']['translations_checked'] );

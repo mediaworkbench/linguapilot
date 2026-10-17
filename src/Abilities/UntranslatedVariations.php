@@ -1,24 +1,24 @@
 <?php
 /**
- * Ability: mlstore/untranslated-variations.
+ * Ability: linguapilot/untranslated-variations.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Abilities;
+namespace MediaWorkbench\LinguaPilot\Abilities;
 
 use Closure;
 use DateTimeImmutable;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\Model\ElementType;
-use MediaWorkbench\MultilingualStoreAbilities\Domain\VariationAudit;
-use MediaWorkbench\MultilingualStoreAbilities\Environment\DependencyStatus;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\MultilingualGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Gateway\WooGateway;
-use MediaWorkbench\MultilingualStoreAbilities\Support\AuditLogger;
-use MediaWorkbench\MultilingualStoreAbilities\Support\OutputEnvelope;
-use MediaWorkbench\MultilingualStoreAbilities\Support\Pagination;
+use MediaWorkbench\LinguaPilot\Domain\Model\ElementType;
+use MediaWorkbench\LinguaPilot\Domain\VariationAudit;
+use MediaWorkbench\LinguaPilot\Environment\DependencyStatus;
+use MediaWorkbench\LinguaPilot\Gateway\MultilingualGateway;
+use MediaWorkbench\LinguaPilot\Gateway\WooGateway;
+use MediaWorkbench\LinguaPilot\Support\AuditLogger;
+use MediaWorkbench\LinguaPilot\Support\OutputEnvelope;
+use MediaWorkbench\LinguaPilot\Support\Pagination;
 
 /**
  * Translated variable products whose variations or variation attributes are not (properly) translated.
@@ -58,21 +58,21 @@ final class UntranslatedVariations extends AbstractAbility {
 	 * {@inheritDoc}
 	 */
 	public function name(): string {
-		return 'mlstore/untranslated-variations';
+		return 'linguapilot/untranslated-variations';
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function label(): string {
-		return __( 'Untranslated variations', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Untranslated variations', 'linguapilot' );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	protected function description(): string {
-		return __( 'Finds translated variable products whose variations or variation attributes are not properly translated, the classic cause of broken variation selectors in translated shops. Issues per product and language: variation_missing, attribute_term_untranslated, local_attribute_missing, local_attribute_options_mismatch and variation_attribute_value_invalid (severity error: shoppers are affected); local_attribute_identical and local_attribute_label_untranslated (severity review: may be intentional, e.g. sizes like S | M | L).', 'multilingual-store-abilities-for-woocommerce' );
+		return __( 'Finds translated variable products whose variations or variation attributes are not properly translated, the classic cause of broken variation selectors in translated shops. Issues per product and language: variation_missing, attribute_term_untranslated, local_attribute_missing, local_attribute_options_mismatch and variation_attribute_value_invalid (severity error: shoppers are affected); local_attribute_identical and local_attribute_label_untranslated (severity review: may be intentional, e.g. sizes like S | M | L).', 'linguapilot' );
 	}
 
 	/**
@@ -85,7 +85,7 @@ final class UntranslatedVariations extends AbstractAbility {
 				'product_id' => array(
 					'type'        => 'integer',
 					'minimum'     => 1,
-					'description' => __( 'Limit to one variable product (any language version; reported under its original).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Limit to one variable product (any language version; reported under its original).', 'linguapilot' ),
 				),
 			),
 			Pagination::input_properties()
@@ -109,17 +109,17 @@ final class UntranslatedVariations extends AbstractAbility {
 				),
 				'variation_id'      => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language variation ID.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language variation ID.', 'linguapilot' ),
 				),
 				'taxonomy'          => array( 'type' => 'string' ),
 				'term_id'           => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language term ID.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language term ID.', 'linguapilot' ),
 				),
 				'term_name'         => array( 'type' => 'string' ),
 				'attribute'         => array(
 					'type'        => 'string',
-					'description' => __( 'Attribute name (taxonomy slug for global attributes).', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Attribute name (taxonomy slug for global attributes).', 'linguapilot' ),
 				),
 				'original_value'    => array( 'type' => 'string' ),
 				'translation_value' => array( 'type' => 'string' ),
@@ -133,14 +133,14 @@ final class UntranslatedVariations extends AbstractAbility {
 			'properties'           => array(
 				'product_id'     => array(
 					'type'        => 'integer',
-					'description' => __( 'Original-language product ID.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Original-language product ID.', 'linguapilot' ),
 				),
 				'title'          => array( 'type' => 'string' ),
 				'language'       => array( 'type' => 'string' ),
 				'translation_id' => array( 'type' => 'integer' ),
 				'edit_url'       => array(
 					'type'        => 'string',
-					'description' => __( 'Edit link of the translated product.', 'multilingual-store-abilities-for-woocommerce' ),
+					'description' => __( 'Edit link of the translated product.', 'linguapilot' ),
 				),
 				'issues'         => array(
 					'type'  => 'array',
@@ -196,12 +196,12 @@ final class UntranslatedVariations extends AbstractAbility {
 		$original = $this->gateway->original_id( $product_id, ElementType::product() );
 		if ( null === $original ) {
 			/* translators: %d: Product ID. */
-			throw AbilityError::not_found( esc_html( sprintf( __( 'Product %d not found.', 'multilingual-store-abilities-for-woocommerce' ), $product_id ) ) );
+			throw AbilityError::not_found( esc_html( sprintf( __( 'Product %d not found.', 'linguapilot' ), $product_id ) ) );
 		}
 
 		if ( array() === $this->woo->variable_product_ids( array( $original ) ) ) {
 			/* translators: %d: Product ID. */
-			throw AbilityError::invalid_input( esc_html( sprintf( __( 'Product %d is not a variable product.', 'multilingual-store-abilities-for-woocommerce' ), $product_id ) ) );
+			throw AbilityError::invalid_input( esc_html( sprintf( __( 'Product %d is not a variable product.', 'linguapilot' ), $product_id ) ) );
 		}
 
 		return $original;

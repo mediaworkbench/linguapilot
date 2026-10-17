@@ -101,5 +101,5 @@ jobs:
           unzip -q /tmp/woocommerce.zip -d /tmp/plugins
       - name: Run integration tests
         env:
-          MLSTORE_WC_PATH: /tmp/plugins/woocommerce/woocommerce.php
+          LINGUAPILOT_WC_PATH: /tmp/plugins/woocommerce/woocommerce.php
         run: vendor/bin/phpunit -c phpunit-integration.xml.dist

@@ -2,14 +2,14 @@
 /**
  * Configurable environment for unit tests.
  *
- * @package MediaWorkbench\MultilingualStoreAbilities
+ * @package MediaWorkbench\LinguaPilot
  */
 
 declare( strict_types = 1 );
 
-namespace MediaWorkbench\MultilingualStoreAbilities\Tests\Unit\Fakes;
+namespace MediaWorkbench\LinguaPilot\Tests\Unit\Fakes;
 
-use MediaWorkbench\MultilingualStoreAbilities\Environment\Environment;
+use MediaWorkbench\LinguaPilot\Environment\Environment;
 
 /**
  * Environment whose detected versions are set by the test.
