@@ -1,9 +1,9 @@
 <?php
 /**
- * Bootstrap for the read-only store suite: loads the real DDEV site (with WPML), no test framework.
+ * Bootstrap for the read-only store suite: loads the real local site (with WPML), no test framework.
  *
- * Every v0.1 code path is read-only, so the suite runs against the dev database (ideally the
- * `wpml-baseline` snapshot). StoreTestCase checksums the content tables to prove nothing was written.
+ * Every v0.1 code path is read-only, so the suite runs against the local dev database (ideally
+ * freshly seeded with tests/Fixtures/seed-demo.php). StoreTestCase checksums the content tables to prove nothing was written.
  *
  * Environment variables:
  * - LINGUAPILOT_WP_LOAD  Path to wp-load.php (default: the WordPress install this plugin lives in).
@@ -49,6 +49,6 @@ $linguapilot_due = $GLOBALS['wpdb']->get_results( // phpcs:ignore WordPress.DB.D
 if ( ! empty( $linguapilot_due ) ) {
 	$linguapilot_list = implode( ', ', array_map( static fn( array $row ): string => "{$row['hook']} ({$row['scheduled_date_gmt']} UTC)", $linguapilot_due ) );
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.Security.EscapeOutput.OutputNotEscaped -- CLI output.
-	fwrite( STDERR, "Scheduled-sale actions are due or due within 5 minutes: {$linguapilot_list}.\nThey save products and would trip the read-only guard mid-run. Run them first, then start the suite again:\n  ddev wp action-scheduler run --hooks=woocommerce_scheduled_sales,wc_product_start_scheduled_sale,wc_product_end_scheduled_sale\n(If an action is not due yet, wait until it is and run the command.)\n" );
+	fwrite( STDERR, "Scheduled-sale actions are due or due within 5 minutes: {$linguapilot_list}.\nThey save products and would trip the read-only guard mid-run. Run them first (prefix with your container runner, e.g. `ddev`), then start the suite again:\n  wp action-scheduler run --hooks=woocommerce_scheduled_sales,wc_product_start_scheduled_sale,wc_product_end_scheduled_sale\n(If an action is not due yet, wait until it is and run the command.)\n" );
 	exit( 1 );
 }

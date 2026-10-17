@@ -66,7 +66,7 @@ abstract class StoreTestCase extends TestCase {
 			array(),
 			$changed,
 			'Guarded tables changed during ' . static::class . ': ' . implode( ', ', $changed ) . '. Either a test wrote to the database, '
-			. 'or something outside the suite did (WP-Cron/Action Scheduler, a browser tab on the DDEV site). ' . ( array() === $changed ? '' : self::background_jobs_since( self::$started_gmt ) )
+			. 'or something outside the suite did (WP-Cron/Action Scheduler, a browser tab on the same site). ' . ( array() === $changed ? '' : self::background_jobs_since( self::$started_gmt ) )
 		);
 	}
 

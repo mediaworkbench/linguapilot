@@ -44,7 +44,7 @@ final class CurrencyPriceGapsTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Concept §12 roles.
+	 * Anonymous, customer, shop_manager and administrator.
 	 *
 	 * @dataProvider roles
 	 *

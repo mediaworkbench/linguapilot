@@ -63,7 +63,7 @@ Orientation for the agent; meant as the first call in a session.
 stock status, manage stock, tax class and prices), or when WCML syncs it in code (stock quantity, stock status, catalog visibility).
 Without WCML only the WPML preferences count. `post_status` is never synced.
 
-**Example output** (DDEV demo store):
+**Example output** (seeded demo store):
 
 ```json
 {
@@ -186,7 +186,7 @@ audited originals: `total_objects` and per language `translated`, `unpublished`,
   categories/tags) returns `linguapilot_invalid_input`.
 - `taxonomy` together with any other `object_type` → `linguapilot_invalid_input`.
 
-**Example output** (DDEV demo store, `{"per_page": 2}`):
+**Example output** (seeded demo store, `{"per_page": 2}`):
 
 ```json
 {
@@ -201,7 +201,7 @@ audited originals: `total_objects` and per language `translated`, `unpublished`,
         "fr"
       ],
       "unpublished_languages": [],
-      "edit_url": "https://mlstore-dev.ddev.site:33000/wp-admin/post.php?post=11&action=edit"
+      "edit_url": "https://your-store.example/wp-admin/post.php?post=11&action=edit"
     },
     {
       "id": 12,
@@ -213,7 +213,7 @@ audited originals: `total_objects` and per language `translated`, `unpublished`,
         "fr"
       ],
       "unpublished_languages": [],
-      "edit_url": "https://mlstore-dev.ddev.site:33000/wp-admin/post.php?post=12&action=edit"
+      "edit_url": "https://your-store.example/wp-admin/post.php?post=12&action=edit"
     }
   ],
   "page": 1,
@@ -297,7 +297,7 @@ Rows are ordered by product, then variation (product row first), then language.
       "sku": "SEED-CAP",
       "language": "de",
       "translation_id": 19018,
-      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19018&action=edit",
+      "edit_url": "https://your-store.example/wp-admin/post.php?post=19018&action=edit",
       "differences": [
         {
           "field": "post_status",
@@ -314,7 +314,7 @@ Rows are ordered by product, then variation (product row first), then language.
       "sku": "SEED-SCARF",
       "language": "de",
       "translation_id": 19020,
-      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19020&action=edit",
+      "edit_url": "https://your-store.example/wp-admin/post.php?post=19020&action=edit",
       "differences": [
         {
           "field": "sku",
@@ -387,7 +387,7 @@ for global attributes. An empty value means "any" and is always valid.
       "title": "[Seed] Variable Hoodie",
       "language": "fr",
       "translation_id": 19029,
-      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19029&action=edit",
+      "edit_url": "https://your-store.example/wp-admin/post.php?post=19029&action=edit",
       "issues": [
         {
           "type": "variation_missing",
@@ -481,7 +481,7 @@ currencies. Customers paying in such a currency silently get an exchange-rate co
         "USD"
       ],
       "base_regular_price": "40",
-      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19010&action=edit"
+      "edit_url": "https://your-store.example/wp-admin/post.php?post=19010&action=edit"
     },
     {
       "product_id": 19012,
@@ -493,7 +493,7 @@ currencies. Customers paying in such a currency silently get an exchange-rate co
         "CHF"
       ],
       "base_regular_price": "30",
-      "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19012&action=edit"
+      "edit_url": "https://your-store.example/wp-admin/post.php?post=19012&action=edit"
     }
   ],
   "page": 1,
@@ -569,6 +569,6 @@ all 6 count for the original, and its German translation is still a draft.
     "de"
   ],
   "in_progress_languages": [],
-  "edit_url": "https://mlstore-dev.ddev.site/wp-admin/post.php?post=19008&action=edit"
+  "edit_url": "https://your-store.example/wp-admin/post.php?post=19008&action=edit"
 }
 ```

@@ -1,13 +1,13 @@
 <?php
 /**
- * Seeds the DDEV demo store with deliberate multilingual test cases (concept §13.4.4).
+ * Seeds a local demo store (WooCommerce + WPML + WCML) with deliberate multilingual test cases.
  *
- * Run from the DDEV project root:
- *     ddev wp eval-file wp-content/plugins/linguapilot/tests/Fixtures/seed-demo.php
+ * Run from the WordPress root (in a container setup, through its runner, e.g. `ddev wp …`):
+ *     wp eval-file wp-content/plugins/linguapilot/tests/Fixtures/seed-demo.php
  *
  * Dev tooling only: never loaded by the plugin and excluded from release zips (.gitattributes).
  * This is the one place in the repository that writes and calls WPML/WCML APIs directly
- * (exception to the gateway-only rule, see CLAUDE.md). Take a DDEV snapshot before running.
+ * (an exception to the rule that all WPML/WCML calls go through Gateway\WpmlGateway). Back up the database (e.g. a DDEV snapshot) before running.
  *
  * Idempotent: everything it creates is tagged with `_linguapilot_seed`, titled "[Seed] …", and removed
  * again at the start of the next run. Expected ability results are checked by
@@ -502,7 +502,7 @@ function linguapilot_seed_run(): void {
 
 	WP_CLI::success(
 		sprintf(
-			"Seeded %d originals, %d translations, %d orders (Cap %d, Mug %d, Hoodie %d).\nVerify: ddev exec -d /var/www/html/wp-content/plugins/linguapilot vendor/bin/phpunit -c phpunit-store.xml.dist --filter SeedScenario",
+			"Seeded %d originals, %d translations, %d orders (Cap %d, Mug %d, Hoodie %d).\nVerify (from the plugin folder): vendor/bin/phpunit -c phpunit-store.xml.dist --filter SeedScenario",
 			7,
 			count( $t ) + 2,
 			count( $orders ),

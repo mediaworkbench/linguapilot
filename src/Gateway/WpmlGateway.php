@@ -164,7 +164,7 @@ final class WpmlGateway implements MultilingualGateway {
 	 * {@inheritDoc}
 	 *
 	 * One hook round-trip per ID; WPML caches translation groups per request. Replace with a
-	 * single `icl_translations` query per page if measurements show it is too slow (concept §8).
+	 * single `icl_translations` query per page if measurements show it is too slow (target: < 2 s on 5,000 products x 4 languages).
 	 */
 	public function translations_of( array $ids, ElementType $type ): array {
 		$result = array();
@@ -358,7 +358,7 @@ final class WpmlGateway implements MultilingualGateway {
 	 * {@inheritDoc}
 	 *
 	 * Direct SQL: a per-language summary needs every original's translations; via hooks that is
-	 * one round-trip per original on every call (concept §8: 5,000 products x 4 languages, < 2 s).
+	 * one round-trip per original on every call (target: < 2 s on 5,000 products x 4 languages).
 	 * One grouped query instead; the status rule is TranslationState::from_post_status().
 	 */
 	public function coverage( CatalogScope $scope, array $languages ): array {

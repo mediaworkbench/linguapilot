@@ -41,7 +41,7 @@ final class LanguagesOverviewTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Concept §12: anonymous, customer, shop_manager, administrator.
+	 * Anonymous, customer, shop_manager and administrator.
 	 *
 	 * @dataProvider roles
 	 *

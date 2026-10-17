@@ -64,7 +64,7 @@ final class AbilityContractTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Every role in concept §12: only roles with manage_woocommerce may run abilities.
+	 * Every role (anonymous, customer, shop_manager, administrator): only roles with manage_woocommerce may run abilities.
 	 *
 	 * @dataProvider roles
 	 *

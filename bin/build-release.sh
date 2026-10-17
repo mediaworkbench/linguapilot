@@ -4,8 +4,8 @@
 # Contents = every tracked or new (non-ignored) file not marked `export-ignore` in .gitattributes,
 # plus a production-only vendor/ (Composer autoloader, no dev packages).
 #
-# Usage (inside the DDEV web container, from the plugin directory):
-#   ddev exec -d /var/www/html/wp-content/plugins/linguapilot bash bin/build-release.sh
+# Usage (from the plugin directory; needs git, composer and zip; in a container setup, run it inside, e.g. via `ddev exec`):
+#   bash bin/build-release.sh
 # Output: build/linguapilot/ and build/linguapilot-<version>.zip
 set -euo pipefail
 

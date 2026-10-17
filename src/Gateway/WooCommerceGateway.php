@@ -541,7 +541,7 @@ final class WooCommerceGateway implements WooGateway {
 	}
 
 	/**
-	 * Store content as plain text: tags stripped, entities decoded (prompt-injection hygiene, concept §9).
+	 * Store content as plain text: tags stripped, entities decoded (prompt-injection hygiene, see docs/SECURITY.md).
 	 *
 	 * @param string $text Raw title or name.
 	 */
